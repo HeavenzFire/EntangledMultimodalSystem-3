@@ -7,12 +7,13 @@ import speech_recognition as sr
 import threading
 import nltk
 from nltk.corpus import wordnet
-from transformers import pipeline
+from transformers import pipeline, GPT2LMHeadModel, GPT2Tokenizer
 import socket
 import requests
 import os
 import time
 import logging
+from google.cloud import speech
 
 # --------------------------
 # Setup Logging
@@ -38,10 +39,12 @@ class ConsciousnessExpander:
 
     def build_model(self, input_dim):
         model = keras.Sequential([
-            keras.layers.Dense(128, activation='tanh', input_shape=(input_dim,)),
-            keras.layers.Dense(256, activation='tanh'),
-            keras.layers.Dense(128, activation='tanh'),
-            keras.layers.Dense(1, activation='tanh')
+            keras.layers.Dense(128, activation='relu', input_shape=(input_dim,)),
+            keras.layers.Dense(256, activation='relu'),
+            keras.layers.Dense(512, activation='relu'),
+            keras.layers.Dense(256, activation='relu'),
+            keras.layers.Dense(128, activation='relu'),
+            keras.layers.Dense(1, activation='linear')
         ])
         model.compile(optimizer='adam', loss='mse')
         return model
@@ -53,31 +56,40 @@ class ConsciousnessExpander:
 # --------------------------
 # NLP Component
 # --------------------------
-nlp_pipeline = pipeline("text-generation", model="gpt2")
+tokenizer = GPT2Tokenizer.from_pretrained("gpt2")
+model = GPT2LMHeadModel.from_pretrained("gpt2")
 
 def generate_text(prompt):
     logging.info("Generating text for prompt: %s", prompt)
-    return nlp_pipeline(prompt, max_length=150, num_return_sequences=1)[0]['generated_text']
+    inputs = tokenizer.encode(prompt, return_tensors="pt")
+    outputs = model.generate(inputs, max_length=150, num_return_sequences=1)
+    return tokenizer.decode(outputs[0], skip_special_tokens=True)
 
 # --------------------------
 # Speech Recognition Component
 # --------------------------
 def recognize_speech():
-    recognizer = sr.Recognizer()
+    client = speech.SpeechClient()
     with sr.Microphone() as source:
+        recognizer = sr.Recognizer()
         recognizer.adjust_for_ambient_noise(source)
         logging.info("Listening for speech input...")
         audio = recognizer.listen(source)
     try:
-        text = recognizer.recognize_google(audio)
+        audio_data = audio.get_wav_data()
+        audio = speech.RecognitionAudio(content=audio_data)
+        config = speech.RecognitionConfig(
+            encoding=speech.RecognitionConfig.AudioEncoding.LINEAR16,
+            sample_rate_hertz=16000,
+            language_code="en-US",
+        )
+        response = client.recognize(config=config, audio=audio)
+        text = response.results[0].alternatives[0].transcript
         logging.info("Recognized speech: %s", text)
         return text
-    except sr.UnknownValueError:
-        logging.warning("Could not understand audio")
-        return "Could not understand audio"
-    except sr.RequestError:
-        logging.error("Speech Recognition API unavailable")
-        return "Speech Recognition API unavailable"
+    except Exception as e:
+        logging.error("Error recognizing speech: %s", e)
+        return "Error recognizing speech"
 
 # --------------------------
 # Fractal Generation Component
@@ -86,7 +98,10 @@ def generate_fractal():
     x = np.linspace(-2, 2, 500)
     y = np.linspace(-2, 2, 500)
     X, Y = np.meshgrid(x, y)
-    Z = np.sin(X**2 + Y**2) / (X**2 + Y**2 + 0.1)
+    Z1 = np.sin(X**2 + Y**2) / (X**2 + Y**2 + 0.1)
+    Z2 = np.cos(X**2 - Y**2) / (X**2 + Y**2 + 0.1)
+    Z3 = np.sin(X*Y) / (X**2 + Y**2 + 0.1)
+    Z = Z1 + Z2 + Z3
     plt.imshow(Z, cmap='inferno', extent=(-2, 2, -2, 2))
     plt.axis('off')
     # Save to the static folder
@@ -98,19 +113,33 @@ def generate_fractal():
 # --------------------------
 def fhss_strategy():
     logging.info("Implementing FHSS: Switching frequency channels")
-    # Placeholder for frequency switching logic
+    # Example frequency hopping logic
+    frequencies = [2.4e9, 2.41e9, 2.42e9, 2.43e9, 2.44e9]
+    current_frequency = frequencies[int(time.time()) % len(frequencies)]
+    logging.info("Current frequency: %s", current_frequency)
+    # Placeholder for actual frequency switching hardware interface
 
 def dsss_strategy():
     logging.info("Implementing DSSS: Spreading signal across frequency band")
-    # Placeholder for signal spreading logic
+    # Example signal spreading logic
+    spreading_code = np.random.choice([1, -1], size=1024)
+    logging.info("Spreading code: %s", spreading_code[:10])
+    # Placeholder for actual signal spreading hardware interface
 
 def error_correction():
     logging.info("Implementing error correction codes")
-    # Placeholder for error detection and correction logic
+    # Example error correction logic
+    data = np.random.randint(0, 2, size=1024)
+    parity_bits = np.sum(data) % 2
+    logging.info("Parity bit: %s", parity_bits)
+    # Placeholder for actual error correction hardware interface
 
 def shielding_feedback():
     logging.info("Adjusting shielding to absorb harmful radiation")
-    # Placeholder for hardware interfacing
+    # Example shielding adjustment logic
+    shield_strength = min(100, max(0, 50 + np.random.randint(-10, 10)))
+    logging.info("Shield strength: %s", shield_strength)
+    # Placeholder for actual shielding hardware interface
 
 def external_radiation_monitor():
     api_url = "https://api.example.com/radiation"  # Replace with your external API
