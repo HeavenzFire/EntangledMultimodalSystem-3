@@ -44,6 +44,8 @@ class ConsciousnessExpander:
             keras.layers.Dense(512, activation='relu'),
             keras.layers.Dense(256, activation='relu'),
             keras.layers.Dense(128, activation='relu'),
+            keras.layers.Dense(64, activation='relu'),
+            keras.layers.Dense(32, activation='relu'),
             keras.layers.Dense(1, activation='linear')
         ])
         model.compile(optimizer='adam', loss='mse')
@@ -101,7 +103,9 @@ def generate_fractal():
     Z1 = np.sin(X**2 + Y**2) / (X**2 + Y**2 + 0.1)
     Z2 = np.cos(X**2 - Y**2) / (X**2 + Y**2 + 0.1)
     Z3 = np.sin(X*Y) / (X**2 + Y**2 + 0.1)
-    Z = Z1 + Z2 + Z3
+    Z4 = np.cos(X*Y) / (X**2 + Y**2 + 0.1)
+    Z5 = np.sin(X**2 - Y**2) / (X**2 + Y**2 + 0.1)
+    Z = Z1 + Z2 + Z3 + Z4 + Z5
     plt.imshow(Z, cmap='inferno', extent=(-2, 2, -2, 2))
     plt.axis('off')
     # Save to the static folder

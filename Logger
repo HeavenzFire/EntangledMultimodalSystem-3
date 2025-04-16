@@ -46,3 +46,18 @@ class Logger:
 
     def add_custom_handler(self, handler):
         self.logger.addHandler(handler)
+
+    def log_performance_metrics(self, metrics):
+        self.logger.info("Performance Metrics: %s", metrics)
+
+    def log_system_status(self, status):
+        self.logger.info("System Status: %s", status)
+
+    def log_user_activity(self, user, activity):
+        self.logger.info("User Activity - User: %s, Activity: %s", user, activity)
+
+    def log_security_event(self, event):
+        self.logger.warning("Security Event: %s", event)
+
+    def log_error_details(self, error, details):
+        self.logger.error("Error: %s, Details: %s", error, details)

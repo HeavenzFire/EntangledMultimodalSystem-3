@@ -6,6 +6,12 @@ from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives.kdf.scrypt import Scrypt
+from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
+from cryptography.hazmat.primitives.padding import PKCS7
+from cryptography.hazmat.primitives.hmac import HMAC
+from cryptography.hazmat.primitives.kdf.hkdf import HKDF
+from cryptography.hazmat.primitives.asymmetric import rsa, padding
+from cryptography.hazmat.primitives import serialization
 
 class Security:
     def __init__(self, secret_key=None):
@@ -50,12 +56,17 @@ class Security:
             backend=default_backend()
         )
         key = kdf.derive(self.secret_key)
-        h = hmac.new(key, message.encode(), hashlib.sha256)
-        return base64.urlsafe_b64encode(salt + h.digest()).decode()
+        iv = os.urandom(16)
+        cipher = Cipher(algorithms.AES(key), modes.CBC(iv), backend=default_backend())
+        encryptor = cipher.encryptor()
+        padder = PKCS7(algorithms.AES.block_size).padder()
+        padded_data = padder.update(message.encode()) + padder.finalize()
+        encrypted_message = encryptor.update(padded_data) + encryptor.finalize()
+        return base64.urlsafe_b64encode(salt + iv + encrypted_message).decode()
 
-    def verify_message(self, message, encrypted):
+    def decrypt_message(self, encrypted):
         decoded = base64.urlsafe_b64decode(encrypted.encode())
-        salt, hmac_digest = decoded[:16], decoded[16:]
+        salt, iv, encrypted_message = decoded[:16], decoded[16:32], decoded[32:]
         kdf = Scrypt(
             salt=salt,
             length=32,
@@ -65,8 +76,12 @@ class Security:
             backend=default_backend()
         )
         key = kdf.derive(self.secret_key)
-        h = hmac.new(key, message.encode(), hashlib.sha256)
-        return hmac.compare_digest(h.digest(), hmac_digest)
+        cipher = Cipher(algorithms.AES(key), modes.CBC(iv), backend=default_backend())
+        decryptor = cipher.decryptor()
+        padded_data = decryptor.update(encrypted_message) + decryptor.finalize()
+        unpadder = PKCS7(algorithms.AES.block_size).unpadder()
+        message = unpadder.update(padded_data) + unpadder.finalize()
+        return message.decode()
 
     def generate_auth_token(self, user_id):
         message = f"{user_id}:{os.urandom(16).hex()}"
@@ -74,18 +89,75 @@ class Security:
 
     def verify_auth_token(self, token):
         try:
-            decoded = base64.urlsafe_b64decode(token.encode())
-            salt, hmac_digest = decoded[:16], decoded[16:]
-            kdf = Scrypt(
-                salt=salt,
-                length=32,
-                n=2**14,
-                r=8,
-                p=1,
-                backend=default_backend()
+            message = self.decrypt_message(token)
+            user_id, _ = message.split(":")
+            return user_id
+        except Exception:
+            return None
+
+    def generate_rsa_key_pair(self):
+        private_key = rsa.generate_private_key(
+            public_exponent=65537,
+            key_size=2048,
+            backend=default_backend()
+        )
+        public_key = private_key.public_key()
+        return private_key, public_key
+
+    def serialize_private_key(self, private_key):
+        return private_key.private_bytes(
+            encoding=serialization.Encoding.PEM,
+            format=serialization.PrivateFormat.PKCS8,
+            encryption_algorithm=serialization.NoEncryption()
+        )
+
+    def serialize_public_key(self, public_key):
+        return public_key.public_bytes(
+            encoding=serialization.Encoding.PEM,
+            format=serialization.PublicFormat.SubjectPublicKeyInfo
+        )
+
+    def encrypt_with_public_key(self, public_key, message):
+        return public_key.encrypt(
+            message.encode(),
+            padding.OAEP(
+                mgf=padding.MGF1(algorithm=hashes.SHA256()),
+                algorithm=hashes.SHA256(),
+                label=None
             )
-            key = kdf.derive(self.secret_key)
-            h = hmac.new(key, token.encode(), hashlib.sha256)
-            return hmac.compare_digest(h.digest(), hmac_digest)
+        )
+
+    def decrypt_with_private_key(self, private_key, encrypted_message):
+        return private_key.decrypt(
+            encrypted_message,
+            padding.OAEP(
+                mgf=padding.MGF1(algorithm=hashes.SHA256()),
+                algorithm=hashes.SHA256(),
+                label=None
+            )
+        ).decode()
+
+    def sign_message(self, private_key, message):
+        return private_key.sign(
+            message.encode(),
+            padding.PSS(
+                mgf=padding.MGF1(algorithm=hashes.SHA256()),
+                salt_length=padding.PSS.MAX_LENGTH
+            ),
+            hashes.SHA256()
+        )
+
+    def verify_signature(self, public_key, message, signature):
+        try:
+            public_key.verify(
+                signature,
+                message.encode(),
+                padding.PSS(
+                    mgf=padding.MGF1(algorithm=hashes.SHA256()),
+                    salt_length=padding.PSS.MAX_LENGTH
+                ),
+                hashes.SHA256()
+            )
+            return True
         except Exception:
             return False

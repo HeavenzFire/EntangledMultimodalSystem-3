@@ -38,3 +38,39 @@ class FractalNN(nn.Module):
             z = z*z + c
             n += 1
         return n
+
+    def julia_set(self, c, x_min, x_max, y_min, y_max, width, height, max_iter):
+        r1 = np.linspace(x_min, x_max, width)
+        r2 = np.linspace(y_min, y_max, height)
+        return np.array([[self._julia(complex(x, y), c, max_iter) for x in r1] for y in r2])
+
+    def _julia(self, z, c, max_iter):
+        n = 0
+        while abs(z) <= 2 and n < max_iter:
+            z = z*z + c
+            n += 1
+        return n
+
+    def sierpinski_triangle(self, size):
+        triangle = np.zeros((size, size), dtype=int)
+        for y in range(size):
+            for x in range(size):
+                if x & y == 0:
+                    triangle[y, x] = 1
+        return triangle
+
+    def barnsley_fern(self, n):
+        x, y = 0, 0
+        points = np.zeros((n, 2))
+        for i in range(n):
+            r = np.random.random()
+            if r < 0.01:
+                x, y = 0, 0.16*y
+            elif r < 0.86:
+                x, y = 0.85*x + 0.04*y, -0.04*x + 0.85*y + 1.6
+            elif r < 0.93:
+                x, y = 0.2*x - 0.26*y, 0.23*x + 0.22*y + 1.6
+            else:
+                x, y = -0.15*x + 0.28*y, 0.26*x + 0.24*y + 0.44
+            points[i] = [x, y]
+        return points
