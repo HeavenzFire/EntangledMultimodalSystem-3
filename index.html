@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Unified Modal Platform</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 20px; }
+    button { padding: 10px 20px; margin: 5px; }
+    #output { margin-top: 20px; white-space: pre-wrap; background: #f4f4f4; padding: 10px; border: 1px solid #ccc; }
+  </style>
+</head>
+<body>
+  <h1>Unified Modal Platform</h1>
+  
+  <button onclick="fetchExpand()">Neural Expand</button>
+  <button onclick="fetchFractal()">Generate Fractal</button>
+  <button onclick="fetchNLP()">Generate Text (NLP)</button>
+  <button onclick="fetchSpeech()">Speech-to-Text</button>
+  <button onclick="fetchDictionary()">Dictionary Lookup</button>
+  <button onclick="fetchCloud()">Cloud Networking</button>
+  <button onclick="fetchRadiation()">Radiation Monitor</button>
+  
+  <div id="output">Output will appear here...</div>
+  
+  <script>
+    function showOutput(text) {
+      document.getElementById('output').innerText = text;
+    }
+
+    async function fetchExpand() {
+      const response = await fetch('/expand');
+      const data = await response.json();
+      showOutput('Neural Expansion:\n' + JSON.stringify(data, null, 2));
+    }
+    
+    async function fetchFractal() {
+      const response = await fetch('/fractal');
+      const data = await response.json();
+      showOutput('Fractal Generation:\n' + JSON.stringify(data, null, 2));
+    }
+    
+    async function fetchNLP() {
+      const prompt = prompt("Enter text prompt for NLP:");
+      if (!prompt) return;
+      const response = await fetch('/nlp', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({prompt: prompt})
+      });
+      const data = await response.json();
+      showOutput('NLP Response:\n' + data.response);
+    }
+    
+    async function fetchSpeech() {
+      const response = await fetch('/speech');
+      const data = await response.json();
+      showOutput('Speech Recognition:\n' + data.recognized_text);
+    }
+    
+    async function fetchDictionary() {
+      const word = prompt("Enter a word for dictionary lookup:");
+      if (!word) return;
+      const response = await fetch('/dictionary', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({word: word})
+      });
+      const data = await response.json();
+      showOutput('Dictionary Lookup for "' + word + '":\n' + JSON.stringify(data.definitions, null, 2));
+    }
+    
+    async function fetchCloud() {
+      const endpoint = prompt("Enter the cloud endpoint URL:");
+      const payload = prompt("Enter JSON payload:");
+      try {
+        const jsonPayload = JSON.parse(payload);
+        const response = await fetch('/cloud', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer default_secret_token'  // Change token as needed
+          },
+          body: JSON.stringify({endpoint: endpoint, payload: jsonPayload})
+        });
+        const data = await response.json();
+        showOutput('Cloud Networking:\n' + JSON.stringify(data, null, 2));
+      } catch (e) {
+        showOutput('Invalid JSON payload.');
+      }
+    }
+    
+    async function fetchRadiation() {
+      const response = await fetch('/radiation_monitor');
+      const data = await response.json();
+      showOutput('Radiation Monitor:\n' + JSON.stringify(data.radiation_data, null, 2));
+    }
+  </script>
+</body>
+</html>
