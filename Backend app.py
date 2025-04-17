@@ -7,7 +7,7 @@ import speech_recognition as sr
 import threading
 import nltk
 from nltk.corpus import wordnet
-from transformers import pipeline, GPT2LMHeadModel, GPT2Tokenizer
+from transformers import pipeline, GPT2LMHeadModel, GPT2Tokenizer, GPT3Tokenizer, GPT3LMHeadModel
 import socket
 import requests
 import os
@@ -43,6 +43,8 @@ class ConsciousnessExpander:
             keras.layers.Dense(512, activation='relu'),
             keras.layers.Dense(256, activation='relu'),
             keras.layers.Dense(128, activation='relu'),
+            keras.layers.Dense(64, activation='relu'),
+            keras.layers.Dense(32, activation='relu'),
             keras.layers.Dense(1, activation='linear')
         ])
         model.compile(optimizer='adam', loss='mse')
@@ -55,8 +57,8 @@ class ConsciousnessExpander:
 # --------------------------
 # NLP Component
 # --------------------------
-tokenizer = GPT2Tokenizer.from_pretrained("gpt2")
-model = GPT2LMHeadModel.from_pretrained("gpt2")
+tokenizer = GPT3Tokenizer.from_pretrained("gpt3")
+model = GPT3LMHeadModel.from_pretrained("gpt3")
 
 def generate_text(prompt):
     logging.info("Generating text for prompt: %s", prompt)
@@ -97,15 +99,23 @@ def generate_fractal():
     Z1 = np.sin(X**2 + Y**2) / (X**2 + Y**2 + 0.1)
     Z2 = np.cos(X**2 - Y**2) / (X**2 + Y**2 + 0.1)
     Z3 = np.sin(X**3 + Y**3) / (X**3 + Y**3 + 0.1)
+    Z4 = np.sin(X**4 + Y**4) / (X**4 + Y**4 + 0.1)
+    Z5 = np.cos(X**3 - Y**3) / (X**3 + Y**3 + 0.1)
     plt.figure(figsize=(15, 5))
-    plt.subplot(1, 3, 1)
+    plt.subplot(1, 5, 1)
     plt.imshow(Z1, cmap='inferno', extent=(-2, 2, -2, 2))
     plt.axis('off')
-    plt.subplot(1, 3, 2)
+    plt.subplot(1, 5, 2)
     plt.imshow(Z2, cmap='viridis', extent=(-2, 2, -2, 2))
     plt.axis('off')
-    plt.subplot(1, 3, 3)
+    plt.subplot(1, 5, 3)
     plt.imshow(Z3, cmap='plasma', extent=(-2, 2, -2, 2))
+    plt.axis('off')
+    plt.subplot(1, 5, 4)
+    plt.imshow(Z4, cmap='magma', extent=(-2, 2, -2, 2))
+    plt.axis('off')
+    plt.subplot(1, 5, 5)
+    plt.imshow(Z5, cmap='cividis', extent=(-2, 2, -2, 2))
     plt.axis('off')
     plt.savefig('static/fractal.png')
     logging.info("Fractal generated and saved to static/fractal.png")
