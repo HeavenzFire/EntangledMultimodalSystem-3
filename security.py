@@ -1,163 +1,83 @@
 import os
+from cryptography.fernet import Fernet
 import hashlib
 import hmac
 import base64
-from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
-from cryptography.hazmat.primitives import hashes
-from cryptography.hazmat.backends import default_backend
-from cryptography.hazmat.primitives.kdf.scrypt import Scrypt
-from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
-from cryptography.hazmat.primitives.padding import PKCS7
-from cryptography.hazmat.primitives.hmac import HMAC
-from cryptography.hazmat.primitives.kdf.hkdf import HKDF
-from cryptography.hazmat.primitives.asymmetric import rsa, padding
-from cryptography.hazmat.primitives import serialization
+import jwt
+import ssl
+import socket
 
 class Security:
-    def __init__(self, secret_key=None):
-        self.secret_key = secret_key or os.urandom(32)
+    def __init__(self):
+        self.key = os.environ.get("ENCRYPTION_KEY", Fernet.generate_key())
+        self.cipher = Fernet(self.key)
+        self.hmac_key = os.environ.get("HMAC_KEY", base64.urlsafe_b64encode(os.urandom(32)))
+        self.jwt_secret = os.environ.get("JWT_SECRET", base64.urlsafe_b64encode(os.urandom(32)))
 
-    def hash_password(self, password, salt=None):
-        salt = salt or os.urandom(16)
-        kdf = PBKDF2HMAC(
-            algorithm=hashes.SHA256(),
-            length=32,
-            salt=salt,
-            iterations=100000,
-            backend=default_backend()
-        )
-        key = kdf.derive(password.encode())
-        return base64.urlsafe_b64encode(salt + key).decode()
+    def encrypt(self, data):
+        return self.cipher.encrypt(data.encode())
 
-    def verify_password(self, password, hashed):
-        decoded = base64.urlsafe_b64decode(hashed.encode())
-        salt, key = decoded[:16], decoded[16:]
-        kdf = PBKDF2HMAC(
-            algorithm=hashes.SHA256(),
-            length=32,
-            salt=salt,
-            iterations=100000,
-            backend=default_backend()
-        )
+    def decrypt(self, token):
+        return self.cipher.decrypt(token).decode()
+
+    def authenticate(self, token, valid_token):
+        return token == valid_token
+
+    def generate_token(self, data):
+        return self.cipher.encrypt(data.encode())
+
+    def validate_token(self, token):
         try:
-            kdf.verify(password.encode(), key)
+            self.cipher.decrypt(token)
             return True
-        except Exception:
+        except:
             return False
 
-    def encrypt_message(self, message):
-        salt = os.urandom(16)
-        kdf = Scrypt(
-            salt=salt,
-            length=32,
-            n=2**14,
-            r=8,
-            p=1,
-            backend=default_backend()
-        )
-        key = kdf.derive(self.secret_key)
-        iv = os.urandom(16)
-        cipher = Cipher(algorithms.AES(key), modes.CBC(iv), backend=default_backend())
-        encryptor = cipher.encryptor()
-        padder = PKCS7(algorithms.AES.block_size).padder()
-        padded_data = padder.update(message.encode()) + padder.finalize()
-        encrypted_message = encryptor.update(padded_data) + encryptor.finalize()
-        return base64.urlsafe_b64encode(salt + iv + encrypted_message).decode()
+    def encrypt_file(self, file_path):
+        with open(file_path, 'rb') as file:
+            encrypted_data = self.cipher.encrypt(file.read())
+        with open(file_path + '.enc', 'wb') as file:
+            file.write(encrypted_data)
 
-    def decrypt_message(self, encrypted):
-        decoded = base64.urlsafe_b64decode(encrypted.encode())
-        salt, iv, encrypted_message = decoded[:16], decoded[16:32], decoded[32:]
-        kdf = Scrypt(
-            salt=salt,
-            length=32,
-            n=2**14,
-            r=8,
-            p=1,
-            backend=default_backend()
-        )
-        key = kdf.derive(self.secret_key)
-        cipher = Cipher(algorithms.AES(key), modes.CBC(iv), backend=default_backend())
-        decryptor = cipher.decryptor()
-        padded_data = decryptor.update(encrypted_message) + decryptor.finalize()
-        unpadder = PKCS7(algorithms.AES.block_size).unpadder()
-        message = unpadder.update(padded_data) + unpadder.finalize()
-        return message.decode()
+    def decrypt_file(self, file_path):
+        with open(file_path, 'rb') as file:
+            decrypted_data = self.cipher.decrypt(file.read())
+        with open(file_path.replace('.enc', ''), 'wb') as file:
+            file.write(decrypted_data)
 
-    def generate_auth_token(self, user_id):
-        message = f"{user_id}:{os.urandom(16).hex()}"
-        return self.encrypt_message(message)
+    def generate_hmac(self, message):
+        return hmac.new(self.hmac_key, message.encode(), hashlib.sha256).hexdigest()
 
-    def verify_auth_token(self, token):
+    def verify_hmac(self, message, hmac_to_verify):
+        generated_hmac = self.generate_hmac(message)
+        return hmac.compare_digest(generated_hmac, hmac_to_verify)
+
+    def encrypt_with_hmac(self, data):
+        encrypted_data = self.encrypt(data)
+        hmac_value = self.generate_hmac(encrypted_data)
+        return encrypted_data, hmac_value
+
+    def decrypt_with_hmac(self, encrypted_data, hmac_value):
+        if self.verify_hmac(encrypted_data, hmac_value):
+            return self.decrypt(encrypted_data)
+        else:
+            raise ValueError("HMAC verification failed. Data integrity compromised.")
+
+    def generate_jwt(self, payload):
+        return jwt.encode(payload, self.jwt_secret, algorithm='HS256')
+
+    def verify_jwt(self, token):
         try:
-            message = self.decrypt_message(token)
-            user_id, _ = message.split(":")
-            return user_id
-        except Exception:
-            return None
+            return jwt.decode(token, self.jwt_secret, algorithms=['HS256'])
+        except jwt.ExpiredSignatureError:
+            raise ValueError("JWT has expired")
+        except jwt.InvalidTokenError:
+            raise ValueError("Invalid JWT")
 
-    def generate_rsa_key_pair(self):
-        private_key = rsa.generate_private_key(
-            public_exponent=65537,
-            key_size=2048,
-            backend=default_backend()
-        )
-        public_key = private_key.public_key()
-        return private_key, public_key
+    def create_ssl_context(self, certfile, keyfile):
+        context = ssl.create_default_context(ssl.Purpose.CLIENT_AUTH)
+        context.load_cert_chain(certfile, keyfile)
+        return context
 
-    def serialize_private_key(self, private_key):
-        return private_key.private_bytes(
-            encoding=serialization.Encoding.PEM,
-            format=serialization.PrivateFormat.PKCS8,
-            encryption_algorithm=serialization.NoEncryption()
-        )
-
-    def serialize_public_key(self, public_key):
-        return public_key.public_bytes(
-            encoding=serialization.Encoding.PEM,
-            format=serialization.PublicFormat.SubjectPublicKeyInfo
-        )
-
-    def encrypt_with_public_key(self, public_key, message):
-        return public_key.encrypt(
-            message.encode(),
-            padding.OAEP(
-                mgf=padding.MGF1(algorithm=hashes.SHA256()),
-                algorithm=hashes.SHA256(),
-                label=None
-            )
-        )
-
-    def decrypt_with_private_key(self, private_key, encrypted_message):
-        return private_key.decrypt(
-            encrypted_message,
-            padding.OAEP(
-                mgf=padding.MGF1(algorithm=hashes.SHA256()),
-                algorithm=hashes.SHA256(),
-                label=None
-            )
-        ).decode()
-
-    def sign_message(self, private_key, message):
-        return private_key.sign(
-            message.encode(),
-            padding.PSS(
-                mgf=padding.MGF1(algorithm=hashes.SHA256()),
-                salt_length=padding.PSS.MAX_LENGTH
-            ),
-            hashes.SHA256()
-        )
-
-    def verify_signature(self, public_key, message, signature):
-        try:
-            public_key.verify(
-                signature,
-                message.encode(),
-                padding.PSS(
-                    mgf=padding.MGF1(algorithm=hashes.SHA256()),
-                    salt_length=padding.PSS.MAX_LENGTH
-                ),
-                hashes.SHA256()
-            )
-            return True
-        except Exception:
-            return False
+    def secure_socket(self, sock, context):
+        return context.wrap_socket(sock, server_side=True)
