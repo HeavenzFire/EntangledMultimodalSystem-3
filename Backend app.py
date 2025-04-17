@@ -39,13 +39,10 @@ class ConsciousnessExpander:
 
     def build_model(self, input_dim):
         model = keras.Sequential([
-            keras.layers.Dense(128, activation='relu', input_shape=(input_dim,)),
-            keras.layers.Dense(256, activation='relu'),
+            keras.layers.Dense(256, activation='relu', input_shape=(input_dim,)),
             keras.layers.Dense(512, activation='relu'),
             keras.layers.Dense(256, activation='relu'),
             keras.layers.Dense(128, activation='relu'),
-            keras.layers.Dense(64, activation='relu'),
-            keras.layers.Dense(32, activation='relu'),
             keras.layers.Dense(1, activation='linear')
         ])
         model.compile(optimizer='adam', loss='mse')
@@ -77,7 +74,6 @@ def recognize_speech():
         recognizer.adjust_for_ambient_noise(source)
         logging.info("Listening for speech input...")
         audio = recognizer.listen(source)
-    try:
         audio_data = audio.get_wav_data()
         audio = speech.RecognitionAudio(content=audio_data)
         config = speech.RecognitionConfig(
@@ -86,12 +82,10 @@ def recognize_speech():
             language_code="en-US",
         )
         response = client.recognize(config=config, audio=audio)
-        text = response.results[0].alternatives[0].transcript
-        logging.info("Recognized speech: %s", text)
-        return text
-    except Exception as e:
-        logging.error("Error recognizing speech: %s", e)
-        return "Error recognizing speech"
+        for result in response.results:
+            logging.info("Recognized speech: %s", result.alternatives[0].transcript)
+            return result.alternatives[0].transcript
+    return "Could not understand audio"
 
 # --------------------------
 # Fractal Generation Component
@@ -102,13 +96,17 @@ def generate_fractal():
     X, Y = np.meshgrid(x, y)
     Z1 = np.sin(X**2 + Y**2) / (X**2 + Y**2 + 0.1)
     Z2 = np.cos(X**2 - Y**2) / (X**2 + Y**2 + 0.1)
-    Z3 = np.sin(X*Y) / (X**2 + Y**2 + 0.1)
-    Z4 = np.cos(X*Y) / (X**2 + Y**2 + 0.1)
-    Z5 = np.sin(X**2 - Y**2) / (X**2 + Y**2 + 0.1)
-    Z = Z1 + Z2 + Z3 + Z4 + Z5
-    plt.imshow(Z, cmap='inferno', extent=(-2, 2, -2, 2))
+    Z3 = np.sin(X**3 + Y**3) / (X**3 + Y**3 + 0.1)
+    plt.figure(figsize=(15, 5))
+    plt.subplot(1, 3, 1)
+    plt.imshow(Z1, cmap='inferno', extent=(-2, 2, -2, 2))
     plt.axis('off')
-    # Save to the static folder
+    plt.subplot(1, 3, 2)
+    plt.imshow(Z2, cmap='viridis', extent=(-2, 2, -2, 2))
+    plt.axis('off')
+    plt.subplot(1, 3, 3)
+    plt.imshow(Z3, cmap='plasma', extent=(-2, 2, -2, 2))
+    plt.axis('off')
     plt.savefig('static/fractal.png')
     logging.info("Fractal generated and saved to static/fractal.png")
 
@@ -118,32 +116,30 @@ def generate_fractal():
 def fhss_strategy():
     logging.info("Implementing FHSS: Switching frequency channels")
     # Example frequency hopping logic
-    frequencies = [2.4e9, 2.41e9, 2.42e9, 2.43e9, 2.44e9]
-    current_frequency = frequencies[int(time.time()) % len(frequencies)]
-    logging.info("Current frequency: %s", current_frequency)
-    # Placeholder for actual frequency switching hardware interface
+    frequencies = [2.4e9, 2.41e9, 2.42e9, 2.43e9]
+    for freq in frequencies:
+        logging.info("Switching to frequency: %s Hz", freq)
+        time.sleep(1)
 
 def dsss_strategy():
     logging.info("Implementing DSSS: Spreading signal across frequency band")
     # Example signal spreading logic
-    spreading_code = np.random.choice([1, -1], size=1024)
-    logging.info("Spreading code: %s", spreading_code[:10])
-    # Placeholder for actual signal spreading hardware interface
+    signal = np.random.randn(1000)
+    spread_signal = np.fft.ifft(np.fft.fft(signal) * np.random.randn(1000))
+    logging.info("Signal spread across frequency band")
 
 def error_correction():
     logging.info("Implementing error correction codes")
     # Example error correction logic
-    data = np.random.randint(0, 2, size=1024)
+    data = np.random.randint(0, 2, 100)
     parity_bits = np.sum(data) % 2
-    logging.info("Parity bit: %s", parity_bits)
-    # Placeholder for actual error correction hardware interface
+    logging.info("Error correction parity bit: %s", parity_bits)
 
 def shielding_feedback():
     logging.info("Adjusting shielding to absorb harmful radiation")
     # Example shielding adjustment logic
-    shield_strength = min(100, max(0, 50 + np.random.randint(-10, 10)))
-    logging.info("Shield strength: %s", shield_strength)
-    # Placeholder for actual shielding hardware interface
+    shield_strength = np.random.uniform(0, 1)
+    logging.info("Shield strength adjusted to: %s", shield_strength)
 
 def external_radiation_monitor():
     api_url = "https://api.example.com/radiation"  # Replace with your external API
