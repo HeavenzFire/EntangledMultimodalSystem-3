@@ -1,4 +1,7 @@
 import numpy as np
+import tensorflow as tf
+from tensorflow import keras
+import logging
 
 class FractalNN:
     def __init__(self, iterations):
