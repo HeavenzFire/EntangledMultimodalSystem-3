@@ -69,3 +69,21 @@ class FractalNeuralNetwork:
     def evolve(self, x):
         logging.info("Evolving fractal neural network with input: %s", x[:5])
         return self.model.predict(x)
+
+class AdvancedFractalGenerator:
+    def __init__(self, iterations, dimension=2):
+        self.iterations = iterations
+        self.dimension = dimension
+
+    def generate_fractal(self, z, c):
+        for _ in range(self.iterations):
+            z = z**self.dimension + c
+        return z
+
+    def process_data(self, data):
+        processed_data = np.array([self.generate_fractal(z, complex(0, 0)) for z in data])
+        return processed_data
+
+    def dynamic_scaling(self, data, scale_factor):
+        scaled_data = data * scale_factor
+        return self.process_data(scaled_data)
