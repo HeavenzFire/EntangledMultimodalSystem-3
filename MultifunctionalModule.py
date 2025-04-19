@@ -177,7 +177,7 @@ class MultimodalSystem:
             )
         elif self.current_mode == "ensemble":
             return self._ensemble_outputs(
-                classical_output, quantum_values, fractal_output, input_data
+                classical_output, quantum_values, fractal_output, original_input
             )
         elif self.current_mode == "crossmodal":
             return self._crossmodal_outputs(
