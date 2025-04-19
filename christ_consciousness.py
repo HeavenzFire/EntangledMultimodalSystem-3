@@ -32,3 +32,13 @@ class ChristConsciousness:
         self.unity = scenario_params.get("unity", self.unity)
         self.higher_awareness = scenario_params.get("higher_awareness", self.higher_awareness)
         return self.simulate()
+
+class ChristConsciousnessSimulator:
+    def __init__(self):
+        self.christ_consciousness = ChristConsciousness()
+
+    def run_simulation(self, factor, advanced=False, additional_params=None):
+        return self.christ_consciousness.expand(factor, advanced, additional_params)
+
+    def run_advanced_simulation(self, scenario_params):
+        return self.christ_consciousness.simulate_advanced(scenario_params)

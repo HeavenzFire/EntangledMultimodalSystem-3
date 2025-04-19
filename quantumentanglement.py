@@ -1,5 +1,8 @@
 import pennylane as qml
 import numpy as np
+import torch
+import torch.nn as nn
+import torch.optim as optim
 
 class QuantumEntanglementSuperposition:
     def __init__(self, num_qubits):
@@ -180,10 +183,6 @@ class QuantumEntanglementSuperposition:
             params = self.variational_params[:num_layers]
             
         return circuit(input_data, params)
-
-import torch
-import torch.nn as nn
-import torch.optim as optim
 
 class QuantumClassicalHybridNN(nn.Module):
     def __init__(self, num_qubits, num_layers, classical_dim):

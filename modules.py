@@ -53,16 +53,16 @@ class MLEngine:
 class APIClient:
     def fetch_data(self, url):
         response = requests.get(url)
-        if response.status_code == 200 {
+        if response.status_code == 200:
             return response.json()
-        } else {
+        else:
             raise Exception(f"Failed to fetch data: {response.status_code}")
 
     def post_data(self, url, data):
         response = requests.post(url, json=data)
-        if response.status_code == 200 {
+        if response.status_code == 200:
             return response.json()
-        } else {
+        else:
             raise Exception(f"Failed to post data: {response.status_code}")
 
 # Quantum Neural Network Module
