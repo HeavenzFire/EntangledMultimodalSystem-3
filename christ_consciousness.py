@@ -13,9 +13,22 @@ class ChristConsciousness:
             "higher_awareness": self.higher_awareness
         }
 
-    def expand(self, factor):
-        self.love *= factor
-        self.compassion *= factor
-        self.unity *= factor
-        self.higher_awareness *= factor
+    def expand(self, factor, advanced=False, additional_params=None):
+        if advanced and additional_params:
+            self.love *= factor * additional_params.get("love", 1.0)
+            self.compassion *= factor * additional_params.get("compassion", 1.0)
+            self.unity *= factor * additional_params.get("unity", 1.0)
+            self.higher_awareness *= factor * additional_params.get("higher_awareness", 1.0)
+        else:
+            self.love *= factor
+            self.compassion *= factor
+            self.unity *= factor
+            self.higher_awareness *= factor
+        return self.simulate()
+
+    def simulate_advanced(self, scenario_params):
+        self.love = scenario_params.get("love", self.love)
+        self.compassion = scenario_params.get("compassion", self.compassion)
+        self.unity = scenario_params.get("unity", self.unity)
+        self.higher_awareness = scenario_params.get("higher_awareness", self.higher_awareness)
         return self.simulate()

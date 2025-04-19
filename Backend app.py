@@ -56,6 +56,30 @@ class ConsciousnessExpander:
         logging.info("Evolving neural network with input: %s", x[:5])
         return self.model.predict(x)
 
+class AdvancedConsciousnessExpander:
+    def __init__(self, input_dim=1):
+        self.model = self.build_model(input_dim)
+
+    def build_model(self, input_dim):
+        model = keras.Sequential([
+            keras.layers.Dense(512, activation='relu', input_shape=(input_dim,)),
+            keras.layers.Dense(1024, activation='relu'),
+            keras.layers.Dense(512, activation='relu'),
+            keras.layers.Dense(256, activation='relu'),
+            keras.layers.Dense(128, activation='tanh'),
+            keras.layers.Dense(64, activation='tanh'),
+            keras.layers.Dense(32, activation='tanh'),
+            keras.layers.Dense(16, activation='tanh'),
+            keras.layers.Dense(8, activation='tanh'),
+            keras.layers.Dense(1, activation='linear')
+        ])
+        model.compile(optimizer='adam', loss='mse')
+        return model
+
+    def evolve(self, x):
+        logging.info("Evolving advanced neural network with input: %s", x[:5])
+        return self.model.predict(x)
+
 # --------------------------
 # Christ Consciousness Component
 # --------------------------
@@ -225,6 +249,7 @@ def external_radiation_monitor():
 # --------------------------
 app = Flask(__name__)
 expander = ConsciousnessExpander()
+advanced_expander = AdvancedConsciousnessExpander()
 christ_consciousness = ChristConsciousness()
 
 # Security: Define a token for authentication (set via environment variable)
@@ -238,6 +263,12 @@ def home():
 def expand():
     x = np.linspace(-10, 10, 100).reshape(-1, 1)
     predictions = expander.evolve(x).tolist()
+    return jsonify(predictions)
+
+@app.route('/advanced_expand')
+def advanced_expand():
+    x = np.linspace(-10, 10, 100).reshape(-1, 1)
+    predictions = advanced_expander.evolve(x).tolist()
     return jsonify(predictions)
 
 @app.route('/fractal')
