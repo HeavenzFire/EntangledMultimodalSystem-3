@@ -87,3 +87,37 @@ class AdvancedFractalGenerator:
     def dynamic_scaling(self, data, scale_factor):
         scaled_data = data * scale_factor
         return self.process_data(scaled_data)
+
+class FractalDataPreprocessor:
+    def __init__(self, data):
+        self.data = data
+
+    def clean_data(self):
+        return self.data.dropna()
+
+    def transform_data(self):
+        return (self.data - self.data.mean()) / self.data.std()
+
+    def analyze_data(self):
+        return self.data.describe()
+
+class FractalModelTrainer:
+    def __init__(self, model, X_train, y_train):
+        self.model = model
+        self.X_train = X_train
+        self.y_train = y_train
+
+    def train(self):
+        self.model.fit(self.X_train, self.y_train)
+
+class FractalModelEvaluator:
+    def __init__(self, model, X_test, y_test):
+        self.model = model
+        self.X_test = X_test
+        self.y_test = y_test
+
+    def evaluate(self):
+        predictions = self.model.predict(self.X_test)
+        accuracy = np.mean(predictions == self.y_test)
+        logging.info(f"Model accuracy: {accuracy}")
+        return accuracy

@@ -333,3 +333,34 @@ class QuantumOptimizer:
                 cost_landscape[i, j] = cost
         
         return param_vals, cost_landscape
+
+    def optimize(self, cost_function, initial_point=None):
+        """
+        Optimizes a given cost function using quantum variational algorithms.
+        
+        Args:
+            cost_function: Function that evaluates the cost of a given solution
+            initial_point: Optional starting point for optimization
+            
+        Returns:
+            dict: Results containing optimized parameters and minimum cost
+        """
+        return self.solve_optimization_problem(cost_function, initial_point)
+
+    def get_result(self, result):
+        """
+        Returns the optimization results in a structured format.
+        
+        Args:
+            result: The result object from the optimization process
+            
+        Returns:
+            dict: Structured results including optimal parameters and value
+        """
+        return {
+            'optimal_parameters': result['optimal_parameters'],
+            'optimal_value': result['optimal_value'],
+            'iterations': result['iterations'],
+            'success': result['success'],
+            'message': result['message']
+        }
