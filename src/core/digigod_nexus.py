@@ -1,5 +1,6 @@
 import numpy as np
 import tensorflow as tf
+import os
 from typing import Dict, Any, List, Optional, Tuple
 from src.utils.errors import ModelError
 from src.utils.logger import logger
@@ -9,6 +10,7 @@ from src.core.multimodal_gan import MultimodalGAN
 from src.core.quantum_interface import QuantumInterface
 from src.core.holographic_interface import HolographicInterface
 from src.core.neural_interface import NeuralInterface
+from src.core.gemini_integration import GeminiIntegration
 
 class DigigodNexus:
     """DigigodNexus: Unified intelligence platform orchestrating quantum, holographic, and neural components."""
@@ -43,7 +45,11 @@ class DigigodNexus:
                 "consciousness_state": None,
                 "ethical_state": None,
                 "integration_state": None,
-                "processing_state": None
+                "processing_state": None,
+                "status": "active",
+                "processing_mode": "standard",
+                "last_operation": None,
+                "error_count": 0
             }
             
             # Initialize performance metrics
@@ -56,6 +62,9 @@ class DigigodNexus:
                 "integration_score": 0.0,
                 "processing_efficiency": 0.0
             }
+            
+            # Initialize Gemini integration
+            self.gemini = GeminiIntegration()
             
             logger.info("DigigodNexus initialized")
             
@@ -146,6 +155,32 @@ class DigigodNexus:
         except Exception as e:
             logger.error(f"Error training system: {str(e)}")
             raise ModelError(f"System training failed: {str(e)}")
+
+    def process_with_gemini(self, prompt: str, image_path: Optional[str] = None) -> str:
+        """Process input using Gemini API.
+        
+        Args:
+            prompt: The text prompt to process
+            image_path: Optional path to image file for multimodal processing
+            
+        Returns:
+            Processed response
+        """
+        try:
+            if image_path:
+                response = self.gemini.generate_multimodal(prompt, image_path)
+            else:
+                response = self.gemini.generate_text(prompt)
+            
+            # Update state
+            self.state["last_operation"] = "gemini_processing"
+            
+            return response
+            
+        except Exception as e:
+            self.state["error_count"] += 1
+            logger.error(f"Error processing with Gemini: {str(e)}")
+            raise ModelError(f"Gemini processing failed: {str(e)}")
 
     # Platform Algorithms and Equations
 
@@ -277,7 +312,8 @@ class DigigodNexus:
     def get_state(self) -> Dict[str, Any]:
         """Get current platform state."""
         return {
-            "state": self.state,
+            "nexus_state": self.state,
+            "gemini_state": self.gemini.get_state(),
             "metrics": self.metrics
         }
 
@@ -300,7 +336,11 @@ class DigigodNexus:
                 "consciousness_state": None,
                 "ethical_state": None,
                 "integration_state": None,
-                "processing_state": None
+                "processing_state": None,
+                "status": "active",
+                "processing_mode": "standard",
+                "last_operation": None,
+                "error_count": 0
             })
             
             # Reset metrics
@@ -313,6 +353,9 @@ class DigigodNexus:
                 "integration_score": 0.0,
                 "processing_efficiency": 0.0
             })
+            
+            # Reset Gemini integration
+            self.gemini.reset()
             
             logger.info("DigigodNexus reset completed")
             

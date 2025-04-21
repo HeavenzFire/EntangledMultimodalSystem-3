@@ -1,187 +1,593 @@
+import os
+import time
+import logging
+from typing import Dict, Any, Optional, List, Tuple, Union
+from src.utils.errors import ModelError, QuantumError
+from dotenv import load_dotenv
 import numpy as np
-from scipy.linalg import expm
-from src.utils.logger import logger
-from src.utils.errors import ModelError
-import matplotlib.pyplot as plt
+from qiskit import QuantumCircuit, execute, transpile
+from qiskit.providers import Backend
+from qiskit.providers.ibmq import IBMQ
+from qiskit.providers.aer import AerSimulator
+from qiskit.ignis.mitigation import CompleteMeasFitter
+from qiskit.ignis.mitigation.measurement import complete_meas_cal
 
 class QuantumProcessor:
-    def __init__(self):
-        """Initialize the quantum processor."""
+    """Advanced Quantum Processor with hybrid quantum-classical capabilities."""
+    
+    def __init__(
+        self,
+        backend_name: str = "aer_simulator",
+        cloud_provider: Optional[str] = None,
+        api_token: Optional[str] = None
+    ):
+        """Initialize Quantum Processor.
+        
+        Args:
+            backend_name: Name of the quantum backend to use
+            cloud_provider: Optional cloud provider name (ibmq, aws, azure)
+            api_token: Optional API token for cloud provider
+        """
         try:
-            # Pauli matrices
-            self.X = np.array([[0, 1], [1, 0]])
-            self.Y = np.array([[0, -1j], [1j, 0]])
-            self.Z = np.array([[1, 0], [0, -1]])
+            # Load environment variables
+            load_dotenv()
             
-            # Hadamard gate
-            self.H = 1/np.sqrt(2) * np.array([[1, 1], [1, -1]])
+            # Initialize parameters
+            self.backend_name = backend_name
+            self.cloud_provider = cloud_provider or os.getenv("QUANTUM_CLOUD_PROVIDER")
+            self.api_token = api_token or os.getenv("QUANTUM_API_TOKEN")
             
-            # Quantum state
-            self.quantum_state = None
-            self.entanglement_matrix = None
+            # Initialize quantum parameters
+            self.quantum_params = {
+                "num_qubits": int(os.getenv("QUANTUM_NUM_QUBITS", "5")),
+                "shots": int(os.getenv("QUANTUM_SHOTS", "1024")),
+                "error_correction": os.getenv("QUANTUM_ERROR_CORRECTION", "surface_code"),
+                "optimization_level": int(os.getenv("QUANTUM_OPTIMIZATION_LEVEL", "3")),
+                "max_execution_time": float(os.getenv("QUANTUM_MAX_EXECUTION_TIME", "300.0")),
+                "hybrid_threshold": float(os.getenv("QUANTUM_HYBRID_THRESHOLD", "0.5"))
+            }
             
-            logger.info("QuantumProcessor initialized")
+            # Initialize state
+            self.state = {
+                "status": "active",
+                "last_execution": None,
+                "execution_count": 0,
+                "error_count": 0,
+                "cloud_usage": 0,
+                "local_usage": 0
+            }
+            
+            # Initialize metrics
+            self.metrics = {
+                "fidelity": 0.0,
+                "gate_performance": 0.0,
+                "error_rate": 0.0,
+                "execution_time": 0.0,
+                "resource_usage": 0.0
+            }
+            
+            # Initialize backend
+            self._initialize_backend()
+            
+            # Initialize error correction
+            self._initialize_error_correction()
+            
+            logging.info("QuantumProcessor initialized")
+            
         except Exception as e:
-            logger.error(f"Failed to initialize QuantumProcessor: {str(e)}")
-            raise ModelError(f"Quantum processor initialization failed: {str(e)}")
+            logging.error(f"Error initializing QuantumProcessor: {str(e)}")
+            raise ModelError(f"Failed to initialize QuantumProcessor: {str(e)}")
 
-    def initialize_state(self, n_qubits):
-        """Initialize a quantum state with n qubits."""
+    def _initialize_backend(self) -> None:
+        """Initialize quantum backend."""
         try:
-            state = np.zeros(2**n_qubits, dtype=np.complex128)
-            state[0] = 1
-            self.quantum_state = state
-            return state
+            if self.cloud_provider == "ibmq":
+                if not self.api_token:
+                    raise QuantumError("IBMQ API token required for cloud backend")
+                IBMQ.enable_account(self.api_token)
+                provider = IBMQ.get_provider()
+                self.backend = provider.get_backend(self.backend_name)
+            elif self.cloud_provider == "aws":
+                # Initialize AWS Braket backend
+                from braket.aws import AwsDevice
+                self.backend = AwsDevice(self.backend_name)
+            elif self.cloud_provider == "azure":
+                # Initialize Azure Quantum backend
+                from azure.quantum import Workspace
+                workspace = Workspace(
+                    subscription_id=os.getenv("AZURE_SUBSCRIPTION_ID"),
+                    resource_group=os.getenv("AZURE_RESOURCE_GROUP"),
+                    name=os.getenv("AZURE_WORKSPACE_NAME"),
+                    location=os.getenv("AZURE_LOCATION")
+                )
+                self.backend = workspace.get_backend(self.backend_name)
+            else:
+                # Use local simulator
+                self.backend = AerSimulator()
+                
         except Exception as e:
-            logger.error(f"State initialization failed: {str(e)}")
-            raise ModelError(f"State initialization failed: {str(e)}")
+            logging.error(f"Error initializing backend: {str(e)}")
+            raise QuantumError(f"Backend initialization failed: {str(e)}")
 
-    def apply_gate(self, gate, qubit):
-        """Apply a quantum gate to a specific qubit."""
+    def _initialize_error_correction(self) -> None:
+        """Initialize quantum error correction."""
         try:
-            n_qubits = int(np.log2(len(self.quantum_state)))
-            
-            # Create full gate matrix
-            full_gate = np.eye(2**n_qubits, dtype=np.complex128)
-            for i in range(2**n_qubits):
-                for j in range(2**n_qubits):
-                    if (i >> qubit) & 1 == 0 and (j >> qubit) & 1 == 0:
-                        full_gate[i, j] = gate[0, 0]
-                    elif (i >> qubit) & 1 == 0 and (j >> qubit) & 1 == 1:
-                        full_gate[i, j] = gate[0, 1]
-                    elif (i >> qubit) & 1 == 1 and (j >> qubit) & 1 == 0:
-                        full_gate[i, j] = gate[1, 0]
-                    elif (i >> qubit) & 1 == 1 and (j >> qubit) & 1 == 1:
-                        full_gate[i, j] = gate[1, 1]
-            
-            # Apply gate
-            self.quantum_state = np.dot(full_gate, self.quantum_state)
-            return self.quantum_state
+            if self.quantum_params["error_correction"] == "surface_code":
+                # Initialize surface code error correction
+                self.error_correction = {
+                    "type": "surface_code",
+                    "distance": int(os.getenv("SURFACE_CODE_DISTANCE", "3")),
+                    "threshold": float(os.getenv("SURFACE_CODE_THRESHOLD", "0.01")),
+                    "logical_qubits": []
+                }
+            elif self.quantum_params["error_correction"] == "repetition_code":
+                # Initialize repetition code error correction
+                self.error_correction = {
+                    "type": "repetition_code",
+                    "repetitions": int(os.getenv("REPETITION_CODE_REPETITIONS", "3")),
+                    "threshold": float(os.getenv("REPETITION_CODE_THRESHOLD", "0.1")),
+                    "logical_qubits": []
+                }
+            else:
+                self.error_correction = None
+                
         except Exception as e:
-            logger.error(f"Gate application failed: {str(e)}")
-            raise ModelError(f"Gate application failed: {str(e)}")
+            logging.error(f"Error initializing error correction: {str(e)}")
+            raise QuantumError(f"Error correction initialization failed: {str(e)}")
 
-    def create_entanglement(self, qubit1, qubit2):
-        """Create entanglement between two qubits."""
+    def process(
+        self,
+        task_type: str,
+        data: Union[np.ndarray, Dict[str, Any]],
+        use_cloud: Optional[bool] = None
+    ) -> Dict[str, Any]:
+        """Process quantum task.
+        
+        Args:
+            task_type: Type of quantum task (optimization, sampling, entanglement)
+            data: Input data for the task
+            use_cloud: Whether to use cloud backend (optional)
+            
+        Returns:
+            Processing results
+        """
         try:
-            # Apply Hadamard to first qubit
-            self.apply_gate(self.H, qubit1)
+            start_time = time.time()
             
-            # Apply CNOT gate
-            n_qubits = int(np.log2(len(self.quantum_state)))
-            cnot = np.eye(2**n_qubits, dtype=np.complex128)
-            for i in range(2**n_qubits):
-                for j in range(2**n_qubits):
-                    if (i >> qubit1) & 1 == 1 and (j >> qubit1) & 1 == 1:
-                        if (i >> qubit2) & 1 == 0 and (j >> qubit2) & 1 == 1:
-                            cnot[i, j] = 1
-                        elif (i >> qubit2) & 1 == 1 and (j >> qubit2) & 1 == 0:
-                            cnot[i, j] = 1
-                        else:
-                            cnot[i, j] = 0
+            # Determine whether to use cloud backend
+            if use_cloud is None:
+                use_cloud = self._should_use_cloud(task_type, data)
             
-            # Apply CNOT
-            self.quantum_state = np.dot(cnot, self.quantum_state)
+            # Create quantum circuit
+            circuit = self._create_circuit(task_type, data)
             
-            # Update entanglement matrix
-            self.entanglement_matrix = np.outer(
-                self.quantum_state,
-                self.quantum_state.conj()
+            # Apply error correction if enabled
+            if self.error_correction:
+                circuit = self._apply_error_correction(circuit)
+            
+            # Execute quantum circuit
+            if use_cloud:
+                result = self._execute_cloud(circuit)
+                self.state["cloud_usage"] += 1
+            else:
+                result = self._execute_local(circuit)
+                self.state["local_usage"] += 1
+            
+            # Update metrics
+            self._update_metrics(result, time.time() - start_time)
+            
+            # Update state
+            self.state["last_execution"] = time.time()
+            self.state["execution_count"] += 1
+            
+            return {
+                "result": result,
+                "metrics": self.metrics,
+                "execution_time": time.time() - start_time,
+                "used_cloud": use_cloud
+            }
+            
+        except Exception as e:
+            self.state["error_count"] += 1
+            logging.error(f"Error in quantum processing: {str(e)}")
+            raise QuantumError(f"Quantum processing failed: {str(e)}")
+
+    def _should_use_cloud(self, task_type: str, data: Union[np.ndarray, Dict[str, Any]]) -> bool:
+        """Determine whether to use cloud backend.
+        
+        Args:
+            task_type: Type of quantum task
+            data: Input data
+            
+        Returns:
+            Whether to use cloud backend
+        """
+        try:
+            # Check if cloud provider is available
+            if not self.cloud_provider:
+                return False
+            
+            # Check task complexity
+            complexity = self._calculate_complexity(task_type, data)
+            
+            # Check resource requirements
+            resources = self._calculate_resources(task_type, data)
+            
+            # Make decision based on thresholds
+            return (
+                complexity > self.quantum_params["hybrid_threshold"] or
+                resources > self.quantum_params["hybrid_threshold"]
             )
             
-            return {
-                "state": self.quantum_state.tolist(),
-                "entanglement_matrix": self.entanglement_matrix.tolist()
-            }
         except Exception as e:
-            logger.error(f"Entanglement creation failed: {str(e)}")
-            raise ModelError(f"Entanglement creation failed: {str(e)}")
+            logging.error(f"Error determining cloud usage: {str(e)}")
+            return False
 
-    def measure(self, qubit):
-        """Measure a specific qubit."""
+    def _create_circuit(self, task_type: str, data: Union[np.ndarray, Dict[str, Any]]) -> QuantumCircuit:
+        """Create quantum circuit for task.
+        
+        Args:
+            task_type: Type of quantum task
+            data: Input data
+            
+        Returns:
+            Quantum circuit
+        """
         try:
-            n_qubits = int(np.log2(len(self.quantum_state)))
+            # Create base circuit
+            circuit = QuantumCircuit(self.quantum_params["num_qubits"])
             
-            # Calculate probabilities
-            prob_0 = 0
-            prob_1 = 0
-            for i in range(2**n_qubits):
-                if (i >> qubit) & 1 == 0:
-                    prob_0 += abs(self.quantum_state[i])**2
-                else:
-                    prob_1 += abs(self.quantum_state[i])**2
-            
-            # Perform measurement
-            result = np.random.choice([0, 1], p=[prob_0, prob_1])
-            
-            # Collapse state
-            new_state = np.zeros_like(self.quantum_state)
-            for i in range(2**n_qubits):
-                if (i >> qubit) & 1 == result:
-                    new_state[i] = self.quantum_state[i] / np.sqrt(prob_0 if result == 0 else prob_1)
-            
-            self.quantum_state = new_state
-            return result
-        except Exception as e:
-            logger.error(f"Measurement failed: {str(e)}")
-            raise ModelError(f"Measurement failed: {str(e)}")
-
-    def quantum_fourier_transform(self):
-        """Apply quantum Fourier transform to the state."""
-        try:
-            n_qubits = int(np.log2(len(self.quantum_state)))
-            
-            # Apply Hadamard to all qubits
-            for qubit in range(n_qubits):
-                self.apply_gate(self.H, qubit)
-            
-            # Apply controlled phase gates
-            for i in range(n_qubits):
-                for j in range(i+1, n_qubits):
-                    phase = 2 * np.pi / (2**(j-i+1))
-                    phase_gate = np.array([[1, 0], [0, np.exp(1j * phase)]])
-                    self.apply_gate(phase_gate, j)
-            
-            return self.quantum_state
-        except Exception as e:
-            logger.error(f"Quantum Fourier transform failed: {str(e)}")
-            raise ModelError(f"Quantum Fourier transform failed: {str(e)}")
-
-    def visualize_state(self, save_path=None):
-        """Visualize the quantum state."""
-        try:
-            plt.figure(figsize=(12, 6))
-            
-            # Plot real and imaginary parts
-            plt.subplot(1, 2, 1)
-            plt.bar(range(len(self.quantum_state)), np.real(self.quantum_state))
-            plt.title('Real Part')
-            
-            plt.subplot(1, 2, 2)
-            plt.bar(range(len(self.quantum_state)), np.imag(self.quantum_state))
-            plt.title('Imaginary Part')
-            
-            plt.tight_layout()
-            
-            if save_path:
-                plt.savefig(save_path)
+            # Add gates based on task type
+            if task_type == "optimization":
+                circuit = self._add_optimization_gates(circuit, data)
+            elif task_type == "sampling":
+                circuit = self._add_sampling_gates(circuit, data)
+            elif task_type == "entanglement":
+                circuit = self._add_entanglement_gates(circuit, data)
             else:
-                plt.show()
+                raise QuantumError(f"Invalid task type: {task_type}")
             
-            plt.close()
+            # Add measurement
+            circuit.measure_all()
+            
+            return circuit
+            
         except Exception as e:
-            logger.error(f"State visualization failed: {str(e)}")
-            raise ModelError(f"State visualization failed: {str(e)}")
+            logging.error(f"Error creating quantum circuit: {str(e)}")
+            raise QuantumError(f"Circuit creation failed: {str(e)}")
 
-    def get_state_info(self):
-        """Get information about the current quantum state."""
+    def _add_optimization_gates(self, circuit: QuantumCircuit, data: Dict[str, Any]) -> QuantumCircuit:
+        """Add optimization gates to circuit.
+        
+        Args:
+            circuit: Quantum circuit
+            data: Optimization parameters
+            
+        Returns:
+            Updated quantum circuit
+        """
         try:
-            return {
-                "state_vector": self.quantum_state.tolist(),
-                "entanglement_matrix": self.entanglement_matrix.tolist() if self.entanglement_matrix is not None else None,
-                "n_qubits": int(np.log2(len(self.quantum_state))),
-                "state_norm": np.linalg.norm(self.quantum_state)
-            }
+            # Add parameterized gates
+            for qubit in range(self.quantum_params["num_qubits"]):
+                circuit.rx(data.get(f"theta_{qubit}", 0.0), qubit)
+                circuit.ry(data.get(f"phi_{qubit}", 0.0), qubit)
+            
+            # Add entangling gates
+            for i in range(self.quantum_params["num_qubits"] - 1):
+                circuit.cx(i, i + 1)
+            
+            return circuit
+            
         except Exception as e:
-            logger.error(f"State info retrieval failed: {str(e)}")
-            raise ModelError(f"State info retrieval failed: {str(e)}") 
+            logging.error(f"Error adding optimization gates: {str(e)}")
+            raise QuantumError(f"Optimization gate addition failed: {str(e)}")
+
+    def _add_sampling_gates(self, circuit: QuantumCircuit, data: Dict[str, Any]) -> QuantumCircuit:
+        """Add sampling gates to circuit.
+        
+        Args:
+            circuit: Quantum circuit
+            data: Sampling parameters
+            
+        Returns:
+            Updated quantum circuit
+        """
+        try:
+            # Add Hadamard gates for superposition
+            for qubit in range(self.quantum_params["num_qubits"]):
+                circuit.h(qubit)
+            
+            # Add controlled gates based on data
+            for i in range(self.quantum_params["num_qubits"]):
+                for j in range(i + 1, self.quantum_params["num_qubits"]):
+                    if data.get(f"entangle_{i}_{j}", False):
+                        circuit.cx(i, j)
+            
+            return circuit
+            
+        except Exception as e:
+            logging.error(f"Error adding sampling gates: {str(e)}")
+            raise QuantumError(f"Sampling gate addition failed: {str(e)}")
+
+    def _add_entanglement_gates(self, circuit: QuantumCircuit, data: Dict[str, Any]) -> QuantumCircuit:
+        """Add entanglement gates to circuit.
+        
+        Args:
+            circuit: Quantum circuit
+            data: Entanglement parameters
+            
+        Returns:
+            Updated quantum circuit
+        """
+        try:
+            # Add initial state preparation
+            for qubit in range(self.quantum_params["num_qubits"]):
+                circuit.initialize(data.get(f"state_{qubit}", [1, 0]), qubit)
+            
+            # Add entanglement gates
+            for i in range(self.quantum_params["num_qubits"]):
+                for j in range(i + 1, self.quantum_params["num_qubits"]):
+                    if data.get(f"entangle_{i}_{j}", False):
+                        circuit.cx(i, j)
+                        circuit.h(i)
+                        circuit.h(j)
+            
+            return circuit
+            
+        except Exception as e:
+            logging.error(f"Error adding entanglement gates: {str(e)}")
+            raise QuantumError(f"Entanglement gate addition failed: {str(e)}")
+
+    def _apply_error_correction(self, circuit: QuantumCircuit) -> QuantumCircuit:
+        """Apply error correction to circuit.
+        
+        Args:
+            circuit: Quantum circuit
+            
+        Returns:
+            Error-corrected quantum circuit
+        """
+        try:
+            if self.error_correction["type"] == "surface_code":
+                # Apply surface code error correction
+                return self._apply_surface_code(circuit)
+            elif self.error_correction["type"] == "repetition_code":
+                # Apply repetition code error correction
+                return self._apply_repetition_code(circuit)
+            else:
+                return circuit
+                
+        except Exception as e:
+            logging.error(f"Error applying error correction: {str(e)}")
+            raise QuantumError(f"Error correction failed: {str(e)}")
+
+    def _apply_surface_code(self, circuit: QuantumCircuit) -> QuantumCircuit:
+        """Apply surface code error correction.
+        
+        Args:
+            circuit: Quantum circuit
+            
+        Returns:
+            Error-corrected quantum circuit
+        """
+        try:
+            # Create logical qubits
+            logical_qubits = []
+            for i in range(0, self.quantum_params["num_qubits"], 4):
+                logical_qubits.append((i, i + 1, i + 2, i + 3))
+            
+            # Apply stabilizer measurements
+            for qubits in logical_qubits:
+                circuit.h(qubits[0])
+                circuit.cx(qubits[0], qubits[1])
+                circuit.cx(qubits[0], qubits[2])
+                circuit.cx(qubits[0], qubits[3])
+                circuit.h(qubits[0])
+            
+            self.error_correction["logical_qubits"] = logical_qubits
+            return circuit
+            
+        except Exception as e:
+            logging.error(f"Error applying surface code: {str(e)}")
+            raise QuantumError(f"Surface code application failed: {str(e)}")
+
+    def _apply_repetition_code(self, circuit: QuantumCircuit) -> QuantumCircuit:
+        """Apply repetition code error correction.
+        
+        Args:
+            circuit: Quantum circuit
+            
+        Returns:
+            Error-corrected quantum circuit
+        """
+        try:
+            # Create logical qubits
+            logical_qubits = []
+            for i in range(0, self.quantum_params["num_qubits"], 3):
+                logical_qubits.append((i, i + 1, i + 2))
+            
+            # Apply repetition code
+            for qubits in logical_qubits:
+                circuit.cx(qubits[0], qubits[1])
+                circuit.cx(qubits[0], qubits[2])
+            
+            self.error_correction["logical_qubits"] = logical_qubits
+            return circuit
+            
+        except Exception as e:
+            logging.error(f"Error applying repetition code: {str(e)}")
+            raise QuantumError(f"Repetition code application failed: {str(e)}")
+
+    def _execute_cloud(self, circuit: QuantumCircuit) -> Dict[str, Any]:
+        """Execute circuit on cloud backend.
+        
+        Args:
+            circuit: Quantum circuit
+            
+        Returns:
+            Execution results
+        """
+        try:
+            # Transpile circuit for backend
+            transpiled_circuit = transpile(
+                circuit,
+                backend=self.backend,
+                optimization_level=self.quantum_params["optimization_level"]
+            )
+            
+            # Execute circuit
+            job = execute(
+                transpiled_circuit,
+                backend=self.backend,
+                shots=self.quantum_params["shots"]
+            )
+            
+            # Wait for results
+            result = job.result()
+            
+            return {
+                "counts": result.get_counts(),
+                "time_taken": result.time_taken,
+                "success": result.success
+            }
+            
+        except Exception as e:
+            logging.error(f"Error executing on cloud: {str(e)}")
+            raise QuantumError(f"Cloud execution failed: {str(e)}")
+
+    def _execute_local(self, circuit: QuantumCircuit) -> Dict[str, Any]:
+        """Execute circuit on local simulator.
+        
+        Args:
+            circuit: Quantum circuit
+            
+        Returns:
+            Execution results
+        """
+        try:
+            # Execute circuit
+            result = execute(
+                circuit,
+                backend=self.backend,
+                shots=self.quantum_params["shots"]
+            ).result()
+            
+            return {
+                "counts": result.get_counts(),
+                "time_taken": result.time_taken,
+                "success": result.success
+            }
+            
+        except Exception as e:
+            logging.error(f"Error executing locally: {str(e)}")
+            raise QuantumError(f"Local execution failed: {str(e)}")
+
+    def _calculate_complexity(self, task_type: str, data: Union[np.ndarray, Dict[str, Any]]) -> float:
+        """Calculate task complexity.
+        
+        Args:
+            task_type: Type of quantum task
+            data: Input data
+            
+        Returns:
+            Complexity score
+        """
+        try:
+            if task_type == "optimization":
+                return len(data) / self.quantum_params["num_qubits"]
+            elif task_type == "sampling":
+                return np.log2(len(data)) / self.quantum_params["num_qubits"]
+            elif task_type == "entanglement":
+                return sum(1 for k, v in data.items() if k.startswith("entangle_")) / (
+                    self.quantum_params["num_qubits"] * (self.quantum_params["num_qubits"] - 1) / 2
+                )
+            else:
+                return 0.0
+                
+        except Exception as e:
+            logging.error(f"Error calculating complexity: {str(e)}")
+            return 0.0
+
+    def _calculate_resources(self, task_type: str, data: Union[np.ndarray, Dict[str, Any]]) -> float:
+        """Calculate resource requirements.
+        
+        Args:
+            task_type: Type of quantum task
+            data: Input data
+            
+        Returns:
+            Resource score
+        """
+        try:
+            if task_type == "optimization":
+                return sum(abs(v) for v in data.values()) / len(data)
+            elif task_type == "sampling":
+                return len(data) / (2 ** self.quantum_params["num_qubits"])
+            elif task_type == "entanglement":
+                return sum(1 for v in data.values() if v) / len(data)
+            else:
+                return 0.0
+                
+        except Exception as e:
+            logging.error(f"Error calculating resources: {str(e)}")
+            return 0.0
+
+    def _update_metrics(self, result: Dict[str, Any], execution_time: float) -> None:
+        """Update processor metrics.
+        
+        Args:
+            result: Execution results
+            execution_time: Time taken for execution
+        """
+        try:
+            # Calculate fidelity
+            counts = result["counts"]
+            total = sum(counts.values())
+            max_count = max(counts.values())
+            self.metrics["fidelity"] = max_count / total if total > 0 else 0.0
+            
+            # Calculate gate performance
+            self.metrics["gate_performance"] = 1.0 - (len(counts) / (2 ** self.quantum_params["num_qubits"]))
+            
+            # Calculate error rate
+            self.metrics["error_rate"] = 1.0 - self.metrics["fidelity"]
+            
+            # Update execution time
+            self.metrics["execution_time"] = execution_time
+            
+            # Calculate resource usage
+            self.metrics["resource_usage"] = (
+                self.metrics["gate_performance"] *
+                (1.0 - self.metrics["error_rate"]) *
+                (1.0 - execution_time / self.quantum_params["max_execution_time"])
+            )
+            
+        except Exception as e:
+            logging.error(f"Error updating metrics: {str(e)}")
+
+    def get_state(self) -> Dict[str, Any]:
+        """Get current processor state."""
+        return self.state
+
+    def get_metrics(self) -> Dict[str, Any]:
+        """Get current processor metrics."""
+        return self.metrics
+
+    def reset(self) -> None:
+        """Reset processor state."""
+        self.state.update({
+            "status": "active",
+            "last_execution": None,
+            "execution_count": 0,
+            "error_count": 0,
+            "cloud_usage": 0,
+            "local_usage": 0
+        })
+        
+        self.metrics.update({
+            "fidelity": 0.0,
+            "gate_performance": 0.0,
+            "error_rate": 0.0,
+            "execution_time": 0.0,
+            "resource_usage": 0.0
+        }) 
