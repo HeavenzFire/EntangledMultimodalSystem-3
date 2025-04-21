@@ -1,5 +1,12 @@
 import os
+import logging
+from logging.handlers import RotatingFileHandler
 from dotenv import load_dotenv
+from typing import Optional, List, Dict, Any, Union # Add common typing imports for potential future use
+import pathlib # Often useful for path configurations
+
+# Define the base directory of the project if needed for path construction
+# Example: BASE_DIR = pathlib.Path(__file__).resolve().parent.parent
 
 # Load environment variables
 load_dotenv()

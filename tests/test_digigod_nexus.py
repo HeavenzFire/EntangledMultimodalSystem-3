@@ -6,27 +6,169 @@ from unittest.mock import Mock, patch
 from datetime import datetime
 
 @pytest.fixture
-def digigod_nexus():
-    """Fixture to create a DigigodNexus instance for testing."""
+def mock_components():
+    """Create mock components for testing."""
+    with patch('src.core.digigod_nexus.QuantumHolographicCore') as mock_core, \
+         patch('src.core.digigod_nexus.EthicalDAO') as mock_dao, \
+         patch('src.core.digigod_nexus.SystemMonitor') as mock_monitor, \
+         patch('src.core.digigod_nexus.SystemValidator') as mock_validator, \
+         patch('src.core.digigod_nexus.AgentAssistant') as mock_assistant:
+        
+        # Setup mock core
+        mock_core.return_value.process.return_value = (
+            np.array([0.55, 0.45]),
+            {
+                "processing_speed": 1.0,
+                "energy_efficiency": 0.935,
+                "error_rate": 0.0002,
+                "integration_score": 0.95
+            }
+        )
+        mock_core.return_value.calibrate.return_value = {
+            "calibration_score": 0.98
+        }
+        
+        # Setup mock DAO
+        mock_dao.return_value.validate_action.return_value = {
+            "compliance_score": 0.989
+        }
+        
+        # Setup mock monitor
+        mock_monitor.return_value.monitor_system.return_value = {
+            "health_score": 0.97
+        }
+        mock_monitor.return_value.calibrate.return_value = {
+            "calibration_score": 0.96
+        }
+        
+        # Setup mock validator
+        mock_validator.return_value.validate_system.return_value = {
+            "overall_score": 0.95
+        }
+        mock_validator.return_value.calibrate.return_value = {
+            "calibration_score": 0.94
+        }
+        
+        # Setup mock assistant
+        mock_assistant.return_value.assist_system.return_value = {
+            "success": True
+        }
+        
+        yield mock_core, mock_dao, mock_monitor, mock_validator, mock_assistant
+
+@pytest.fixture
+def nexus(mock_components):
+    """Create a DigigodNexus instance with mock components."""
     return DigigodNexus()
 
-def test_initialization(digigod_nexus):
-    """Test proper initialization of all core components."""
-    assert digigod_nexus.quantum_processor is not None
-    assert digigod_nexus.holographic_processor is not None
-    assert digigod_nexus.neural_interface is not None
-    assert digigod_nexus.qhe_processor is not None
-    assert digigod_nexus.sync_manager is not None
-    assert digigod_nexus.consciousness_engine is not None
-    assert digigod_nexus.multimodal_gan is not None
-    assert digigod_nexus.revival_system is not None
-    assert isinstance(digigod_nexus.system_state, dict)
-    assert digigod_nexus.system_state["consciousness_level"] == 0.0
-    assert digigod_nexus.system_state["ethical_compliance"] == 1.0
-    assert digigod_nexus.system_state["quantum_entanglement"] == 0.0
-    assert digigod_nexus.system_state["holographic_resolution"] == 0
-    assert digigod_nexus.system_state["security_level"] == 0.0
-    assert isinstance(digigod_nexus.system_state["last_update"], str)
+def test_initialization(nexus):
+    """Test nexus initialization."""
+    assert nexus.state["consciousness_level"] == 0.0
+    assert nexus.state["ethical_compliance"] == 0.0
+    assert nexus.state["system_health"] == 0.0
+    assert nexus.state["validation_score"] == 0.0
+    
+    assert nexus.metrics["processing_speed"] == 0.0
+    assert nexus.metrics["energy_efficiency"] == 0.0
+    assert nexus.metrics["error_rate"] == 0.0
+    assert nexus.metrics["integration_score"] == 0.0
+
+def test_process(nexus):
+    """Test data processing pipeline."""
+    input_data = np.array([0.7, 0.3])
+    output, metrics = nexus.process(input_data)
+    
+    # Check output shape and values
+    assert isinstance(output, np.ndarray)
+    assert output.shape == (2,)
+    assert np.allclose(output, np.array([0.55, 0.45]))
+    
+    # Check metrics
+    assert metrics["processing_speed"] == 1.0
+    assert metrics["energy_efficiency"] == 0.935
+    assert metrics["error_rate"] == 0.0002
+    assert metrics["integration_score"] == 0.95
+    
+    # Check state updates
+    state = nexus.get_state()
+    assert state["consciousness_level"] == 0.95
+    assert state["ethical_compliance"] == 0.989
+    assert state["system_health"] == 0.97
+    assert state["validation_score"] == 0.95
+
+def test_calibrate(nexus):
+    """Test system calibration."""
+    metrics = nexus.calibrate(target_phi=0.9)
+    
+    assert metrics["calibration_score"] == pytest.approx(0.96)
+    assert metrics["core_calibration"] == 0.98
+    assert metrics["monitor_calibration"] == 0.96
+    assert metrics["validator_calibration"] == 0.94
+
+def test_reset(nexus):
+    """Test system reset."""
+    # First process some data to change state
+    input_data = np.array([0.7, 0.3])
+    nexus.process(input_data)
+    
+    # Reset the system
+    nexus.reset()
+    
+    # Check state is reset
+    state = nexus.get_state()
+    assert all(v == 0.0 for v in state.values())
+    
+    # Check metrics are reset
+    metrics = nexus.get_metrics()
+    assert all(v == 0.0 for v in metrics.values())
+
+def test_monitor_consciousness(nexus, mock_components):
+    """Test consciousness monitoring."""
+    _, _, _, _, mock_assistant = mock_components
+    
+    # Set up state with consciousness level below threshold
+    nexus.state["consciousness_level"] = 0.8
+    
+    # Start monitoring in a separate thread
+    import threading
+    monitor_thread = threading.Thread(
+        target=nexus.monitor_consciousness,
+        kwargs={"alert_threshold": 0.85, "telemetry_rate": 10.0}
+    )
+    monitor_thread.daemon = True
+    monitor_thread.start()
+    
+    # Wait for monitoring to detect the low consciousness level
+    import time
+    time.sleep(0.2)
+    
+    # Verify assistant was called
+    mock_assistant.return_value.assist_system.assert_called_with("consciousness_alert")
+    
+    # Stop the monitoring thread
+    monitor_thread.join(timeout=0.1)
+
+def test_error_handling(nexus, mock_components):
+    """Test error handling in processing pipeline."""
+    mock_core, _, _, _, _ = mock_components
+    
+    # Simulate error in core processing
+    mock_core.return_value.process.side_effect = Exception("Processing error")
+    
+    with pytest.raises(Exception) as exc_info:
+        nexus.process(np.array([0.7, 0.3]))
+    assert "Error in DigigodNexus processing" in str(exc_info.value)
+
+def test_calibration_error_handling(nexus, mock_components):
+    """Test error handling in calibration."""
+    mock_core, _, _, _, _ = mock_components
+    
+    # Simulate error in core calibration
+    mock_core.return_value.calibrate.side_effect = Exception("Calibration error")
+    
+    with pytest.raises(Exception) as exc_info:
+        nexus.calibrate(target_phi=0.9)
+    assert "Error in system calibration" in str(exc_info.value)
 
 def test_process_task(digigod_nexus):
     """Test end-to-end task processing through the unified system."""

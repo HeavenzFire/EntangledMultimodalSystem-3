@@ -34,16 +34,42 @@ env/
 .vscode/
 *.swp
 *.swo
+*~
 
 # Logs
 *.log
 logs/
+/var/log/digigod/
 
 # Test coverage
 .coverage
 htmlcov/
 .pytest_cache/
+.tox/
 
-# System Files
+# Distribution
+*.tar.gz
+*.zip
+*.rar
+
+# AWS
+.aws/
+.terraform/
+*.tfstate
+*.tfstate.*
+*.tfvars
+
+# Docker
+.docker/
+docker-compose.override.yml
+
+# System
 .DS_Store
-Thumbs.db 
+Thumbs.db
+
+# Project specific
+quantum_results/
+holographic_cache/
+neural_data/
+temp/
+cache/ 

@@ -21,8 +21,9 @@ module "quantum_core" {
   ethical_firewall  = true
 }
 
-resource "aws_iam_role" "quantum_execution_role" {
-  name = "quantum_execution_role"
+# IAM role for Braket access
+resource "aws_iam_role" "braket_role" {
+  name = "digigod-braket-role"
 
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
@@ -38,9 +39,10 @@ resource "aws_iam_role" "quantum_execution_role" {
   })
 }
 
-resource "aws_iam_role_policy" "quantum_policy" {
-  name = "quantum_policy"
-  role = aws_iam_role.quantum_execution_role.id
+# IAM policy for Braket access
+resource "aws_iam_role_policy" "braket_policy" {
+  name = "digigod-braket-policy"
+  role = aws_iam_role.braket_role.id
 
   policy = jsonencode({
     Version = "2012-10-17"
@@ -51,8 +53,9 @@ resource "aws_iam_role_policy" "quantum_policy" {
           "braket:CreateQuantumTask",
           "braket:GetQuantumTask",
           "braket:CancelQuantumTask",
-          "s3:PutObject",
-          "s3:GetObject"
+          "braket:SearchDevices",
+          "s3:GetObject",
+          "s3:PutObject"
         ]
         Resource = "*"
       }
@@ -60,8 +63,9 @@ resource "aws_iam_role_policy" "quantum_policy" {
   })
 }
 
+# S3 bucket for quantum task results
 resource "aws_s3_bucket" "quantum_results" {
-  bucket = "quantum-results-${var.environment}"
+  bucket = "digigod-quantum-results"
   acl    = "private"
 
   versioning {
@@ -75,16 +79,54 @@ resource "aws_s3_bucket" "quantum_results" {
       }
     }
   }
+
+  lifecycle_rule {
+    id      = "cleanup"
+    enabled = true
+
+    expiration {
+      days = 30
+    }
+  }
+}
+
+# Braket quantum task queue
+resource "aws_sqs_queue" "quantum_tasks" {
+  name                      = "digigod-quantum-tasks"
+  delay_seconds             = 0
+  max_message_size          = 262144
+  message_retention_seconds = 86400
+  receive_wait_time_seconds = 0
+
+  redrive_policy = jsonencode({
+    deadLetterTargetArn = aws_sqs_queue.quantum_tasks_dlq.arn
+    maxReceiveCount     = 3
+  })
+}
+
+# Dead letter queue for quantum tasks
+resource "aws_sqs_queue" "quantum_tasks_dlq" {
+  name = "digigod-quantum-tasks-dlq"
+}
+
+# CloudWatch log group for quantum tasks
+resource "aws_cloudwatch_log_group" "quantum_tasks" {
+  name              = "/aws/braket/digigod"
+  retention_in_days = 30
 }
 
 output "quantum_core_arn" {
   value = module.quantum_core.arn
 }
 
-output "execution_role_arn" {
-  value = aws_iam_role.quantum_execution_role.arn
+output "braket_role_arn" {
+  value = aws_iam_role.braket_role.arn
 }
 
-output "results_bucket" {
-  value = aws_s3_bucket.quantum_results.bucket
+output "quantum_results_bucket" {
+  value = aws_s3_bucket.quantum_results.id
+}
+
+output "quantum_tasks_queue" {
+  value = aws_sqs_queue.quantum_tasks.id
 } 
