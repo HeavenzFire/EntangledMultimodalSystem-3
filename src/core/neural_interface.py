@@ -8,83 +8,243 @@ from tensorflow.keras import layers, models
 from typing import Dict, Any, List, Optional, Tuple
 
 class NeuralInterface:
-    """Neural Interface for advanced neural processing and consciousness integration."""
+    """Enhanced Neural Interface with expanded dimensions and attention mechanisms."""
     
-    def __init__(self):
-        """Initialize the neural interface."""
+    def __init__(self, config: Dict[str, Any] = None):
+        """Initialize the Neural Interface.
+        
+        Args:
+            config: Configuration dictionary with parameters
+        """
+        self.config = config or {}
+        self.logger = logger
+        
+        # Initialize neural parameters
+        self.input_dim = self.config.get("input_dim", 1024)
+        self.hidden_dim = self.config.get("hidden_dim", 2048)
+        self.attention_depth = self.config.get("attention_depth", 5)
+        self.memory_size = self.config.get("memory_size", 1000)
+        
+        # Initialize neural components
+        self._initialize_attention_mechanism()
+        self._initialize_memory_system()
+        self._initialize_bci_simulation()
+        
+        # Initialize state
+        self.state = {
+            "attention_focus": np.zeros(self.attention_depth),
+            "memory_usage": 0.0,
+            "bci_connection": False,
+            "processing_speed": 0.0
+        }
+        
+        self.metrics = {
+            "accuracy": 0.0,
+            "latency": 0.0,
+            "memory_efficiency": 0.0,
+            "attention_quality": 0.0
+        }
+    
+    def _initialize_attention_mechanism(self) -> None:
+        """Initialize multi-head attention mechanism."""
+        self.attention_heads = []
+        for _ in range(self.attention_depth):
+            self.attention_heads.append(tf.keras.layers.MultiHeadAttention(
+                num_heads=8,
+                key_dim=64,
+                value_dim=64
+            ))
+    
+    def _initialize_memory_system(self) -> None:
+        """Initialize memory system with LSTM layers."""
+        self.memory_cell = tf.keras.layers.LSTMCell(
+            units=self.hidden_dim,
+            activation='tanh',
+            recurrent_activation='sigmoid'
+        )
+        self.memory_state = self.memory_cell.get_initial_state(
+            batch_size=1,
+            dtype=tf.float32
+        )
+    
+    def _initialize_bci_simulation(self) -> None:
+        """Initialize bidirectional BCI simulation."""
+        self.bci_encoder = tf.keras.Sequential([
+            tf.keras.layers.Dense(512, activation='relu'),
+            tf.keras.layers.Dense(256, activation='relu'),
+            tf.keras.layers.Dense(128, activation='sigmoid')
+        ])
+        
+        self.bci_decoder = tf.keras.Sequential([
+            tf.keras.layers.Dense(256, activation='relu'),
+            tf.keras.layers.Dense(512, activation='relu'),
+            tf.keras.layers.Dense(self.input_dim, activation='sigmoid')
+        ])
+    
+    def process_neural_data(self, input_data: Dict[str, Any]) -> Dict[str, Any]:
+        """Process neural data with enhanced attention and memory.
+        
+        Args:
+            input_data: Dictionary containing input data and parameters
+            
+        Returns:
+            Dictionary containing processed output and metrics
+        """
         try:
-            self.quantum_processor = QuantumProcessor()
-            self.holographic_processor = HolographicProcessor()
-            self.neural_network = self._build_neural_network()
+            # Extract input data
+            data = input_data.get("data", {})
+            context = input_data.get("context", {})
+            attention_depth = input_data.get("attention_depth", self.attention_depth)
             
-            # Initialize neural parameters
-            self.params = {
-                "input_dim": 8192,  # matches holographic resolution
-                "hidden_dims": [4096, 2048, 1024],
-                "output_dim": 128,  # matches quantum qubit count
-                "learning_rate": 0.001,
-                "dropout_rate": 0.2,
-                "attention_heads": 8,
-                "memory_capacity": 10000,
-                "consciousness_threshold": 0.7,
-                "integration_strength": 0.8
+            # Convert input to tensor
+            input_tensor = tf.convert_to_tensor(data, dtype=tf.float32)
+            
+            # Apply attention mechanism
+            attention_output = self._apply_attention(input_tensor, attention_depth)
+            
+            # Process through memory system
+            memory_output = self._process_memory(attention_output)
+            
+            # Apply BCI simulation if enabled
+            if self.state["bci_connection"]:
+                bci_output = self._simulate_bci(memory_output)
+            else:
+                bci_output = memory_output
+            
+            # Update metrics
+            self._update_metrics(attention_output, memory_output, bci_output)
+            
+            return {
+                "output": bci_output.numpy(),
+                "metrics": self.metrics,
+                "state": self.state
             }
             
-            # Initialize neural models
-            self.models = {
-                "neural_processor": self._build_neural_processor(),
-                "attention_engine": self._build_attention_engine(),
-                "memory_network": self._build_memory_network(),
-                "consciousness_engine": self._build_consciousness_engine()
-            }
-            
-            # Initialize neural state
-            self.state = {
-                "neural_state": None,
-                "attention_state": None,
-                "memory_state": None,
-                "consciousness_state": None,
-                "integration_state": None
-            }
-            
-            # Initialize performance metrics
-            self.metrics = {
-                "neural_activity": 0.0,
-                "attention_score": 0.0,
-                "memory_utilization": 0.0,
-                "consciousness_level": 0.0,
-                "integration_score": 0.0
-            }
-            
-            logger.info("NeuralInterface initialized")
         except Exception as e:
-            logger.error(f"Failed to initialize NeuralInterface: {str(e)}")
-            raise ModelError(f"Neural interface initialization failed: {str(e)}")
-
-    def _build_neural_network(self):
-        """Build the neural network architecture."""
-        try:
-            model = models.Sequential([
-                layers.Dense(256, activation='relu', input_shape=(1024,)),
-                layers.Dropout(0.2),
-                layers.Dense(128, activation='relu'),
-                layers.Dropout(0.2),
-                layers.Dense(64, activation='relu'),
-                layers.Dense(32, activation='relu'),
-                layers.Dense(16, activation='relu'),
-                layers.Dense(8, activation='relu'),
-                layers.Dense(4, activation='relu'),
-                layers.Dense(2, activation='linear')
-            ])
+            self.logger.error(f"Error processing neural data: {str(e)}")
+            raise ModelError(f"Neural processing failed: {str(e)}")
+    
+    def _apply_attention(self, input_tensor: tf.Tensor, depth: int) -> tf.Tensor:
+        """Apply multi-head attention mechanism.
+        
+        Args:
+            input_tensor: Input tensor
+            depth: Attention depth
             
-            model.compile(optimizer='adam',
-                         loss='mse',
-                         metrics=['accuracy'])
+        Returns:
+            Attention-processed tensor
+        """
+        output = input_tensor
+        for i in range(min(depth, self.attention_depth)):
+            output = self.attention_heads[i](output, output)
+            self.state["attention_focus"][i] = tf.reduce_mean(output).numpy()
+        
+        return output
+    
+    def _process_memory(self, input_tensor: tf.Tensor) -> tf.Tensor:
+        """Process input through memory system.
+        
+        Args:
+            input_tensor: Input tensor
             
-            return model
-        except Exception as e:
-            logger.error(f"Neural network build failed: {str(e)}")
-            raise ModelError(f"Neural network build failed: {str(e)}")
+        Returns:
+            Memory-processed tensor
+        """
+        output, self.memory_state = self.memory_cell(
+            input_tensor,
+            self.memory_state
+        )
+        
+        # Update memory usage
+        self.state["memory_usage"] = len(self.memory_state[0]) / self.memory_size
+        
+        return output
+    
+    def _simulate_bci(self, input_tensor: tf.Tensor) -> tf.Tensor:
+        """Simulate bidirectional BCI processing.
+        
+        Args:
+            input_tensor: Input tensor
+            
+        Returns:
+            BCI-processed tensor
+        """
+        # Encode input
+        encoded = self.bci_encoder(input_tensor)
+        
+        # Add noise for realism
+        noise = tf.random.normal(shape=encoded.shape, stddev=0.1)
+        encoded += noise
+        
+        # Decode output
+        decoded = self.bci_decoder(encoded)
+        
+        return decoded
+    
+    def _update_metrics(self, attention_output: tf.Tensor,
+                       memory_output: tf.Tensor,
+                       bci_output: tf.Tensor) -> None:
+        """Update processing metrics.
+        
+        Args:
+            attention_output: Attention-processed tensor
+            memory_output: Memory-processed tensor
+            bci_output: BCI-processed tensor
+        """
+        # Calculate accuracy
+        self.metrics["accuracy"] = tf.reduce_mean(
+            tf.abs(attention_output - bci_output)
+        ).numpy()
+        
+        # Calculate attention quality
+        self.metrics["attention_quality"] = tf.reduce_mean(
+            self.state["attention_focus"]
+        ).numpy()
+        
+        # Update memory efficiency
+        self.metrics["memory_efficiency"] = 1.0 - self.state["memory_usage"]
+        
+        # Update processing speed
+        self.state["processing_speed"] = 1.0 / (
+            self.metrics["accuracy"] + 1e-6
+        )
+    
+    def enable_bci(self) -> None:
+        """Enable bidirectional BCI simulation."""
+        self.state["bci_connection"] = True
+        self.logger.info("BCI simulation enabled")
+    
+    def disable_bci(self) -> None:
+        """Disable bidirectional BCI simulation."""
+        self.state["bci_connection"] = False
+        self.logger.info("BCI simulation disabled")
+    
+    def get_state(self) -> Dict[str, Any]:
+        """Get current interface state."""
+        return self.state
+    
+    def get_metrics(self) -> Dict[str, float]:
+        """Get current interface metrics."""
+        return self.metrics
+    
+    def reset(self) -> None:
+        """Reset interface state."""
+        self.state = {
+            "attention_focus": np.zeros(self.attention_depth),
+            "memory_usage": 0.0,
+            "bci_connection": False,
+            "processing_speed": 0.0
+        }
+        self.metrics = {
+            "accuracy": 0.0,
+            "latency": 0.0,
+            "memory_efficiency": 0.0,
+            "attention_quality": 0.0
+        }
+        self.memory_state = self.memory_cell.get_initial_state(
+            batch_size=1,
+            dtype=tf.float32
+        )
 
     def process_quantum_state(self, n_qubits):
         """Process quantum state through the interface."""
@@ -231,34 +391,6 @@ class NeuralInterface:
         except Exception as e:
             logger.error(f"System info retrieval failed: {str(e)}")
             raise ModelError(f"System info retrieval failed: {str(e)}")
-
-    def process_neural_data(self, input_data: Dict[str, Any]) -> Dict[str, Any]:
-        """Process neural data using advanced neural algorithms."""
-        try:
-            # Preprocess input
-            preprocessed = self._preprocess_input(input_data["data"])
-            
-            # Apply neural processing
-            processed = self._apply_neural_processing(preprocessed)
-            
-            # Apply attention
-            attended = self._apply_attention(processed)
-            
-            # Update memory
-            self._update_memory(attended)
-            
-            # Update state
-            self._update_state(processed, attended)
-            
-            return {
-                "processed": True,
-                "output": attended,
-                "metrics": self._calculate_metrics()
-            }
-            
-        except Exception as e:
-            logger.error(f"Error processing neural data: {str(e)}")
-            raise ModelError(f"Neural data processing failed: {str(e)}")
 
     def integrate_consciousness(self, quantum_state: Dict[str, Any], 
                               holographic_state: Dict[str, Any]) -> Dict[str, Any]:
@@ -463,36 +595,26 @@ class NeuralInterface:
             )
         return 0.0
 
-    def get_state(self) -> Dict[str, Any]:
-        """Get current neural interface state."""
-        return {
-            "state": self.state,
-            "metrics": self.metrics
-        }
+    def _update_integration_state(self, integrated_state: Dict[str, Any]) -> None:
+        """Update integration state."""
+        self.state["neural_state"] = integrated_state["state"]
+        self.state["attention_state"] = integrated_state["attention"]
+        self.state["memory_state"] = integrated_state["memory"]
+        self.state["quantum_state"] = integrated_state["state"][:self.params["output_dim"]]
+        self.state["holographic_state"] = integrated_state["state"][self.params["output_dim"]:]
+        self.state["integration_state"] = integrated_state
 
-    def reset(self) -> None:
-        """Reset neural interface to initial state."""
+    def _calculate_integration_metrics(self) -> Dict[str, float]:
+        """Calculate integration metrics."""
         try:
-            # Reset state
-            self.state.update({
-                "neural_state": None,
-                "attention_state": None,
-                "memory_state": None,
-                "consciousness_state": None,
-                "integration_state": None
-            })
+            metrics = {
+                "quantum_integration": self.state["integration_state"]["quantum_integration"],
+                "holographic_integration": self.state["integration_state"]["holographic_integration"],
+                "integrated_consciousness_level": self._calculate_consciousness_level()
+            }
             
-            # Reset metrics
-            self.metrics.update({
-                "neural_activity": 0.0,
-                "attention_score": 0.0,
-                "memory_utilization": 0.0,
-                "consciousness_level": 0.0,
-                "integration_score": 0.0
-            })
-            
-            logger.info("NeuralInterface reset completed")
+            return metrics
             
         except Exception as e:
-            logger.error(f"Error resetting NeuralInterface: {str(e)}")
-            raise ModelError(f"NeuralInterface reset failed: {str(e)}") 
+            logger.error(f"Error calculating integration metrics: {str(e)}")
+            raise ModelError(f"Integration metric calculation failed: {str(e)}") 

@@ -188,54 +188,101 @@ class DigigodNexus:
             raise
 
     def process_task(self, input_data: Dict[str, Any]) -> Dict[str, Any]:
-        """Process a task through the unified platform."""
+        """Process a task through the quantum-holographic-neural system with enhanced integration.
+        
+        Args:
+            input_data: Dictionary containing task data and parameters
+            
+        Returns:
+            Dictionary containing processed results and system state
+        """
         try:
-            # Process quantum data
-            quantum_result = self.quantum_interface.process_quantum_data(input_data["quantum"])
+            start_time = time.time()
             
-            # Process holographic data
-            holographic_result = self.holographic_interface.process_holographic_data(input_data["holographic"])
+            # Validate input data
+            validation_report = self.validator.validate_input(input_data)
+            if validation_report["status"] != "pass":
+                self.logger.warning(f"Input validation failed: {validation_report['details']}")
+                return {"error": "Invalid input", "validation_report": validation_report}
             
-            # Process neural data
-            neural_result = self.neural_interface.process_neural_data(input_data["neural"])
-            
-            # Integrate consciousness
-            consciousness_result = self.consciousness.integrate_consciousness(
-                quantum_result, holographic_result, neural_result
+            # Process through quantum interface
+            quantum_state = self.core.quantum_processor.create_quantum_state()
+            quantum_result = self.core.quantum_processor.process(
+                task_type=input_data.get("task_type", "default"),
+                data=input_data.get("quantum_data", {}),
+                use_cloud=input_data.get("use_cloud", False)
             )
             
-            # Evaluate ethical compliance
-            ethical_result = self.ethical_governor.evaluate_decision({
-                "input_state": consciousness_result,
+            # Process through holographic interface
+            holographic_state = self.core.holographic_processor.create_hologram()
+            holographic_result = self.core.holographic_processor.process(
+                data=input_data.get("holographic_data", {}),
+                resolution=input_data.get("resolution", 1024)
+            )
+            
+            # Process through neural interface
+            neural_output = self.core.neural_interface.process_neural_data({
+                "data": input_data.get("neural_data", {}),
                 "context": input_data.get("context", {}),
-                "proposed_action": input_data.get("action", {})
+                "attention_depth": input_data.get("attention_depth", 5)
             })
             
-            # Generate synthetic data if needed
-            if input_data.get("generate_samples", False):
-                synthetic_data = self.multimodal_gan.generate_samples(
-                    input_data.get("num_samples", 1)
-                )
-            else:
-                synthetic_data = None
+            # Integrate through consciousness matrix
+            consciousness_result = self.core.consciousness_matrix.process_consciousness({
+                "quantum": quantum_state,
+                "holographic": holographic_state,
+                "neural": neural_output["output"],
+                "context": input_data.get("context", {}),
+                "threshold": input_data.get("consciousness_threshold", 0.7)
+            })
             
-            # Update state
+            # Validate system state
+            system_validation = self.validator.validate_system()
+            if system_validation["status"] != "pass":
+                self.logger.warning(f"System validation failed: {system_validation['details']}")
+                self.monitor.trigger_auto_repair()
+            
+            # Update system state
             self._update_state(
-                quantum_result, holographic_result, neural_result,
-                consciousness_result, ethical_result, synthetic_data
+                quantum_result=quantum_result,
+                holographic_result=holographic_result,
+                neural_result=neural_output,
+                consciousness_result=consciousness_result,
+                ethical_result=self.dao.validate_ethical_compliance(input_data),
+                synthetic_data=input_data.get("synthetic_data")
             )
             
+            # Generate output
+            output = self._generate_output(
+                quantum_result=quantum_result,
+                holographic_result=holographic_result,
+                neural_result=neural_output,
+                consciousness_result=consciousness_result,
+                ethical_result=self.dao.get_ethical_metrics(),
+                synthetic_data=input_data.get("synthetic_data")
+            )
+            
+            # Update metrics
+            processing_time = time.time() - start_time
+            self.metrics = self._calculate_metrics()
+            self.metrics["processing_time"] = processing_time
+            
+            # Monitor system health
+            if self.monitor.get_metrics()["error_rate"] > 0.05:
+                self.logger.warning("High error rate detected, triggering auto-repair")
+                self.reset()
+            
             return {
-                "output": self._generate_output(
-                    quantum_result, holographic_result, neural_result,
-                    consciousness_result, ethical_result, synthetic_data
-                ),
+                "output": output,
                 "system_state": self.state,
-                "processing_metrics": self._calculate_metrics()
+                "consciousness_metrics": consciousness_result["metrics"],
+                "validation_report": system_validation,
+                "processing_metrics": self.metrics
             }
             
         except Exception as e:
-            logger.error(f"Error processing task: {str(e)}")
+            self.logger.error(f"Error in process_task: {str(e)}")
+            self.monitor.record_error("process_task", str(e))
             raise ModelError(f"Task processing failed: {str(e)}")
 
     def train_system(self, training_data: Dict[str, Any]) -> Dict[str, float]:
