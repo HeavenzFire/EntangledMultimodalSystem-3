@@ -148,3 +148,32 @@ class Security:
             return self.decrypt_data(encrypted_data)
         else:
             raise ValueError("HMAC verification failed. Data integrity compromised.")
+
+    def test_encryption(self):
+        """Test encryption and decryption functionality."""
+        test_data = "This is a test."
+        encrypted_data = self.encrypt(test_data)
+        decrypted_data = self.decrypt(encrypted_data)
+        assert test_data == decrypted_data, "Encryption/Decryption test failed."
+
+    def test_hmac(self):
+        """Test HMAC generation and verification."""
+        test_message = "This is a test message."
+        hmac_value = self.generate_hmac(test_message)
+        assert self.verify_hmac(test_message, hmac_value), "HMAC verification test failed."
+
+    def test_jwt(self):
+        """Test JWT generation and verification."""
+        test_payload = {"user_id": 123}
+        token = self.generate_jwt(test_payload)
+        decoded_payload = self.verify_jwt(token)
+        assert test_payload == decoded_payload, "JWT verification test failed."
+
+    def test_ssl(self):
+        """Test SSL context creation and socket wrapping."""
+        certfile = "path/to/certfile"
+        keyfile = "path/to/keyfile"
+        context = self.create_ssl_context(certfile, keyfile)
+        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        secure_sock = self.secure_socket(sock, context)
+        assert isinstance(secure_sock, ssl.SSLSocket), "SSL socket wrapping test failed."
