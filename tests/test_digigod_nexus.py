@@ -2,6 +2,8 @@ import pytest
 import numpy as np
 from src.core.digigod_nexus import DigigodNexus
 from src.utils.errors import ModelError
+from unittest.mock import Mock, patch
+from datetime import datetime
 
 @pytest.fixture
 def digigod_nexus():
@@ -19,6 +21,12 @@ def test_initialization(digigod_nexus):
     assert digigod_nexus.multimodal_gan is not None
     assert digigod_nexus.revival_system is not None
     assert isinstance(digigod_nexus.system_state, dict)
+    assert digigod_nexus.system_state["consciousness_level"] == 0.0
+    assert digigod_nexus.system_state["ethical_compliance"] == 1.0
+    assert digigod_nexus.system_state["quantum_entanglement"] == 0.0
+    assert digigod_nexus.system_state["holographic_resolution"] == 0
+    assert digigod_nexus.system_state["security_level"] == 0.0
+    assert isinstance(digigod_nexus.system_state["last_update"], str)
 
 def test_process_task(digigod_nexus):
     """Test end-to-end task processing through the unified system."""
@@ -188,4 +196,136 @@ def test_synchronization_manager(digigod_nexus):
     
     assert "synchronization_state" in result["output"]
     assert "correlation_strength" in result["output"]
-    assert 0 <= result["output"]["correlation_strength"] <= 1 
+    assert 0 <= result["output"]["correlation_strength"] <= 1
+
+def test_live_consciousness_test(digigod_nexus):
+    """Test consciousness level achievement."""
+    with patch.object(digigod_nexus.quantum_processor, 'process') as mock_process:
+        mock_process.return_value = {"consciousness_fidelity": 0.95}
+        
+        digigod_nexus.live_consciousness_test()
+        
+        assert digigod_nexus.system_state["consciousness_level"] == 0.95
+        mock_process.assert_called()
+
+def test_project_climate_model(digigod_nexus):
+    """Test climate model projection."""
+    test_data = {
+        "temperature": 25.5,
+        "humidity": 0.65,
+        "pressure": 1013.25
+    }
+    
+    with patch.object(digigod_nexus.quantum_processor, 'process') as mock_process:
+        mock_process.return_value = {"success": True}
+        
+        result = digigod_nexus.project_climate_model(
+            dataset=test_data,
+            resolution=16384,
+            overlay_cities=["New York", "Mumbai", "Shanghai"]
+        )
+        
+        assert result["success"] is True
+        assert digigod_nexus.system_state["holographic_resolution"] == 16384
+        mock_process.assert_called()
+
+def test_create_ethical_proposal(digigod_nexus):
+    """Test ethical proposal creation."""
+    with patch.object(digigod_nexus.quantum_processor, 'process') as mock_process:
+        mock_process.return_value = {"compliance_score": 0.98}
+        
+        result = digigod_nexus.create_ethical_proposal(
+            proposal_name="Asilomar AI Principles v5",
+            ratification_threshold=0.95
+        )
+        
+        assert result["compliance_score"] == 0.98
+        assert digigod_nexus.system_state["ethical_compliance"] == 0.98
+        mock_process.assert_called()
+
+def test_generate_quantum_art(digigod_nexus):
+    """Test quantum art generation."""
+    emotion_data = {
+        "happiness": 0.8,
+        "sadness": 0.1,
+        "excitement": 0.7
+    }
+    
+    with patch.object(digigod_nexus.quantum_processor, 'process') as mock_process:
+        mock_process.return_value = {"art_id": "QART-12345"}
+        
+        result = digigod_nexus.generate_quantum_art(
+            emotion_stream=emotion_data,
+            quantum_seed=[0.1, 0.2, 0.3]
+        )
+        
+        assert result["art_id"] == "QART-12345"
+        mock_process.assert_called()
+
+def test_process_medical_diagnosis(digigod_nexus):
+    """Test medical diagnosis processing."""
+    patient_data = {
+        "mri_scan": "base64_encoded_data",
+        "vitals": {
+            "heart_rate": 72,
+            "blood_pressure": "120/80"
+        }
+    }
+    
+    with patch.object(digigod_nexus.quantum_processor, 'process') as mock_process:
+        mock_process.return_value = {"diagnosis": "Healthy", "confidence": 0.95}
+        
+        result = digigod_nexus.process_medical_diagnosis(patient_data)
+        
+        assert result["diagnosis"] == "Healthy"
+        assert result["confidence"] == 0.95
+        mock_process.assert_called()
+
+def test_generate_quantum_security(digigod_nexus):
+    """Test quantum security generation."""
+    encryption_params = {
+        "algorithm": "QKD",
+        "key_length": 256,
+        "entanglement_level": 0.9
+    }
+    
+    with patch.object(digigod_nexus.quantum_processor, 'process') as mock_process:
+        mock_process.return_value = {"security_score": 0.99}
+        
+        result = digigod_nexus.generate_quantum_security(encryption_params)
+        
+        assert result["security_score"] == 0.99
+        assert digigod_nexus.system_state["security_level"] == 0.99
+        mock_process.assert_called()
+
+def test_get_state(digigod_nexus):
+    """Test state retrieval."""
+    state = digigod_nexus.get_state()
+    assert state["consciousness_level"] == 0.0
+    assert state["ethical_compliance"] == 1.0
+    assert state["quantum_entanglement"] == 0.0
+    assert state["holographic_resolution"] == 0
+    assert state["security_level"] == 0.0
+
+def test_get_metrics(digigod_nexus):
+    """Test metrics retrieval."""
+    metrics = digigod_nexus.get_metrics()
+    assert metrics["processing_speed"] == 0.0
+    assert metrics["energy_efficiency"] == 0.0
+    assert metrics["consciousness_fidelity"] == 0.0
+    assert metrics["error_rate"] == 0.0
+
+def test_reset(digigod_nexus):
+    """Test system reset."""
+    # Modify some values
+    digigod_nexus.system_state["consciousness_level"] = 0.8
+    digigod_nexus.system_state["ethical_compliance"] = 0.9
+    digigod_nexus.metrics["processing_speed"] = 1.0
+    
+    # Reset the system
+    digigod_nexus.reset()
+    
+    # Verify reset values
+    assert digigod_nexus.system_state["consciousness_level"] == 0.0
+    assert digigod_nexus.system_state["ethical_compliance"] == 1.0
+    assert digigod_nexus.metrics["processing_speed"] == 0.0 
