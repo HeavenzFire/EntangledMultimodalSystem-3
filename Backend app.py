@@ -59,8 +59,8 @@ class ConsciousnessExpander:
 # --------------------------
 # NLP Component
 # --------------------------
-tokenizer = GPT2Tokenizer.from_pretrained("gpt2")
-model = GPT2LMHeadModel.from_pretrained("gpt2")
+tokenizer = GPT3Tokenizer.from_pretrained("gpt3")
+model = GPT3LMHeadModel.from_pretrained("gpt3")
 
 def generate_text(prompt):
     logging.info("Generating text for prompt: %s", prompt)

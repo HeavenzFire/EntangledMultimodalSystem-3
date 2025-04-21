@@ -10,7 +10,9 @@ if __name__ == '__main__':
         app.run(
             host='0.0.0.0',
             port=5000,
-            debug=Config.DEBUG
+            debug=Config.DEBUG,
+            use_reloader=False,
+            threaded=True
         )
     except Exception as e:
         logger.error(f"Failed to start application: {str(e)}", exc_info=True)

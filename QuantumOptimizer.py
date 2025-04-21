@@ -333,4 +333,3 @@ class QuantumOptimizer:
                 cost_landscape[i, j] = cost
         
         return param_vals, cost_landscape
-```
