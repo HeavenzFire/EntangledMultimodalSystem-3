@@ -84,3 +84,18 @@ class FractalIntegration:
         basic_fractal, advanced_fractal = self.integrate_fractals(data, scale_factor)
         combined_fractal = (basic_fractal + advanced_fractal) / 2
         return combined_fractal
+
+class FractalSystem:
+    def __init__(self, fractal_nn, advanced_fractal_nn):
+        self.fractal_nn = fractal_nn
+        self.advanced_fractal_nn = advanced_fractal_nn
+
+    def generate_and_process_fractals(self, data, scale_factor):
+        basic_fractal = self.fractal_nn.process_data(data)
+        advanced_fractal = self.advanced_fractal_nn.dynamic_scaling(data, scale_factor)
+        combined_fractal = (basic_fractal + advanced_fractal) / 2
+        return combined_fractal
+
+    def integrate_with_main_system(self, main_system_data):
+        fractal_data = self.generate_and_process_fractals(main_system_data, 1.5)
+        return fractal_data
