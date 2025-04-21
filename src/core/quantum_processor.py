@@ -5,12 +5,13 @@ from typing import Dict, Any, Optional, List, Tuple, Union
 from src.utils.errors import ModelError, QuantumError
 from dotenv import load_dotenv
 import numpy as np
-from qiskit import QuantumCircuit, execute, transpile
+from qiskit import QuantumCircuit, transpile
 from qiskit.providers import Backend
 from qiskit.providers.ibmq import IBMQ
 from qiskit.providers.aer import AerSimulator
-from qiskit.ignis.mitigation import CompleteMeasFitter
-from qiskit.ignis.mitigation.measurement import complete_meas_cal
+from qiskit.primitives import Sampler, Estimator
+from qiskit.quantum_info import SparsePauliOp
+from qiskit_ibm_runtime import QiskitRuntimeService, Session, Options
 
 class QuantumProcessor:
     """Advanced Quantum Processor with hybrid quantum-classical capabilities."""
@@ -66,7 +67,7 @@ class QuantumProcessor:
                 "resource_usage": 0.0
             }
             
-            # Initialize backend
+            # Initialize backend and primitives
             self._initialize_backend()
             
             # Initialize error correction
@@ -84,13 +85,19 @@ class QuantumProcessor:
             if self.cloud_provider == "ibmq":
                 if not self.api_token:
                     raise QuantumError("IBMQ API token required for cloud backend")
-                IBMQ.enable_account(self.api_token)
-                provider = IBMQ.get_provider()
-                self.backend = provider.get_backend(self.backend_name)
+                # Initialize QiskitRuntimeService
+                self.service = QiskitRuntimeService(channel="ibm_quantum", token=self.api_token)
+                self.backend = self.service.backend(self.backend_name)
+                # Initialize primitives with session
+                self.session = Session(service=self.service, backend=self.backend_name)
+                self.sampler = Sampler(session=self.session)
+                self.estimator = Estimator(session=self.session)
             elif self.cloud_provider == "aws":
                 # Initialize AWS Braket backend
                 from braket.aws import AwsDevice
                 self.backend = AwsDevice(self.backend_name)
+                self.sampler = Sampler()
+                self.estimator = Estimator()
             elif self.cloud_provider == "azure":
                 # Initialize Azure Quantum backend
                 from azure.quantum import Workspace
@@ -101,9 +108,13 @@ class QuantumProcessor:
                     location=os.getenv("AZURE_LOCATION")
                 )
                 self.backend = workspace.get_backend(self.backend_name)
+                self.sampler = Sampler()
+                self.estimator = Estimator()
             else:
                 # Use local simulator
                 self.backend = AerSimulator()
+                self.sampler = Sampler()
+                self.estimator = Estimator()
                 
         except Exception as e:
             logging.error(f"Error initializing backend: {str(e)}")
@@ -165,13 +176,13 @@ class QuantumProcessor:
             if self.error_correction:
                 circuit = self._apply_error_correction(circuit)
             
-            # Execute quantum circuit
-            if use_cloud:
-                result = self._execute_cloud(circuit)
-                self.state["cloud_usage"] += 1
+            # Execute quantum circuit using primitives
+            if task_type == "sampling":
+                result = self._execute_sampling(circuit)
+            elif task_type == "optimization":
+                result = self._execute_optimization(circuit, data)
             else:
-                result = self._execute_local(circuit)
-                self.state["local_usage"] += 1
+                result = self._execute_default(circuit)
             
             # Update metrics
             self._update_metrics(result, time.time() - start_time)
@@ -179,6 +190,10 @@ class QuantumProcessor:
             # Update state
             self.state["last_execution"] = time.time()
             self.state["execution_count"] += 1
+            if use_cloud:
+                self.state["cloud_usage"] += 1
+            else:
+                self.state["local_usage"] += 1
             
             return {
                 "result": result,
@@ -191,6 +206,35 @@ class QuantumProcessor:
             self.state["error_count"] += 1
             logging.error(f"Error in quantum processing: {str(e)}")
             raise QuantumError(f"Quantum processing failed: {str(e)}")
+
+    def _execute_sampling(self, circuit: QuantumCircuit) -> Dict[str, Any]:
+        """Execute circuit using Sampler primitive."""
+        job = self.sampler.run(circuit, shots=self.quantum_params["shots"])
+        result = job.result()
+        return {
+            "quasi_dists": result.quasi_dists,
+            "metadata": result.metadata
+        }
+
+    def _execute_optimization(self, circuit: QuantumCircuit, data: Dict[str, Any]) -> Dict[str, Any]:
+        """Execute optimization task using Estimator primitive."""
+        observables = [SparsePauliOp.from_list(obs) for obs in data.get("observables", [])]
+        job = self.estimator.run(circuit, observables)
+        result = job.result()
+        return {
+            "values": result.values,
+            "metadata": result.metadata
+        }
+
+    def _execute_default(self, circuit: QuantumCircuit) -> Dict[str, Any]:
+        """Execute circuit using default backend."""
+        transpiled_circuit = transpile(circuit, self.backend)
+        job = self.backend.run(transpiled_circuit, shots=self.quantum_params["shots"])
+        result = job.result()
+        return {
+            "counts": result.get_counts(),
+            "metadata": result.to_dict().get("results", [{}])[0].get("metadata", {})
+        }
 
     def _should_use_cloud(self, task_type: str, data: Union[np.ndarray, Dict[str, Any]]) -> bool:
         """Determine whether to use cloud backend.
@@ -417,70 +461,6 @@ class QuantumProcessor:
         except Exception as e:
             logging.error(f"Error applying repetition code: {str(e)}")
             raise QuantumError(f"Repetition code application failed: {str(e)}")
-
-    def _execute_cloud(self, circuit: QuantumCircuit) -> Dict[str, Any]:
-        """Execute circuit on cloud backend.
-        
-        Args:
-            circuit: Quantum circuit
-            
-        Returns:
-            Execution results
-        """
-        try:
-            # Transpile circuit for backend
-            transpiled_circuit = transpile(
-                circuit,
-                backend=self.backend,
-                optimization_level=self.quantum_params["optimization_level"]
-            )
-            
-            # Execute circuit
-            job = execute(
-                transpiled_circuit,
-                backend=self.backend,
-                shots=self.quantum_params["shots"]
-            )
-            
-            # Wait for results
-            result = job.result()
-            
-            return {
-                "counts": result.get_counts(),
-                "time_taken": result.time_taken,
-                "success": result.success
-            }
-            
-        except Exception as e:
-            logging.error(f"Error executing on cloud: {str(e)}")
-            raise QuantumError(f"Cloud execution failed: {str(e)}")
-
-    def _execute_local(self, circuit: QuantumCircuit) -> Dict[str, Any]:
-        """Execute circuit on local simulator.
-        
-        Args:
-            circuit: Quantum circuit
-            
-        Returns:
-            Execution results
-        """
-        try:
-            # Execute circuit
-            result = execute(
-                circuit,
-                backend=self.backend,
-                shots=self.quantum_params["shots"]
-            ).result()
-            
-            return {
-                "counts": result.get_counts(),
-                "time_taken": result.time_taken,
-                "success": result.success
-            }
-            
-        except Exception as e:
-            logging.error(f"Error executing locally: {str(e)}")
-            raise QuantumError(f"Local execution failed: {str(e)}")
 
     def _calculate_complexity(self, task_type: str, data: Union[np.ndarray, Dict[str, Any]]) -> float:
         """Calculate task complexity.

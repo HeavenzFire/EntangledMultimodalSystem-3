@@ -22,6 +22,10 @@ class ValidationError(EntangledSystemError):
     """Raised when input validation fails."""
     pass
 
+class QuantumError(EntangledSystemError):
+    """Raised when there's an error with quantum operations."""
+    pass
+
 def handle_error(error, logger):
     """Handle errors and log them appropriately."""
     if isinstance(error, EntangledSystemError):

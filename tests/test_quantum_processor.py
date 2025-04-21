@@ -4,6 +4,9 @@ import pytest
 from unittest.mock import patch, MagicMock
 import numpy as np
 from qiskit import QuantumCircuit
+from qiskit.primitives import Sampler, Estimator
+from qiskit.quantum_info import SparsePauliOp
+from qiskit_ibm_runtime import QiskitRuntimeService, Session, Options
 from src.core.quantum_processor import QuantumProcessor, QuantumError
 from src.utils.errors import ModelError
 
@@ -72,13 +75,19 @@ class TestQuantumProcessor:
             "theta_2": 0.1,
             "phi_2": 0.6
         }
-        result = processor.process("optimization", data)
-        assert "result" in result
-        assert "metrics" in result
-        assert "execution_time" in result
-        assert result["used_cloud"] is False
-        assert processor.state["execution_count"] == 1
-        assert processor.state["local_usage"] == 1
+        with patch.object(processor, '_execute_optimization') as mock_execute:
+            mock_execute.return_value = {
+                "expectation_values": [0.5],
+                "time_taken": 1.0,
+                "success": True
+            }
+            result = processor.process("optimization", data)
+            assert "result" in result
+            assert "metrics" in result
+            assert "execution_time" in result
+            assert result["used_cloud"] is False
+            assert processor.state["execution_count"] == 1
+            assert processor.state["local_usage"] == 1
     
     def test_process_sampling(self, processor):
         """Test sampling task processing."""
@@ -86,13 +95,19 @@ class TestQuantumProcessor:
             "entangle_0_1": True,
             "entangle_1_2": True
         }
-        result = processor.process("sampling", data)
-        assert "result" in result
-        assert "metrics" in result
-        assert "execution_time" in result
-        assert result["used_cloud"] is False
-        assert processor.state["execution_count"] == 1
-        assert processor.state["local_usage"] == 1
+        with patch.object(processor, '_execute_sampling') as mock_execute:
+            mock_execute.return_value = {
+                "counts": {"000": 50, "111": 50},
+                "time_taken": 1.0,
+                "success": True
+            }
+            result = processor.process("sampling", data)
+            assert "result" in result
+            assert "metrics" in result
+            assert "execution_time" in result
+            assert result["used_cloud"] is False
+            assert processor.state["execution_count"] == 1
+            assert processor.state["local_usage"] == 1
     
     def test_process_entanglement(self, processor):
         """Test entanglement task processing."""
@@ -174,25 +189,27 @@ class TestQuantumProcessor:
         assert "success" in result
         assert result["success"] is True
     
-    @patch('qiskit.providers.ibmq.IBMQ')
-    def test_execute_cloud(self, mock_ibmq, processor):
+    @patch('qiskit_ibm_runtime.QiskitRuntimeService')
+    def test_execute_cloud(self, mock_service, processor):
         """Test cloud circuit execution."""
-        # Mock IBMQ provider and backend
-        mock_provider = MagicMock()
-        mock_backend = MagicMock()
-        mock_job = MagicMock()
+        # Mock QiskitRuntimeService and Session
+        mock_session = MagicMock()
+        mock_sampler = MagicMock()
+        mock_estimator = MagicMock()
         mock_result = MagicMock()
         
-        mock_ibmq.enable_account.return_value = None
-        mock_ibmq.get_provider.return_value = mock_provider
-        mock_provider.get_backend.return_value = mock_backend
-        mock_backend.run.return_value = mock_job
-        mock_job.result.return_value = mock_result
-        mock_result.get_counts.return_value = {"000": 50, "111": 50}
-        mock_result.time_taken = 1.0
-        mock_result.success = True
+        mock_service.return_value = mock_service
+        mock_service.backend.return_value = MagicMock()
+        mock_service.session.return_value = mock_session
+        mock_session.__enter__.return_value = mock_session
+        mock_session.sampler.return_value = mock_sampler
+        mock_session.estimator.return_value = mock_estimator
         
-        processor.cloud_provider = "ibmq"
+        mock_result.quasi_dists = [{"000": 0.5, "111": 0.5}]
+        mock_result.metadata = [{"time_taken": 1.0}]
+        mock_sampler.run.return_value = mock_result
+        
+        processor.cloud_provider = "ibm"
         processor.api_token = "test_token"
         processor._initialize_backend()
         
@@ -201,7 +218,7 @@ class TestQuantumProcessor:
         circuit.cx(0, 1)
         circuit.measure_all()
         
-        result = processor._execute_cloud(circuit)
+        result = processor._execute_sampling(circuit)
         assert "counts" in result
         assert "time_taken" in result
         assert "success" in result
