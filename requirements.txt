@@ -1,0 +1,17 @@
+flask==2.0.1
+numpy==1.21.0
+torch==1.9.0
+tensorflow==2.6.0
+transformers==4.11.0
+scipy==1.7.0
+matplotlib==3.4.2
+pyaudio==0.2.11
+SpeechRecognition==3.8.1
+python-dotenv==0.19.0
+requests==2.26.0
+pytest==6.2.5
+black==21.7b0
+flake8==3.9.2
+isort==5.9.3
+mypy==0.910
+pylint==2.9.6 
