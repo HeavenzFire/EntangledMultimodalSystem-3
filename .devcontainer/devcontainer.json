@@ -1,0 +1,6 @@
+{
+  "tasks": {
+    "build": "```bash\npoetry install && poetry build\n```",
+    "test": "pytest"
+  }
+}
