@@ -1,315 +1,249 @@
 import numpy as np
 import tensorflow as tf
-from typing import Dict, Any, Optional
-from src.utils.logger import logger
+from typing import Dict, Optional, Tuple
+import logging
+
+logger = logging.getLogger(__name__)
 
 class QuantumBeatitudesEngine:
-    """Quantum Beatitudes Engine for ethical processing.
-    
-    This engine encodes the Beatitudes (Matthew 5:3-12) as quantum constraints
-    for ethical decision-making and consciousness processing.
+    """
+    Quantum Beatitudes Engine that processes quantum states according to the Beatitudes principles.
+    Implements quantum processing of ethical and spiritual states based on Matthew 5:3-12.
     """
     
-    # Beatitude definitions with scriptural references
+    # Beatitudes patterns and their quantum representations
     BEATITUDES = {
-        "poor_in_spirit": {
-            "reference": "Matthew 5:3",
-            "weight": 0.7,
-            "description": "Blessed are the poor in spirit, for theirs is the kingdom of heaven"
+        'poor_in_spirit': {
+            'pattern': lambda x: np.sin(x) * np.exp(-x**2),
+            'weight': 0.9,
+            'reference': 'Matthew 5:3'
         },
-        "mourn": {
-            "reference": "Matthew 5:4",
-            "weight": 0.75,
-            "description": "Blessed are those who mourn, for they will be comforted"
+        'mourn': {
+            'pattern': lambda x: np.cos(x) * np.exp(-x**2/2),
+            'weight': 0.85,
+            'reference': 'Matthew 5:4'
         },
-        "meek": {
-            "reference": "Matthew 5:5",
-            "weight": 0.8,
-            "description": "Blessed are the meek, for they will inherit the earth"
+        'meek': {
+            'pattern': lambda x: np.tanh(x) * np.exp(-x**2/3),
+            'weight': 0.8,
+            'reference': 'Matthew 5:5'
         },
-        "hunger_righteousness": {
-            "reference": "Matthew 5:6",
-            "weight": 0.85,
-            "description": "Blessed are those who hunger and thirst for righteousness"
+        'hunger_righteousness': {
+            'pattern': lambda x: np.sinh(x) * np.exp(-x**2/4),
+            'weight': 0.95,
+            'reference': 'Matthew 5:6'
         },
-        "merciful": {
-            "reference": "Matthew 5:7",
-            "weight": 0.9,
-            "description": "Blessed are the merciful, for they will be shown mercy"
+        'merciful': {
+            'pattern': lambda x: np.cosh(x) * np.exp(-x**2/5),
+            'weight': 0.9,
+            'reference': 'Matthew 5:7'
         },
-        "pure_heart": {
-            "reference": "Matthew 5:8",
-            "weight": 0.85,
-            "description": "Blessed are the pure in heart, for they will see God"
+        'pure_heart': {
+            'pattern': lambda x: np.arctan(x) * np.exp(-x**2/6),
+            'weight': 0.85,
+            'reference': 'Matthew 5:8'
         },
-        "peacemakers": {
-            "reference": "Matthew 5:9",
-            "weight": 0.9,
-            "description": "Blessed are the peacemakers, for they will be called children of God"
+        'peacemakers': {
+            'pattern': lambda x: np.arcsinh(x) * np.exp(-x**2/7),
+            'weight': 0.9,
+            'reference': 'Matthew 5:9'
         },
-        "persecuted": {
-            "reference": "Matthew 5:10",
-            "weight": 0.8,
-            "description": "Blessed are those who are persecuted because of righteousness"
+        'persecuted': {
+            'pattern': lambda x: np.arccosh(1 + x**2) * np.exp(-x**2/8),
+            'weight': 0.8,
+            'reference': 'Matthew 5:10-12'
         }
     }
     
-    def __init__(self, config: Optional[Dict[str, Any]] = None):
-        """Initialize the Quantum Beatitudes Engine.
+    def __init__(self, config: Dict):
+        """
+        Initialize the Quantum Beatitudes Engine.
         
         Args:
-            config: Configuration parameters including:
-                - dimensions: Dimension of quantum state space
-                - depth: Depth of quantum processing
-                - ethical_threshold: Threshold for ethical validation
+            config: Configuration dictionary containing:
+                - quantum_dimensions: Number of quantum dimensions
+                - beatitude_depth: Depth of beatitude processing
+                - ethical_threshold: Threshold for ethical alignment
+                - spiritual_strength: Strength of spiritual influence
+                - temporal_resolution: Resolution of temporal processing
         """
-        # Default configuration
-        self.config = config or {
-            'dimensions': 16384,
-            'depth': 12,
-            'ethical_threshold': 0.85
+        self.config = config
+        self.quantum_dimensions = config.get('quantum_dimensions', 16384)
+        self.beatitude_depth = config.get('beatitude_depth', 12)
+        self.ethical_threshold = config.get('ethical_threshold', 0.95)
+        self.spiritual_strength = config.get('spiritual_strength', 0.9)
+        self.temporal_resolution = config.get('temporal_resolution', 0.01)
+        
+        # Initialize state
+        self.state = {
+            'current_state': None,
+            'beatitude_states': [],
+            'metrics': None
         }
         
-        # Initialize quantum network
+        # Build quantum network
         self._build_quantum_network()
         
-        # Initialize state and metrics
-        self.state = {
-            'input_state': None,
-            'processed_state': None,
-            'beatitude_scores': None,
-            'metrics': None
-        }
+        # Generate beatitude patterns
+        self._generate_beatitude_patterns()
         
-        self.metrics = {
-            'ethical_alignment': 0.0,
-            'quantum_coherence': 0.0,
-            'beatitude_entanglement': 0.0,
-            'processing_time': 0.0
-        }
-        
-        logger.info("Quantum Beatitudes Engine initialized successfully")
+        logger.info("Quantum Beatitudes Engine initialized with configuration: %s", config)
     
     def _build_quantum_network(self) -> None:
-        """Build quantum processing network."""
-        try:
-            # Input layer
-            input_layer = tf.keras.layers.Input(shape=(self.config['dimensions'],))
+        """Build the quantum neural network for beatitude processing."""
+        # Input layer
+        input_layer = tf.keras.layers.Input(shape=(self.quantum_dimensions,))
+        
+        # Beatitude processing layers
+        x = input_layer
+        for i in range(self.beatitude_depth):
+            # Quantum transformation layer
+            x = tf.keras.layers.Dense(
+                self.quantum_dimensions,
+                activation='tanh',
+                kernel_initializer='glorot_uniform'
+            )(x)
             
-            # Quantum processing layers
-            x = input_layer
-            for i in range(self.config['depth']):
-                # Quantum attention
-                x = tf.keras.layers.MultiHeadAttention(
-                    num_heads=12,
-                    key_dim=64
-                )(x, x)
-                
-                # Quantum normalization
-                x = tf.keras.layers.LayerNormalization()(x)
-                
-                # Quantum transformation
-                x = tf.keras.layers.Dense(
-                    self.config['dimensions'],
-                    activation='gelu'
-                )(x)
+            # Ethical alignment layer
+            x = tf.keras.layers.Dense(
+                self.quantum_dimensions,
+                activation='sigmoid',
+                kernel_initializer='he_uniform'
+            )(x)
             
-            # Build model
-            self.quantum_model = tf.keras.Model(
-                inputs=input_layer,
-                outputs=x
-            )
-            
-            logger.info("Quantum processing network built successfully")
-            
-        except Exception as e:
-            logger.error(f"Error building quantum network: {str(e)}")
-            raise
+            # Spiritual coherence layer
+            x = tf.keras.layers.Dense(
+                self.quantum_dimensions,
+                activation='linear',
+                kernel_initializer='orthogonal'
+            )(x)
+        
+        # Output layer
+        output_layer = tf.keras.layers.Dense(
+            self.quantum_dimensions,
+            activation='linear',
+            kernel_initializer='glorot_uniform'
+        )(x)
+        
+        # Create model
+        self.quantum_model = tf.keras.Model(inputs=input_layer, outputs=output_layer)
+        
+        logger.info("Quantum network built with %d layers", self.beatitude_depth * 3 + 2)
     
-    def apply(self, input_data: np.ndarray, constraints: Dict[str, Any]) -> np.ndarray:
-        """Apply quantum beatitudes processing.
+    def _generate_beatitude_patterns(self) -> None:
+        """Generate quantum patterns for each beatitude."""
+        x = np.linspace(-5, 5, self.quantum_dimensions)
+        self.beatitude_patterns = {}
+        
+        for name, beatitude in self.BEATITUDES.items():
+            # Generate pattern
+            pattern = beatitude['pattern'](x)
+            pattern = pattern / np.linalg.norm(pattern)  # Normalize
+            
+            # Store pattern with weight
+            self.beatitude_patterns[name] = {
+                'pattern': pattern,
+                'weight': beatitude['weight'],
+                'reference': beatitude['reference']
+            }
+        
+        logger.info("Generated %d beatitude patterns", len(self.beatitude_patterns))
+    
+    def process(self, quantum_state: np.ndarray) -> Tuple[np.ndarray, Dict]:
+        """
+        Process a quantum state through the beatitude engine.
         
         Args:
-            input_data: Input quantum state
-            constraints: Ethical constraints from Bible RAG
+            quantum_state: Input quantum state to process
             
         Returns:
-            Processed quantum state
+            Tuple containing:
+                - Processed quantum state
+                - Processing metrics
         """
-        try:
-            # Validate input
-            self._validate_input(input_data)
-            
-            # Process through quantum network
-            processed_state = self.quantum_model.predict(input_data, verbose=0)
-            
-            # Apply beatitude constraints
-            beatitude_scores = self._apply_beatitude_constraints(
-                processed_state,
-                constraints
-            )
-            
-            # Calculate metrics
-            ethical_alignment = self._calculate_ethical_alignment(beatitude_scores)
-            quantum_coherence = self._calculate_quantum_coherence(processed_state)
-            beatitude_entanglement = self._calculate_beatitude_entanglement(
-                processed_state,
-                beatitude_scores
-            )
-            
-            # Update state
-            self.state.update({
-                'input_state': input_data,
-                'processed_state': processed_state,
-                'beatitude_scores': beatitude_scores,
-                'metrics': {
-                    'ethical_alignment': float(ethical_alignment),
-                    'quantum_coherence': float(quantum_coherence),
-                    'beatitude_entanglement': float(beatitude_entanglement),
-                    'processing_time': 0.0  # TODO: Implement actual timing
-                }
-            })
-            
-            # Update metrics
-            self.metrics.update(self.state['metrics'])
-            
-            logger.info("Quantum beatitudes processing completed successfully")
-            
-            return processed_state
-            
-        except Exception as e:
-            logger.error(f"Error in quantum beatitudes processing: {str(e)}")
-            raise
+        # Validate input
+        self._validate_input(quantum_state)
+        
+        # Process through quantum network
+        processed_state = self.quantum_model.predict(quantum_state, verbose=0)
+        
+        # Apply beatitude patterns
+        beatitude_state = self._apply_beatitude_patterns(processed_state)
+        
+        # Calculate metrics
+        metrics = self._calculate_metrics(beatitude_state)
+        
+        # Update state
+        self.state['current_state'] = beatitude_state
+        self.state['beatitude_states'].append(beatitude_state)
+        self.state['metrics'] = metrics
+        
+        return beatitude_state, metrics
     
-    def _validate_input(self, input_data: np.ndarray) -> None:
-        """Validate input data dimensions.
+    def _validate_input(self, quantum_state: np.ndarray) -> None:
+        """Validate input quantum state."""
+        if quantum_state.shape[1] != self.quantum_dimensions:
+            raise ValueError(f"Input state must have {self.quantum_dimensions} dimensions")
         
-        Args:
-            input_data: Input data array
-            
-        Raises:
-            ValueError: If input dimensions are invalid
-        """
-        if input_data.shape[1] != self.config['dimensions']:
-            raise ValueError(
-                f"Input dimension {input_data.shape[1]} does not match "
-                f"quantum dimensions {self.config['dimensions']}"
-            )
+        # Check normalization
+        norm = np.linalg.norm(quantum_state)
+        if not np.isclose(norm, 1.0, atol=1e-6):
+            raise ValueError("Input state must be normalized")
     
-    def _apply_beatitude_constraints(
-        self,
-        quantum_state: np.ndarray,
-        constraints: Dict[str, Any]
-    ) -> Dict[str, float]:
-        """Apply beatitude constraints to quantum state.
+    def _apply_beatitude_patterns(self, state: np.ndarray) -> np.ndarray:
+        """Apply beatitude patterns to quantum state."""
+        result = state.copy()
         
-        Args:
-            quantum_state: Processed quantum state
-            constraints: Ethical constraints from Bible RAG
+        for name, beatitude in self.beatitude_patterns.items():
+            # Calculate pattern influence
+            influence = np.dot(state.flatten(), beatitude['pattern'].flatten())
+            influence *= beatitude['weight'] * self.spiritual_strength
             
-        Returns:
-            Dictionary of beatitude scores
-        """
-        beatitude_scores = {}
+            # Apply pattern
+            result += influence * beatitude['pattern'].reshape(1, -1)
         
-        for beatitude, info in self.BEATITUDES.items():
-            # Calculate alignment with beatitude
-            alignment = np.mean(np.abs(np.correlate(
-                quantum_state.flatten(),
-                np.random.rand(len(quantum_state.flatten()))  # TODO: Use actual beatitude patterns
-            )))
-            
-            # Apply weight and constraint
-            score = alignment * info['weight']
-            if constraints and beatitude in constraints:
-                score *= constraints[beatitude]
-            
-            beatitude_scores[beatitude] = float(score)
+        # Normalize result
+        result = result / np.linalg.norm(result)
         
-        return beatitude_scores
+        return result
     
-    def _calculate_ethical_alignment(self, beatitude_scores: Dict[str, float]) -> float:
-        """Calculate ethical alignment score.
+    def _calculate_metrics(self, state: np.ndarray) -> Dict:
+        """Calculate processing metrics."""
+        metrics = {}
         
-        Args:
-            beatitude_scores: Dictionary of beatitude scores
-            
-        Returns:
-            Ethical alignment score between 0 and 1
-        """
-        return float(np.mean(list(beatitude_scores.values())))
-    
-    def _calculate_quantum_coherence(self, quantum_state: np.ndarray) -> float:
-        """Calculate quantum coherence.
+        # Calculate beatitude alignments
+        for name, beatitude in self.beatitude_patterns.items():
+            alignment = np.abs(np.dot(state.flatten(), beatitude['pattern'].flatten()))
+            metrics[f'{name}_alignment'] = alignment
         
-        Args:
-            quantum_state: Processed quantum state
-            
-        Returns:
-            Quantum coherence score between 0 and 1
-        """
-        coherence = np.mean(np.abs(np.correlate(
-            quantum_state.flatten(),
-            quantum_state.flatten()
-        )))
-        
-        return float(coherence)
-    
-    def _calculate_beatitude_entanglement(
-        self,
-        quantum_state: np.ndarray,
-        beatitude_scores: Dict[str, float]
-    ) -> float:
-        """Calculate beatitude entanglement.
-        
-        Args:
-            quantum_state: Processed quantum state
-            beatitude_scores: Dictionary of beatitude scores
-            
-        Returns:
-            Beatitude entanglement score between 0 and 1
-        """
-        # Calculate entanglement between quantum state and beatitude scores
-        entanglement = np.mean([
-            score * np.mean(np.abs(np.correlate(
-                quantum_state.flatten(),
-                np.random.rand(len(quantum_state.flatten()))  # TODO: Use actual beatitude patterns
-            )))
-            for score in beatitude_scores.values()
+        # Calculate overall ethical alignment
+        metrics['ethical_alignment'] = np.mean([
+            metrics[f'{name}_alignment'] for name in self.beatitude_patterns
         ])
         
-        return float(entanglement)
-    
-    def get_state(self) -> Dict[str, Any]:
-        """Get current system state.
+        # Calculate spiritual coherence
+        metrics['spiritual_coherence'] = np.std([
+            metrics[f'{name}_alignment'] for name in self.beatitude_patterns
+        ])
         
-        Returns:
-            Current system state
-        """
+        # Calculate quantum purity
+        metrics['quantum_purity'] = np.abs(np.dot(state.flatten(), state.flatten()))
+        
+        return metrics
+    
+    def get_state(self) -> Dict:
+        """Get current engine state."""
         return self.state
     
-    def get_metrics(self) -> Dict[str, float]:
-        """Get current system metrics.
-        
-        Returns:
-            Current system metrics
-        """
-        return self.metrics
+    def get_metrics(self) -> Optional[Dict]:
+        """Get current processing metrics."""
+        return self.state['metrics']
     
     def reset(self) -> None:
-        """Reset system state and metrics."""
+        """Reset engine state."""
         self.state = {
-            'input_state': None,
-            'processed_state': None,
-            'beatitude_scores': None,
+            'current_state': None,
+            'beatitude_states': [],
             'metrics': None
         }
-        
-        self.metrics = {
-            'ethical_alignment': 0.0,
-            'quantum_coherence': 0.0,
-            'beatitude_entanglement': 0.0,
-            'processing_time': 0.0
-        }
-        
-        logger.info("Quantum Beatitudes Engine reset successfully") 
+        logger.info("Engine state reset") 
