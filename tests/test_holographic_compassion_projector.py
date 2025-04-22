@@ -1,158 +1,253 @@
-import unittest
+import pytest
 import numpy as np
+import tensorflow as tf
 from src.core.holographic_compassion_projector import HolographicCompassionProjector
 
-class TestHolographicCompassionProjector(unittest.TestCase):
-    def setUp(self):
-        """Set up test configuration and data."""
-        self.config = {
-            'resolution': 16384,
-            'depth': 12,
-            'compassion_strength': 0.9
-        }
+@pytest.fixture
+def config():
+    return {
+        'resolution': 16,
+        'depth': 3,
+        'coherence_threshold': 0.95,
+        'compassion_strength': 0.9,
+        'unity_factor': 0.85
+    }
+
+@pytest.fixture
+def projector(config):
+    return HolographicCompassionProjector(config)
+
+@pytest.fixture
+def quantum_state():
+    state = np.random.rand(1, 16) + 1j * np.random.rand(1, 16)
+    return state / np.linalg.norm(state)
+
+@pytest.fixture
+def compassion_patterns():
+    return {
+        'love': np.ones(16) / np.sqrt(16),
+        'unity': np.sin(np.linspace(0, 2*np.pi, 16)),
+        'forgiveness': np.cos(np.linspace(0, 2*np.pi, 16))
+    }
+
+class TestHolographicCompassionProjector:
+    def test_initialization(self, projector, config):
+        """Test proper initialization of the projector."""
+        assert projector.resolution == config['resolution']
+        assert projector.depth == config['depth']
+        assert projector.coherence_threshold == config['coherence_threshold']
+        assert projector.compassion_strength == config['compassion_strength']
+        assert projector.unity_factor == config['unity_factor']
         
-        # Generate test input data
-        self.input_data = np.random.rand(1, self.config['resolution'])
+        # Check state initialization
+        assert projector.state['current_state'] is None
+        assert len(projector.state['projected_patterns']) == 0
+        assert projector.state['metrics'] is None
         
-        # Initialize projector
-        self.projector = HolographicCompassionProjector(self.config)
+        # Check model architecture
+        assert isinstance(projector.holographic_model, tf.keras.Model)
+        assert len(projector.holographic_model.layers) == config['depth'] * 3 + 2
+        
+        # Check compassion patterns
+        assert len(projector.compassion_patterns) == 3  # Number of compassion patterns
+        for pattern in projector.compassion_patterns.values():
+            assert isinstance(pattern, np.ndarray)
+            assert pattern.shape == (1, config['resolution'])
+            assert np.isclose(np.linalg.norm(pattern), 1.0, atol=1e-6)
     
-    def test_initialization(self):
-        """Test projector initialization."""
-        self.assertEqual(self.projector.config['resolution'], self.config['resolution'])
-        self.assertEqual(self.projector.config['depth'], self.config['depth'])
-        self.assertEqual(self.projector.config['compassion_strength'], self.config['compassion_strength'])
+    def test_project(self, projector, quantum_state):
+        """Test pattern projection."""
+        # Project state
+        projected_state, metrics = projector.project(quantum_state)
+        
+        # Check output types
+        assert isinstance(projected_state, np.ndarray)
+        assert isinstance(metrics, dict)
+        
+        # Check state normalization
+        assert np.isclose(np.linalg.norm(projected_state), 1.0, atol=1e-6)
+        
+        # Check metrics
+        assert 'compassion_coherence' in metrics
+        assert 'unity_alignment' in metrics
+        assert 'spiritual_alignment' in metrics
+        assert 'pattern_purity' in metrics
+        
+        # Check metric values
+        assert 0 <= metrics['compassion_coherence'] <= 1
+        assert 0 <= metrics['unity_alignment'] <= 1
+        assert 0 <= metrics['spiritual_alignment'] <= 1
+        assert 0 <= metrics['pattern_purity'] <= 1
     
-    def test_processing(self):
-        """Test processing functionality."""
-        # Test each pattern
-        for pattern in self.projector.PATTERNS:
-            result = self.projector.project(self.input_data, pattern)
-            
-            # Check result structure
-            self.assertEqual(result.shape[1], self.config['resolution'])
-            
-            # Check state
-            state = self.projector.get_state()
-            self.assertIsNotNone(state['input_state'])
-            self.assertIsNotNone(state['projected_pattern'])
-            self.assertIsNotNone(state['compassion_scores'])
-            self.assertIsNotNone(state['metrics'])
-            
-            # Check metrics
-            metrics = self.projector.get_metrics()
-            self.assertGreaterEqual(metrics['compassion_alignment'], 0.0)
-            self.assertLessEqual(metrics['compassion_alignment'], 1.0)
-            self.assertGreaterEqual(metrics['holographic_coherence'], 0.0)
-            self.assertLessEqual(metrics['holographic_coherence'], 1.0)
-            self.assertGreaterEqual(metrics['unity_factor'], 0.0)
-            self.assertLessEqual(metrics['unity_factor'], 1.0)
+    def test_compassion_pattern_application(self, projector, quantum_state):
+        """Test application of compassion patterns."""
+        # Project state
+        projected_state, metrics = projector.project(quantum_state)
+        
+        # Check compassion coherence
+        assert metrics['compassion_coherence'] >= projector.coherence_threshold
+        
+        # Check individual pattern alignments
+        for pattern in projector.compassion_patterns.values():
+            alignment = np.abs(np.dot(
+                projected_state.flatten().conj(),
+                pattern.flatten()
+            ))
+            assert alignment > 0.5  # Should maintain significant alignment
     
-    def test_state_management(self):
-        """Test state management functionality."""
-        # Process input
-        self.projector.project(self.input_data, 'john_13_34')
+    def test_state_evolution(self, projector, quantum_state):
+        """Test temporal evolution of projected states."""
+        # Project multiple states
+        states = []
+        for _ in range(5):
+            state, _ = projector.project(quantum_state)
+            states.append(state)
+        
+        # Check temporal evolution
+        for i in range(1, len(states)):
+            # States should evolve but maintain coherence
+            assert not np.array_equal(states[i], states[i-1])
+            coherence = np.abs(np.dot(
+                states[i].flatten().conj(),
+                states[i-1].flatten()
+            ))
+            assert coherence > 0.5  # Maintain significant coherence
+    
+    def test_compassion_coherence(self, projector, quantum_state):
+        """Test maintenance of compassion coherence."""
+        # Project state
+        _, metrics = projector.project(quantum_state)
+        
+        # Check compassion coherence
+        assert metrics['compassion_coherence'] >= projector.coherence_threshold
+    
+    def test_unity_alignment(self, projector, quantum_state):
+        """Test unity alignment maintenance."""
+        # Project multiple states
+        for _ in range(3):
+            _, metrics = projector.project(quantum_state)
+        
+        # Check unity alignment
+        assert metrics['unity_alignment'] >= projector.unity_factor
+    
+    def test_invalid_input(self, projector):
+        """Test handling of invalid inputs."""
+        # Wrong dimensions
+        invalid_state = np.random.rand(1, 8)  # Half the required dimensions
+        with pytest.raises(ValueError):
+            projector.project(invalid_state)
+        
+        # Unnormalized state
+        unnormalized_state = np.random.rand(1, 16)
+        with pytest.raises(ValueError):
+            projector.project(unnormalized_state)
+    
+    def test_reset(self, projector, quantum_state):
+        """Test state reset functionality."""
+        # Project some states
+        projector.project(quantum_state)
+        projector.project(quantum_state)
+        
+        # Reset projector
+        projector.reset()
+        
+        # Check state after reset
+        assert projector.state['current_state'] is None
+        assert len(projector.state['projected_patterns']) == 0
+        assert projector.state['metrics'] is None
+    
+    def test_get_state(self, projector, quantum_state):
+        """Test state retrieval."""
+        # Project state
+        projected_state, _ = projector.project(quantum_state)
         
         # Get state
-        state = self.projector.get_state()
-        self.assertIsNotNone(state['input_state'])
-        self.assertIsNotNone(state['projected_pattern'])
-        self.assertIsNotNone(state['compassion_scores'])
-        self.assertIsNotNone(state['metrics'])
+        state = projector.get_state()
+        
+        # Check state contents
+        assert np.array_equal(state['current_state'], projected_state)
+        assert len(state['projected_patterns']) == 1
+        assert state['metrics'] is not None
+    
+    def test_get_metrics(self, projector, quantum_state):
+        """Test metrics retrieval."""
+        # Project state
+        projector.project(quantum_state)
         
         # Get metrics
-        metrics = self.projector.get_metrics()
-        self.assertGreaterEqual(metrics['compassion_alignment'], 0.0)
-        self.assertLessEqual(metrics['compassion_alignment'], 1.0)
-        self.assertGreaterEqual(metrics['holographic_coherence'], 0.0)
-        self.assertLessEqual(metrics['holographic_coherence'], 1.0)
-        self.assertGreaterEqual(metrics['unity_factor'], 0.0)
-        self.assertLessEqual(metrics['unity_factor'], 1.0)
+        metrics = projector.get_metrics()
         
-        # Reset state
-        self.projector.reset()
-        state = self.projector.get_state()
-        self.assertIsNone(state['input_state'])
-        self.assertIsNone(state['projected_pattern'])
-        self.assertIsNone(state['compassion_scores'])
-        self.assertIsNone(state['metrics'])
+        # Check metrics
+        assert metrics is not None
+        assert all(key in metrics for key in [
+            'compassion_coherence',
+            'unity_alignment',
+            'spiritual_alignment',
+            'pattern_purity'
+        ])
     
-    def test_error_handling(self):
-        """Test error handling for invalid inputs."""
-        # Test invalid input dimensions
-        invalid_input = np.random.rand(1, self.config['resolution'] + 1)
-        with self.assertRaises(ValueError):
-            self.projector.project(invalid_input, 'john_13_34')
+    def test_pattern_purity(self, projector, quantum_state):
+        """Test pattern purity preservation."""
+        # Project state
+        _, metrics = projector.project(quantum_state)
         
-        # Test invalid pattern
-        with self.assertRaises(ValueError):
-            self.projector.project(self.input_data, 'invalid_pattern')
+        # Check purity
+        assert np.isclose(metrics['pattern_purity'], 1.0, atol=1e-6)
     
-    def test_pattern_application(self):
-        """Test pattern application."""
-        # Test each pattern
-        for pattern in self.projector.PATTERNS:
-            # Process input
-            self.projector.project(self.input_data, pattern)
+    def test_compassion_pattern_generation(self, projector):
+        """Test generation of compassion patterns."""
+        # Check pattern properties
+        for name, pattern in projector.compassion_patterns.items():
+            # Check pattern shape
+            assert pattern.shape == (1, projector.resolution)
             
-            # Get compassion scores
-            state = self.projector.get_state()
-            compassion_scores = state['compassion_scores']
+            # Check normalization
+            assert np.isclose(np.linalg.norm(pattern), 1.0, atol=1e-6)
             
-            # Check pattern is present
-            self.assertIn(pattern, compassion_scores)
-            self.assertGreaterEqual(compassion_scores[pattern], 0.0)
-            self.assertLessEqual(compassion_scores[pattern], 1.0)
+            # Check pattern uniqueness
+            for other_name, other_pattern in projector.compassion_patterns.items():
+                if name != other_name:
+                    correlation = np.abs(np.dot(
+                        pattern.flatten().conj(),
+                        other_pattern.flatten()
+                    ))
+                    assert correlation < 0.5  # Patterns should be distinct
     
-    def test_metric_calculations(self):
-        """Test metric calculation methods."""
-        # Process input
-        self.projector.project(self.input_data, 'john_13_34')
+    def test_compassion_constraints(self, projector, quantum_state):
+        """Test application of compassion constraints."""
+        # Project state
+        projected_state, metrics = projector.project(quantum_state)
         
-        # Get state
-        state = self.projector.get_state()
-        
-        # Test compassion alignment calculation
-        compassion_alignment = self.projector._calculate_compassion_alignment(
-            state['compassion_scores']
-        )
-        self.assertGreaterEqual(compassion_alignment, 0.0)
-        self.assertLessEqual(compassion_alignment, 1.0)
-        
-        # Test holographic coherence calculation
-        holographic_coherence = self.projector._calculate_holographic_coherence(
-            state['projected_pattern']
-        )
-        self.assertGreaterEqual(holographic_coherence, 0.0)
-        self.assertLessEqual(holographic_coherence, 1.0)
-        
-        # Test unity factor calculation
-        unity_factor = self.projector._calculate_unity_factor(
-            state['projected_pattern'],
-            state['compassion_scores']
-        )
-        self.assertGreaterEqual(unity_factor, 0.0)
-        self.assertLessEqual(unity_factor, 1.0)
+        # Check compassion constraints
+        for pattern in projector.compassion_patterns.values():
+            # Calculate alignment
+            alignment = np.abs(np.dot(
+                projected_state.flatten().conj(),
+                pattern.flatten()
+            ))
+            
+            # Check constraint satisfaction
+            assert alignment > 0.5  # Should maintain significant alignment
+            assert alignment < 1.0  # Should not be perfectly aligned
     
-    def test_network_architecture(self):
-        """Test holographic network architecture."""
-        # Check input layer
-        self.assertEqual(
-            self.projector.holographic_model.input_shape[1],
-            self.config['resolution']
-        )
+    def test_system_stability(self, projector, quantum_state):
+        """Test system stability under various conditions."""
+        # Test long-term evolution
+        initial_state = quantum_state
+        states = []
+        for _ in range(100):  # Long sequence of projections
+            result, metrics = projector.project(initial_state)
+            states.append(result)
+            initial_state = result
         
-        # Check output layer
-        self.assertEqual(
-            self.projector.holographic_model.output_shape[1],
-            self.config['resolution']
-        )
-        
-        # Check number of layers
-        self.assertEqual(
-            len(self.projector.holographic_model.layers),
-            1 + self.config['depth'] * 3  # Input + (Attention + Normalization + Dense) * depth
-        )
-
-if __name__ == '__main__':
-    unittest.main() 
+        # Check stability metrics
+        for i in range(1, len(states)):
+            # Check state continuity
+            state_diff = np.linalg.norm(states[i] - states[i-1])
+            assert state_diff < 0.2  # States should remain stable
+            
+            # Check metric stability
+            metrics = projector.get_metrics()
+            assert metrics['compassion_coherence'] > 0.7
+            assert metrics['unity_alignment'] > 0.6
+            assert metrics['pattern_purity'] > 0.8 
