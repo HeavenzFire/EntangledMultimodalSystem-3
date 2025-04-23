@@ -1,4 +1,4 @@
-from typing import Dict, Any, List
+from typing import Dict, Any, List, Optional
 from datetime import datetime
 import logging
 from .error_correction import XYZ2Code, EnhancedAlphaQubitDecoder
@@ -8,6 +8,9 @@ from .monitoring import SystemMonitor
 from .ml_optimization import MLModelOptimizer
 from .adaptive_optimization import QuantumInspiredOptimizer
 from .omni_initiative import OmniInitiativeFramework
+from .quantum_state import QuantumState
+from .nonlinear_processor import NonlinearProcessor
+from ..cryptography.quantum_crypto import QuantumCryptographicSystem
 
 # Configure logging
 logger = logging.getLogger(__name__)
@@ -78,142 +81,116 @@ class QuantumHybridSystem:
         self.ml_optimizer = MLModelOptimizer()
         self.quantum_optimizer = QuantumInspiredOptimizer()
         self.omni_framework = OmniInitiativeFramework()
+        self.nonlinear_processor = NonlinearProcessor()
+        self.quantum_crypto = QuantumCryptographicSystem()
         
         # System State
         self.job_history = []
         self.error_history = []
         self.trend_window = 10
-        logger.info("Initialized QuantumHybridSystem with Omni-Initiative integration")
+        logger.info("Initialized QuantumHybridSystem with advanced cryptography")
 
-    def process_job(self, job_id: str, quantum_circuit: str) -> Dict[str, Any]:
-        """
-        Process a quantum job with enhanced error correction and advanced optimization
-        
-        Args:
-            job_id: Unique job identifier
-            quantum_circuit: Quantum circuit description
+    def process_job(self, job_data: Dict) -> Dict:
+        try:
+            # Initialize quantum state
+            quantum_state = QuantumState(
+                amplitude=job_data.get('amplitude', 1.0),
+                phase=job_data.get('phase', 0.0),
+                error_rate=job_data.get('error_rate', 0.01)
+            )
             
-        Returns:
-            Dictionary containing job results and metrics
-        """
-        start_time = datetime.now()
-        
-        # Get current system state
-        current_state = {
-            'quantum_fidelity': self.error_correction.logical_error_rate,
-            'classical_performance': self.decoder.decoding_accuracy,
-            'resource_utilization': len(self.job_history) / 100,
-            'error_rate': self.error_correction.logical_error_rate
-        }
-        
-        # Quantum-inspired optimization
-        optimized_state = self.quantum_optimizer.optimize_quantum_state(current_state)
-        self.error_correction.logical_error_rate = optimized_state['error_rate']
-        
-        # Error correction phase
-        stabilizers = self.error_correction.stabilizers
-        syndrome = self.error_correction.syndrome_measurement()
-        ml_performance = self.decoder.decode(syndrome)
-        
-        # Enhanced error prediction with ML
-        current_metrics = {
-            'error_rate': self.error_correction.logical_error_rate,
-            'ml_accuracy': self.decoder.decoding_accuracy,
-            'quantum_fidelity': optimized_state['quantum_fidelity']
-        }
-        error_prediction = self.ml_optimizer.predict_errors(current_metrics)
-        
-        # Track prediction accuracy
-        self.ml_optimizer.track_prediction(job_id, error_prediction, self.error_correction.logical_error_rate)
-        
-        # System optimization phase
-        self.system_control.add_job(job_id, {
-            'stabilizers': stabilizers,
-            'syndrome': len(syndrome),
-            'ml_acc': self.decoder.decoding_accuracy,
-            'predicted_error': error_prediction,
-            'quantum_fidelity': optimized_state['quantum_fidelity']
-        })
-        
-        # ML model optimization
-        training_data = [{
-            'error_rate': h['metrics']['error_rate'],
-            'ml_accuracy': h['metrics']['ml_accuracy']
-        } for h in self.job_history[-10:]]
-        ml_metrics = self.ml_optimizer.optimize_model(training_data)
-        
-        # Resource optimization with quantum-inspired clustering
-        historical_data = [h['metrics'] for h in self.job_history[-10:]]
-        resource_allocation = self.quantum_optimizer.optimize_resources(
-            current_state['resource_utilization'],
-            historical_data
-        )
-        
-        # Adaptive parameter adjustment
-        adapted_state = self.quantum_optimizer.adapt_parameters(current_state)
-        
-        # Omni-Initiative optimization
-        omni_metrics = {
-            'customer_satisfaction': 1.0 - self.error_correction.logical_error_rate,
-            'operational_efficiency': self.decoder.decoding_accuracy,
-            'resource_utilization': current_state['resource_utilization'],
-            'revenue_impact': 1.0 - (self.error_correction.logical_error_rate * 0.5),
-            'employee_engagement': 0.9,  # High engagement for quantum operations
-            'data_quality': 1.0 - (self.error_correction.logical_error_rate * 0.2)
-        }
-        self.omni_framework.track_metrics(omni_metrics)
-        
-        # Optimize customer journey and employee workflow
-        journey_optimization = self.omni_framework.optimize_customer_journey({
-            'satisfaction': omni_metrics['customer_satisfaction'],
-            'efficiency': omni_metrics['operational_efficiency'],
-            'revenue': omni_metrics['revenue_impact']
-        })
-        
-        workflow_optimization = self.omni_framework.optimize_employee_workflow({
-            'engagement': omni_metrics['employee_engagement'],
-            'efficiency': omni_metrics['operational_efficiency'],
-            'satisfaction': 0.9
-        })
-        
-        # Performance monitoring
-        job_metrics = {
-            'job_id': job_id,
-            'execution_time': (datetime.now() - start_time).total_seconds() * 1000,
-            'error_rate': self.error_correction.logical_error_rate,
-            'ml_accuracy': self.decoder.decoding_accuracy,
-            'response_time': self.resource_optimizer.response_time,
-            'predicted_error': error_prediction,
-            'ml_optimization': ml_metrics.__dict__,
-            'quantum_optimization': {
-                'fidelity': optimized_state['quantum_fidelity'],
-                'adapted_fidelity': adapted_state['quantum_fidelity'],
-                'resource_allocation': resource_allocation
-            },
-            'omni_optimization': {
-                'customer_journey': journey_optimization,
-                'employee_workflow': workflow_optimization,
-                'metrics': self.omni_framework.get_framework_metrics()
+            # Generate quantum key for encryption
+            quantum_key = self.quantum_crypto.generate_quantum_key()
+            
+            # Track current system state
+            current_state = {
+                'quantum_fidelity': quantum_state.fidelity,
+                'classical_performance': 0.95,
+                'resource_utilization': 0.85,
+                'error_rate': quantum_state.error_rate,
+                'security_level': quantum_key.security_level,
+                'entanglement_degree': quantum_key.entanglement_degree,
+                'timestamp': datetime.now()
             }
-        }
-        self.performance_dashboard.update_metrics(job_metrics)
-        
-        # Track optimization performance
-        self.quantum_optimizer.track_performance(current_state)
-        
-        # Anomaly detection
-        if self.ml_optimizer.detect_anomalies():
-            self.performance_dashboard.trigger_alert(f"Anomaly detected in {job_id}")
-        
-        # Store job history
-        self.job_history.append({
-            'timestamp': start_time,
-            'job_id': job_id,
-            'metrics': job_metrics
-        })
-        
-        logger.info(f"Job {job_id} completed with quantum fidelity {optimized_state['quantum_fidelity']:.4f}")
-        return job_metrics
+            
+            # Apply quantum-inspired optimization
+            optimized_state = self.quantum_optimizer.optimize_quantum_state(quantum_state)
+            
+            # Process with nonlinear processor
+            nonlinear_state = self.nonlinear_processor.process_quantum_state(optimized_state)
+            
+            # Get current metrics for error prediction
+            current_metrics = {
+                'error_rate': nonlinear_state.error_rate,
+                'ml_accuracy': self.ml_optimizer.get_performance_metrics()['accuracy'],
+                'security_level': quantum_key.security_level
+            }
+            
+            # Enhanced error prediction using ML
+            predicted_errors = self.ml_optimizer.predict_errors(
+                historical_data=self.ml_optimizer.prediction_history,
+                current_metrics=current_metrics
+            )
+            
+            # Track prediction accuracy
+            self.ml_optimizer.track_prediction(
+                predicted_error=predicted_errors['error_rate'],
+                actual_error=nonlinear_state.error_rate
+            )
+            
+            # Optimize ML model
+            self.ml_optimizer.optimize_model(
+                training_data=self.ml_optimizer.prediction_history[-10:]
+            )
+            
+            # Optimize resources
+            resource_allocation = self.quantum_optimizer.optimize_resources(
+                performance_data=[current_state]
+            )
+            
+            # Adapt parameters
+            self.quantum_optimizer.adapt_parameters(
+                current_state=current_state,
+                target_state={
+                    'quantum_fidelity': 0.99,
+                    'classical_performance': 0.98,
+                    'resource_utilization': 0.9,
+                    'error_rate': 0.001,
+                    'security_level': 0.99,
+                    'entanglement_degree': 0.95
+                }
+            )
+            
+            # Track performance
+            self.quantum_optimizer.track_performance(current_state)
+            
+            # Prepare job metrics
+            job_metrics = {
+                'quantum_fidelity': optimized_state.fidelity,
+                'classical_performance': current_state['classical_performance'],
+                'resource_utilization': resource_allocation['utilization'],
+                'error_rate': nonlinear_state.error_rate,
+                'predicted_errors': predicted_errors,
+                'ml_optimization': self.ml_optimizer.get_performance_metrics(),
+                'quantum_optimization': self.quantum_optimizer.get_optimization_metrics(),
+                'nonlinear_processing': self.nonlinear_processor.get_performance_metrics(),
+                'cryptographic_metrics': self.quantum_crypto.get_security_metrics(),
+                'timestamp': datetime.now()
+            }
+            
+            # Check for anomalies
+            if self.ml_optimizer.detect_anomalies(
+                current_error=nonlinear_state.error_rate,
+                historical_errors=[s.error_rate for s in self.nonlinear_processor.state_history]
+            ):
+                self.logger.warning("Anomaly detected in error rates")
+            
+            self.logger.info(f"Job completed successfully with quantum fidelity: {optimized_state.fidelity}")
+            return job_metrics
+            
+        except Exception as e:
+            self.logger.error(f"Error processing job: {str(e)}")
+            raise
 
     def get_system_metrics(self) -> Dict[str, Any]:
         """
