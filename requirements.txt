@@ -1,11 +1,13 @@
 # Core dependencies
-numpy>=1.24.0
-scipy>=1.10.0
+numpy>=1.21.0
+scipy>=1.7.0
 pandas>=2.0.0
-matplotlib>=3.7.0
+matplotlib>=3.5.0
 
 # Quantum computing
-qiskit>=0.44.0
+qiskit==0.45.0
+qiskit-aer==0.12.2
+qiskit-ibmq-provider==0.20.2
 amazon-braket-sdk>=1.35.0
 cirq>=1.2.0
 pennylane>=0.31.0
@@ -14,7 +16,7 @@ pennylane>=0.31.0
 torch>=2.0.0
 torchvision>=0.15.0
 transformers>=4.30.0
-tensorflow>=2.13.0
+tensorflow>=2.15.0
 
 # Holographic processing
 holopy>=3.1.0
@@ -32,7 +34,7 @@ awscli>=1.27.0
 google-cloud-storage>=2.10.0
 
 # Testing and development
-pytest>=7.3.0
+pytest>=7.4.3
 pytest-cov>=4.1.0
 pytest-benchmark>=3.4.0
 black>=23.3.0
@@ -67,4 +69,5 @@ google-api-python-client>=2.100.0
 pyaudio==0.2.11
 SpeechRecognition==3.8.1
 isort==5.9.3
-pylint==2.9.6 
+pylint==2.9.6
+sympy>=1.9 
