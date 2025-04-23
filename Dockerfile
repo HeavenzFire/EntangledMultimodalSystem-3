@@ -1,40 +1,53 @@
-# Use CUDA base image for GPU support
-FROM nvidia/cuda:12.2.0-runtime-ubuntu22.04
-
-# Set environment variables
-ENV DEBIAN_FRONTEND=noninteractive
-ENV PYTHONUNBUFFERED=1
-ENV PYTHONPATH=/app
+# Builder stage
+FROM python:3.10-slim as builder
 
 # Install system dependencies
 RUN apt-get update && apt-get install -y \
-    python3.10 \
-    python3-pip \
+    build-essential \
     git \
     && rm -rf /var/lib/apt/lists/*
+
+# Set up virtual environment
+RUN python -m venv /opt/venv
+ENV PATH="/opt/venv/bin:$PATH"
+
+# Install Python dependencies
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Install quantum dependencies
+RUN pip install --no-cache-dir \
+    qiskit[all]==0.44.0 \
+    pennylane==0.31.0 \
+    cirq==1.2.0 \
+    mitiq==0.28.0
+
+# Runtime stage
+FROM python:3.10-slim
+
+# Copy virtual environment from builder
+COPY --from=builder /opt/venv /opt/venv
+ENV PATH="/opt/venv/bin:$PATH"
 
 # Set working directory
 WORKDIR /app
 
-# Copy requirements file
-COPY requirements.txt .
-
-# Install Python dependencies
-RUN pip3 install --no-cache-dir -r requirements.txt
-
 # Copy application code
-COPY src/ src/
-COPY tests/ tests/
-COPY deployment/ deployment/
+COPY src/ /app/src/
+COPY tests/ /app/tests/
+COPY setup.py pyproject.toml README.md ./
 
-# Set up logging directory
-RUN mkdir -p /var/log/digigod
+# Install the package
+RUN pip install -e .
 
-# Expose ports
-EXPOSE 8000
+# Set environment variables
+ENV PYTHONPATH=/app
+ENV QUANTUM_BACKEND=ibm_kyiv
+ENV LOG_LEVEL=INFO
 
-# Set entrypoint
-ENTRYPOINT ["python3", "-m", "src.core.digigod_nexus"]
+# Health check
+HEALTHCHECK --interval=30s --timeout=30s --start-period=5s --retries=3 \
+    CMD python -c "from entangled_multimodal_system.monitoring.quantum_telemetry import QuantumMonitor; QuantumMonitor().track_operation(None, 'health_check')" || exit 1
 
 # Default command
-CMD ["--mode=cloud", "--qpus=128", "--ethics=asilomar_v5"] 
+CMD ["python", "-m", "entangled_multimodal_system"] 
