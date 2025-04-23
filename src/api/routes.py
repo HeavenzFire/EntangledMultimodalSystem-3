@@ -43,7 +43,10 @@ def process_input():
         input_data = data['input']
         input_type = data['type']
         
-        result = system_manager.process_input(input_data, input_type)
+        if input_type == "integration":
+            result = integration_engine.integrate_consciousness(input_data['n_qubits'], input_data['hologram_size'])
+        else:
+            result = system_manager.process_input(input_data, input_type)
         return jsonify(result)
     except Exception as e:
         return handle_error(e, logger)
@@ -512,5 +515,21 @@ def reset_framework_api():
     except Exception as e:
         logger.error(f"API Framework Reset Unexpected Error: {str(e)}")
         return jsonify({"error": "An unexpected error occurred during framework reset."}), 500
+
+@api_bp.route('/api/integrate_consciousness', methods=['POST'])
+def integrate_consciousness():
+    """API endpoint to handle consciousness integration requests."""
+    try:
+        data = request.get_json()
+        if not data or 'n_qubits' not in data or 'hologram_size' not in data:
+            raise ValidationError("n_qubits and hologram_size are required")
+        
+        n_qubits = data['n_qubits']
+        hologram_size = data['hologram_size']
+        
+        result = integration_engine.integrate_consciousness(n_qubits, hologram_size)
+        return jsonify(result)
+    except Exception as e:
+        return handle_error(e, logger)
 
 # Ensure this blueprint is registered in the main app file 
