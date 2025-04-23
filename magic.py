@@ -4,7 +4,7 @@ import torch.nn.functional as F
 import clip
 import matplotlib.pyplot as plt
 from torch.utils.data import Dataset, DataLoader
-import numpy np
+import numpy as np
 import random
 import math
 from copy import deepcopy
