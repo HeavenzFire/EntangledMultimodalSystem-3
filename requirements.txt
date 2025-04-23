@@ -16,7 +16,7 @@ qiskit-ibm-runtime>=0.18.0
 
 # Quantum Machine Learning
 tensorflow>=2.12.0
-tensorflow-quantum>=0.7.0
+tensorflow-quantum==0.6.0
 torch>=2.0.0
 torch-quantum>=0.1.0
 pennylane>=0.33.0
