@@ -17,9 +17,8 @@ jobs:
           python-version: "3.10"
 
       - name: Update dependencies
-        uses: py-actions/py-dependency-update@v2
+        uses: actions/dependency-review-action@v3
         with:
-          requirements-files: "requirements.txt"
           token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Run security audit

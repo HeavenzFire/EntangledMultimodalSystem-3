@@ -45,7 +45,7 @@ jobs:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
 
       - name: Run dependency check
-        uses: dependency-check/Dependency-Check@main
+        uses: dependency-check/Dependency-Check@v5
         with:
           project: 'EntangledMultimodalSystem'
           path: '.'
