@@ -5,6 +5,8 @@ on:
     branches: [ main ]
   pull_request:
     branches: [ main ]
+  schedule:
+    - cron: '0 0 * * 0'  # Run weekly
 
 jobs:
   quantum-security:
@@ -53,4 +55,4 @@ jobs:
           path: |
             sbom.spdx.json
             security-scan-results.json
-            quantum-safe-secrets-report.json 
+            quantum-safe-secrets-report.json
