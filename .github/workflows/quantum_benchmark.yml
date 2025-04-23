@@ -86,3 +86,15 @@ jobs:
         git add docs/benchmarks/
         git commit -m "Update benchmark results [skip ci]" || echo "No changes to commit"
         git push 
+
+    - name: Merge pull request if tests pass
+      if: github.event_name == 'pull_request' && success()
+      uses: actions/github-script@v6
+      with:
+        script: |
+          github.pulls.merge({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            pull_number: context.payload.pull_request.number,
+            merge_method: 'merge'
+          })

@@ -48,4 +48,16 @@ jobs:
           path: |
             benchmark-results.json
             quantum-volume-report.json
-            error-correction-metrics.json 
+            error-correction-metrics.json
+
+      - name: Merge pull request if tests pass
+        if: github.event_name == 'pull_request' && success()
+        uses: actions/github-script@v6
+        with:
+          script: |
+            github.pulls.merge({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: context.payload.pull_request.number,
+              merge_method: 'merge'
+            })

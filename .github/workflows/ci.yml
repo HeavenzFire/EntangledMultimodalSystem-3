@@ -50,6 +50,18 @@ jobs:
         file: ./coverage.xml
         fail_ci_if_error: true
 
+    - name: Merge pull request if tests pass
+      if: github.event_name == 'pull_request' && success()
+      uses: actions/github-script@v6
+      with:
+        script: |
+          github.pulls.merge({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            pull_number: context.payload.pull_request.number,
+            merge_method: 'merge'
+          })
+
   docs:
     runs-on: ubuntu-latest
     needs: test

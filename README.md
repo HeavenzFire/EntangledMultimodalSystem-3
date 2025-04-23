@@ -115,6 +115,14 @@ isort src tests
 4. Push to the branch
 5. Create a Pull Request
 
+### Need to Merge and Finish Pull Requests
+
+It is important to regularly merge and finish pull requests to keep the repository up-to-date and maintain a smooth workflow. Please ensure that all pending pull requests are reviewed and merged in a timely manner.
+
+### Automated Merging of Pull Requests
+
+To streamline the process, we have implemented automated merging of pull requests. If all tests pass and the pull request meets the required criteria, it will be automatically merged. This helps in maintaining an up-to-date repository and reduces manual intervention.
+
 ## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
@@ -262,3 +270,7 @@ We welcome contributions from the community! To ensure a smooth process, please 
 ### Need to Merge and Finish Pull Requests
 
 It is important to regularly merge and finish pull requests to keep the repository up-to-date and maintain a smooth workflow. Please ensure that all pending pull requests are reviewed and merged in a timely manner.
+
+### Automated Merging of Pull Requests
+
+To streamline the process, we have implemented automated merging of pull requests. If all tests pass and the pull request meets the required criteria, it will be automatically merged. This helps in maintaining an up-to-date repository and reduces manual intervention.
