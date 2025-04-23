@@ -52,27 +52,31 @@ def test_build_planetary_health_model(consciousness_engine):
 
 def test_integrate_consciousness(consciousness_engine):
     """Test integration of consciousness components."""
-    integration_state = consciousness_engine.integrate_consciousness()
+    integration_state = consciousness_engine.integrate_consciousness(n_qubits=4, hologram_size=(64, 64))
     assert isinstance(integration_state, dict)
     assert all(key in integration_state for key in [
-        'ethical_alignment',
+        'quantum_consciousness',
+        'holographic_patterns',
+        'neural_processing',
+        'ethical_assessment',
         'societal_impact',
         'planetary_health',
-        'system_state'
+        'last_update'
     ])
 
 def test_assess_impact(consciousness_engine):
     """Test impact assessment of integrated consciousness."""
-    integration_state = consciousness_engine.integrate_consciousness()
-    impact_scores = consciousness_engine.assess_impact(integration_state)
+    integration_state = consciousness_engine.integrate_consciousness(n_qubits=4, hologram_size=(64, 64))
+    impact_scores = consciousness_engine.assess_impact()
     assert isinstance(impact_scores, dict)
     assert all(key in impact_scores for key in [
-        'ethical_score',
-        'societal_score',
-        'environmental_score',
-        'overall_score'
+        'ethical_alignment',
+        'societal_impact',
+        'planetary_health'
     ])
-    assert all(0 <= score <= 1 for score in impact_scores.values())
+    assert all(0 <= score <= 1 for score in impact_scores['ethical_alignment'].values())
+    assert all(0 <= score <= 1 for score in impact_scores['societal_impact'].values())
+    assert all(0 <= score <= 1 for score in impact_scores['planetary_health'].values())
 
 def test_get_integration_status(consciousness_engine):
     """Test retrieval of integration status."""
@@ -80,19 +84,20 @@ def test_get_integration_status(consciousness_engine):
     assert isinstance(status, dict)
     assert all(key in status for key in [
         'integration_state',
-        'impact_scores',
-        'system_health'
+        'impact_assessment',
+        'sync_status',
+        'last_update'
     ])
 
 def test_reset_integration(consciousness_engine):
     """Test reset of consciousness integration."""
-    initial_state = consciousness_engine.integrate_consciousness()
+    initial_state = consciousness_engine.integrate_consciousness(n_qubits=4, hologram_size=(64, 64))
     consciousness_engine.reset_integration()
-    new_state = consciousness_engine.integrate_consciousness()
+    new_state = consciousness_engine.integrate_consciousness(n_qubits=4, hologram_size=(64, 64))
     assert new_state is not None
     assert isinstance(new_state, dict)
     # States should be different after reset
     assert not np.array_equal(
-        new_state['system_state'],
-        initial_state['system_state']
-    ) 
+        new_state['quantum_consciousness']['state_vector'],
+        initial_state['quantum_consciousness']['state_vector']
+    )
