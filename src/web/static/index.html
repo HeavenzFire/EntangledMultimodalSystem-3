@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HyperIntelligent Portal</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <style>
+        .chat-container {
+            height: calc(100vh - 200px);
+        }
+        .message {
+            max-width: 80%;
+            margin: 8px;
+            padding: 12px;
+            border-radius: 12px;
+        }
+        .user-message {
+            background-color: #e3f2fd;
+            margin-left: auto;
+        }
+        .agent-message {
+            background-color: #f5f5f5;
+        }
+    </style>
+</head>
+<body class="bg-gray-100">
+    <div class="container mx-auto px-4 py-8">
+        <header class="mb-8">
+            <h1 class="text-4xl font-bold text-gray-800">HyperIntelligent Portal</h1>
+            <p class="text-gray-600">Advanced AI Assistant Interface</p>
+        </header>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <!-- Agent Management Panel -->
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <h2 class="text-2xl font-semibold mb-4">Agent Management</h2>
+                <div class="space-y-4">
+                    <div id="agent-list" class="space-y-2">
+                        <!-- Agent list will be populated here -->
+                    </div>
+                    <button onclick="createNewAgent()" class="w-full bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600">
+                        Create New Agent
+                    </button>
+                </div>
+            </div>
+
+            <!-- Chat Interface -->
+            <div class="md:col-span-2 bg-white rounded-lg shadow-md p-6">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-2xl font-semibold">Chat Interface</h2>
+                    <div id="agent-status" class="text-sm text-gray-600">
+                        <!-- Agent status will be displayed here -->
+                    </div>
+                </div>
+                
+                <div id="chat-messages" class="chat-container overflow-y-auto mb-4">
+                    <!-- Messages will be displayed here -->
+                </div>
+
+                <div class="flex space-x-2">
+                    <input type="text" id="message-input" 
+                           class="flex-1 border rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                           placeholder="Type your message...">
+                    <button onclick="sendMessage()" 
+                            class="bg-blue-500 text-white py-2 px-6 rounded-lg hover:bg-blue-600">
+                        Send
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let ws = null;
+        let currentAgent = "default";
+
+        // Initialize WebSocket connection
+        function initWebSocket() {
+            ws = new WebSocket(`ws://${window.location.host}/ws/chat/${currentAgent}`);
+            
+            ws.onmessage = function(event) {
+                const response = JSON.parse(event.data);
+                appendMessage(response.content, false);
+            };
+            
+            ws.onclose = function() {
+                console.log("WebSocket connection closed");
+                setTimeout(initWebSocket, 1000);
+            };
+        }
+
+        // Send message to agent
+        function sendMessage() {
+            const input = document.getElementById('message-input');
+            const message = input.value.trim();
+            
+            if (message && ws) {
+                appendMessage(message, true);
+                ws.send(JSON.stringify({ content: message }));
+                input.value = '';
+            }
+        }
+
+        // Append message to chat
+        function appendMessage(message, isUser) {
+            const chatContainer = document.getElementById('chat-messages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${isUser ? 'user-message' : 'agent-message'}`;
+            messageDiv.textContent = message;
+            chatContainer.appendChild(messageDiv);
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        }
+
+        // Create new agent
+        async function createNewAgent() {
+            const name = prompt("Enter agent name:");
+            if (name) {
+                try {
+                    const response = await fetch('/api/agents', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            name: name,
+                            capabilities: ["chat", "learning", "analysis"]
+                        })
+                    });
+                    
+                    if (response.ok) {
+                        loadAgents();
+                    }
+                } catch (error) {
+                    console.error('Error creating agent:', error);
+                }
+            }
+        }
+
+        // Load available agents
+        async function loadAgents() {
+            const agentList = document.getElementById('agent-list');
+            agentList.innerHTML = '';
+            
+            // Add default agent
+            const defaultAgent = document.createElement('div');
+            defaultAgent.className = 'p-2 border rounded cursor-pointer hover:bg-gray-100';
+            defaultAgent.textContent = 'Default Agent';
+            defaultAgent.onclick = () => switchAgent('default');
+            agentList.appendChild(defaultAgent);
+        }
+
+        // Switch to different agent
+        function switchAgent(agentId) {
+            currentAgent = agentId;
+            document.getElementById('chat-messages').innerHTML = '';
+            if (ws) {
+                ws.close();
+            }
+            initWebSocket();
+            updateAgentStatus();
+        }
+
+        // Update agent status
+        async function updateAgentStatus() {
+            try {
+                const response = await fetch(`/api/agents/${currentAgent}/status`);
+                const data = await response.json();
+                const statusDiv = document.getElementById('agent-status');
+                statusDiv.textContent = `Status: ${data.status.name} | Learning Events: ${data.learning_stats.total_learning_events}`;
+            } catch (error) {
+                console.error('Error updating agent status:', error);
+            }
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            initWebSocket();
+            loadAgents();
+            updateAgentStatus();
+            
+            // Handle Enter key in message input
+            document.getElementById('message-input').addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    sendMessage();
+                }
+            });
+        });
+    </script>
+</body>
+</html> 
