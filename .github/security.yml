@@ -1,0 +1,58 @@
+# Security configuration for the repository
+version: 1.0
+
+security:
+  # Enable Dependabot for automated security updates
+  dependabot:
+    enabled: true
+    schedule:
+      interval: daily
+    open-pull-requests-limit: 10
+    target-branch: main
+    labels:
+      - security
+      - dependencies
+
+  # Code scanning configuration
+  code-scanning:
+    enabled: true
+    tools:
+      - name: CodeQL
+        languages: [python]
+      - name: Snyk
+        languages: [python]
+    schedule: daily
+
+  # Security policy
+  policy:
+    severity-levels:
+      critical:
+        response-time: 24h
+        auto-assign: true
+      high:
+        response-time: 72h
+        auto-assign: true
+      moderate:
+        response-time: 7d
+        auto-assign: false
+      low:
+        response-time: 14d
+        auto-assign: false
+
+  # Automated security updates
+  auto-updates:
+    enabled: true
+    schedule: daily
+    target-branch: security-updates
+    create-pull-requests: true
+    merge-strategy: rebase
+
+  # Security notifications
+  notifications:
+    enabled: true
+    channels:
+      - type: slack
+        channel: security-alerts
+      - type: email
+        recipients:
+          - security-team@example.com 
