@@ -1,0 +1,88 @@
+name: Quantum Error Correction Benchmarks
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'core/quantum/error_correction/**'
+      - 'tests/test_error_correction.py'
+  pull_request:
+    branches: [ main ]
+    paths:
+      - 'core/quantum/error_correction/**'
+      - 'tests/test_error_correction.py'
+  schedule:
+    - cron: '0 0 * * 0'  # Weekly on Sundays
+
+jobs:
+  benchmark:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v2
+    
+    - name: Set up Python 3.10
+      uses: actions/setup-python@v2
+      with:
+        python-version: '3.10'
+        
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install qiskit qiskit-aer numpy scipy pytest pytest-benchmark networkx
+        
+    - name: Run error correction tests
+      run: |
+        python -m pytest tests/test_error_correction.py -v
+        
+    - name: Run surface code benchmarks
+      run: |
+        python -m pytest tests/test_error_correction.py::TestQuantumErrorCorrection::test_surface_code_encoding --benchmark-only
+        
+    - name: Run Steane code benchmarks
+      run: |
+        python -m pytest tests/test_error_correction.py::TestQuantumErrorCorrection::test_steane_code_encoding --benchmark-only
+        
+    - name: Run error detection benchmarks
+      run: |
+        python -m pytest tests/test_error_correction.py::TestQuantumErrorCorrection::test_error_detection_and_correction --benchmark-only
+        
+    - name: Generate benchmark report
+      run: |
+        echo "# Quantum Error Correction Benchmark Results" > benchmark-report.md
+        echo "## Surface Code Performance" >> benchmark-report.md
+        python -m pytest tests/test_error_correction.py::TestQuantumErrorCorrection::test_surface_code_encoding --benchmark-only >> benchmark-report.md
+        echo "## Steane Code Performance" >> benchmark-report.md
+        python -m pytest tests/test_error_correction.py::TestQuantumErrorCorrection::test_steane_code_encoding --benchmark-only >> benchmark-report.md
+        echo "## Error Detection Performance" >> benchmark-report.md
+        python -m pytest tests/test_error_correction.py::TestQuantumErrorCorrection::test_error_detection_and_correction --benchmark-only >> benchmark-report.md
+        
+    - name: Upload benchmark results
+      uses: actions/upload-artifact@v2
+      with:
+        name: benchmark-results
+        path: |
+          benchmark-report.md
+          .pytest_cache/v/cache/nodeids
+          
+    - name: Check performance regression
+      run: |
+        python -c "
+        import json
+        with open('.pytest_cache/v/cache/nodeids', 'r') as f:
+            results = json.load(f)
+        # Add performance regression checks here
+        for result in results:
+            if 'error_rate' in result and float(result['error_rate']) > 0.1:
+                raise Exception(f'Performance regression detected: {result}')
+        "
+        
+    - name: Update benchmark history
+      if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+      run: |
+        git config --local user.email "action@github.com"
+        git config --local user.name "GitHub Action"
+        cp benchmark-report.md docs/benchmarks/$(date +%Y-%m-%d).md
+        git add docs/benchmarks/
+        git commit -m "Update benchmark results [skip ci]" || echo "No changes to commit"
+        git push 
