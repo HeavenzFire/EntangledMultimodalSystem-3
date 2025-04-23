@@ -3,14 +3,21 @@ updates:
   - package-ecosystem: "pip"
     directory: "/"
     schedule:
-      interval: "weekly"
+      interval: "daily"
     open-pull-requests-limit: 10
     labels:
       - "dependencies"
       - "python"
+      - "security"
     commit-message:
-      prefix: "pip"
+      prefix: "security"
       include: "scope"
+    reviewers:
+      - "security-team"
+    assignees:
+      - "security-team"
+    milestone: 1
+
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
@@ -19,6 +26,12 @@ updates:
     labels:
       - "dependencies"
       - "github-actions"
+      - "security"
     commit-message:
       prefix: "github-actions"
-      include: "scope" 
+      include: "scope"
+    reviewers:
+      - "security-team"
+    assignees:
+      - "security-team"
+    milestone: 1 
