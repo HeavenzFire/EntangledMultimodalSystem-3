@@ -56,11 +56,25 @@ pip install -r requirements.txt
 
 ## Pull Request Process
 
-1. Update the README.md with details of changes
-2. Update the documentation
-3. Add tests for new features
-4. Ensure all tests pass
-5. Submit pull request
+We welcome contributions from the community! To ensure a smooth process, please follow these guidelines:
+
+1. **Fork the repository**: Create a personal copy of the repository on your GitHub account.
+2. **Clone your fork**: Clone the forked repository to your local machine.
+3. **Create a new branch**: Create a new branch for your feature or bug fix.
+4. **Make your changes**: Implement your changes in the new branch.
+5. **Submit a pull request**: Once your changes are ready, submit a pull request to the main repository.
+
+### Guidelines for Handling Pull Requests
+
+- **Review**: All pull requests will be reviewed by maintainers.
+- **Feedback**: Feedback will be provided, and changes may be requested.
+- **Testing**: Ensure that all tests pass before submitting a pull request.
+- **Documentation**: Update documentation if necessary.
+- **Merge**: Once approved, the pull request will be merged into the main branch.
+
+### Need to Merge and Finish Pull Requests
+
+It is important to regularly merge and finish pull requests to keep the repository up-to-date and maintain a smooth workflow. Please ensure that all pending pull requests are reviewed and merged in a timely manner.
 
 ## Review Process
 
