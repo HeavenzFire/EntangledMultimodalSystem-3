@@ -1,108 +1,82 @@
-import pytest
+import unittest
+import torch
 import numpy as np
 from src.core.holographic_processor import HolographicProcessor
 from src.utils.errors import ModelError
 
-@pytest.fixture
-def holographic_processor():
-    return HolographicProcessor(
-        wavelength=633e-9,  # Red laser wavelength
-        pixel_size=10e-6,   # 10 micron pixels
-        distance=0.1        # 10cm propagation distance
-    )
-
-def test_initialization(holographic_processor):
-    """Test holographic processor initialization."""
-    assert holographic_processor.wavelength == 633e-9
-    assert holographic_processor.pixel_size == 10e-6
-    assert holographic_processor.distance == 0.1
-    assert holographic_processor.grid_size == (1024, 1024)  # Default size
-
-def test_create_hologram(holographic_processor):
-    """Test hologram creation."""
-    hologram = holographic_processor.create_hologram()
-    assert hologram is not None
-    assert isinstance(hologram, np.ndarray)
-    assert hologram.shape == holographic_processor.grid_size
-    assert np.all(np.abs(hologram) <= 1.0)  # Check normalization
-
-def test_propagate_wave(holographic_processor):
-    """Test wave propagation."""
-    initial_wave = holographic_processor.create_plane_wave()
-    propagated_wave = holographic_processor.propagate_wave(initial_wave)
-    assert propagated_wave is not None
-    assert isinstance(propagated_wave, np.ndarray)
-    assert propagated_wave.shape == initial_wave.shape
-    assert np.all(np.isfinite(propagated_wave))  # Check for numerical stability
-
-def test_reconstruct_hologram(holographic_processor):
-    """Test hologram reconstruction."""
-    hologram = holographic_processor.create_hologram()
-    reconstruction = holographic_processor.reconstruct_hologram(hologram)
-    assert reconstruction is not None
-    assert isinstance(reconstruction, np.ndarray)
-    assert reconstruction.shape == hologram.shape
-    assert np.all(np.isfinite(reconstruction))
-
-def test_create_point_source(holographic_processor):
-    """Test point source creation."""
-    point_source = holographic_processor.create_point_source(x=0, y=0)
-    assert point_source is not None
-    assert isinstance(point_source, np.ndarray)
-    assert point_source.shape == holographic_processor.grid_size
-    assert np.all(np.isfinite(point_source))
-
-def test_create_plane_wave(holographic_processor):
-    """Test plane wave creation."""
-    plane_wave = holographic_processor.create_plane_wave(angle_x=0.1, angle_y=0.1)
-    assert plane_wave is not None
-    assert isinstance(plane_wave, np.ndarray)
-    assert plane_wave.shape == holographic_processor.grid_size
-    assert np.all(np.abs(plane_wave) - 1.0 < 1e-10)  # Check unit amplitude
-
-def test_interference_pattern(holographic_processor):
-    """Test interference pattern generation."""
-    reference = holographic_processor.create_plane_wave()
-    object_wave = holographic_processor.create_point_source(x=0, y=0)
-    interference = holographic_processor.create_interference_pattern(reference, object_wave)
-    assert interference is not None
-    assert isinstance(interference, np.ndarray)
-    assert interference.shape == holographic_processor.grid_size
-    assert np.all(np.isreal(interference))  # Interference pattern should be real
-
-def test_get_hologram_info(holographic_processor):
-    """Test retrieval of hologram information."""
-    hologram = holographic_processor.create_hologram()
-    info = holographic_processor.get_hologram_info(hologram)
-    assert isinstance(info, dict)
-    assert "shape" in info
-    assert "max_amplitude" in info
-    assert "phase_range" in info
-
-def test_error_handling(holographic_processor):
-    """Test error handling in holographic operations."""
-    # Test invalid wavelength
-    with pytest.raises(ModelError):
-        HolographicProcessor(wavelength=-1)
+class TestHolographicProcessor(unittest.TestCase):
+    def setUp(self):
+        self.config = {
+            'wavefront_size': 256,
+            'num_channels': 3
+        }
+        self.processor = HolographicProcessor(self.config)
+        
+        # Generate test data
+        self.test_tensor = torch.randn(256, 256)
+        self.test_modalities = {
+            'visual': torch.randn(256, 256),
+            'audio': torch.randn(256, 256),
+            'tactile': torch.randn(256, 256)
+        }
     
-    # Test invalid pixel size
-    with pytest.raises(ModelError):
-        HolographicProcessor(wavelength=633e-9, pixel_size=0)
+    def test_initialization(self):
+        """Test processor initialization"""
+        self.assertIsNone(self.processor.wavefront)
+        self.assertIsNone(self.processor.reference_wave)
+        
+    def test_wavefront_initialization(self):
+        """Test wavefront initialization"""
+        self.processor.initialize_wavefront((256, 256))
+        self.assertIsNotNone(self.processor.wavefront)
+        self.assertIsNotNone(self.processor.reference_wave)
+        self.assertEqual(self.processor.wavefront.shape, (256, 256))
+        self.assertEqual(self.processor.reference_wave.shape, (256, 256))
     
-    # Test invalid distance
-    with pytest.raises(ModelError):
-        HolographicProcessor(wavelength=633e-9, pixel_size=10e-6, distance=-1)
+    def test_data_encoding(self):
+        """Test data encoding into holographic pattern"""
+        hologram = self.processor.encode_data(self.test_tensor)
+        self.assertIsInstance(hologram, np.ndarray)
+        self.assertEqual(hologram.shape, (256, 256))
+        self.assertEqual(hologram.dtype, np.complex128)
+    
+    def test_data_decoding(self):
+        """Test data decoding from holographic pattern"""
+        hologram = self.processor.encode_data(self.test_tensor)
+        decoded = self.processor.decode_data(hologram)
+        self.assertIsInstance(decoded, torch.Tensor)
+        self.assertEqual(decoded.shape, (256, 256))
+    
+    def test_phase_modulation(self):
+        """Test phase modulation of holographic pattern"""
+        hologram = self.processor.encode_data(self.test_tensor)
+        phase = np.random.rand(256, 256) * 2 * np.pi
+        modulated = self.processor.apply_phase_modulation(hologram, phase)
+        self.assertIsInstance(modulated, np.ndarray)
+        self.assertEqual(modulated.shape, (256, 256))
+        self.assertEqual(modulated.dtype, np.complex128)
+    
+    def test_wavefront_reconstruction(self):
+        """Test wavefront reconstruction"""
+        self.processor.initialize_wavefront((256, 256))
+        hologram = self.processor.encode_data(self.test_tensor)
+        reconstructed = self.processor.reconstruct_wavefront(hologram)
+        self.assertIsInstance(reconstructed, np.ndarray)
+        self.assertEqual(reconstructed.shape, (256, 256))
+    
+    def test_multimodal_processing(self):
+        """Test processing of multimodal data"""
+        result = self.processor.process_multimodal_data(self.test_modalities)
+        self.assertIsInstance(result, torch.Tensor)
+        self.assertEqual(result.shape, (256, 256))
+    
+    def test_performance(self):
+        """Test processing performance"""
+        import time
+        start_time = time.time()
+        result = self.processor.process_multimodal_data(self.test_modalities)
+        processing_time = time.time() - start_time
+        self.assertLess(processing_time, 1.0)  # Should process within 1 second
 
-def test_reset_processor(holographic_processor):
-    """Test reset of holographic processor."""
-    # Create some holograms
-    hologram1 = holographic_processor.create_hologram()
-    
-    # Reset
-    holographic_processor.reset_processor()
-    
-    # Create new hologram
-    hologram2 = holographic_processor.create_hologram()
-    
-    # Verify different random states
-    assert not np.array_equal(hologram1, hologram2) 
+if __name__ == '__main__':
+    unittest.main() 
