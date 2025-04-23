@@ -44,13 +44,13 @@ jobs:
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
 
-      - name: Run dependency check
-        uses: dependency-check/Dependency-Check@v5
+      - name: Run CodeQL Analysis
+        uses: github/codeql-action/init@v2
         with:
-          project: 'EntangledMultimodalSystem'
-          path: '.'
-          format: 'HTML'
-          out: 'reports'
+          languages: python
+
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v2
 
       - name: Upload security report
         uses: actions/upload-artifact@v3
