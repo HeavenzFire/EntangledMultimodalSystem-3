@@ -1,19 +1,17 @@
-name: CI
+name: CI/CD Pipeline
 
 on:
   push:
-    branches: [ main, feature/* ]
+    branches: [ main ]
   pull_request:
     branches: [ main ]
-  schedule:
-    - cron: '0 0 * * 0'  # Run weekly
 
 jobs:
   test:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: [3.8, 3.9]
+        python-version: [3.8, 3.9, '3.10']
 
     steps:
     - uses: actions/checkout@v2
@@ -22,45 +20,47 @@ jobs:
       uses: actions/setup-python@v2
       with:
         python-version: ${{ matrix.python-version }}
-    
+        
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        pip install -e .[dev]
-    
-    - name: Lint with black
+        pip install -r requirements.txt
+        
+    - name: Run linting
       run: |
+        flake8 src tests
         black --check src tests
-    
-    - name: Sort imports with isort
-      run: |
-        isort --check-only src tests
-    
-    - name: Type check with mypy
-      run: |
         mypy src
-    
-    - name: Test with pytest
+        
+    - name: Run tests
       run: |
-        pytest
-    
-    - name: Upload coverage
+        pytest tests/ --cov=src --cov-report=xml --cov-report=term-missing
+        
+    - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v2
       with:
         file: ./coverage.xml
         fail_ci_if_error: true
-
-    - name: Merge pull request if tests pass
-      if: github.event_name == 'pull_request' && success()
-      uses: actions/github-script@v6
+        
+    - name: Run benchmarks
+      run: |
+        pytest tests/ --benchmark-only --benchmark-autosave --benchmark-json=benchmark_results.json
+        
+    - name: Upload benchmark results
+      uses: actions/upload-artifact@v2
       with:
-        script: |
-          github.pulls.merge({
-            owner: context.repo.owner,
-            repo: context.repo.repo,
-            pull_number: context.payload.pull_request.number,
-            merge_method: 'merge'
-          })
+        name: benchmark-results
+        path: benchmark_results.json
+        
+    - name: Generate test report
+      run: |
+        pytest tests/ --html=report.html --self-contained-html
+        
+    - name: Upload test report
+      uses: actions/upload-artifact@v2
+      with:
+        name: test-report
+        path: report.html
 
   docs:
     runs-on: ubuntu-latest
