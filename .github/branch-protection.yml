@@ -27,4 +27,4 @@ branch_protection_rules:
       - "dependabot"
       - "test"
       - "lint"
-      - "docs" 
+      - "docs"

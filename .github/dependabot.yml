@@ -22,4 +22,25 @@ updates:
       - dependency-name: "torch"
         versions: ["2.0.0", "2.0.1"]
       - dependency-name: "qiskit"
-        versions: ["0.40.0", "0.40.1"] 
+        versions: ["0.40.0", "0.40.1"]
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 10
+    reviewers:
+      - "HeavenzFire"
+    commit-message:
+      prefix: "chore"
+      include: "scope"
+    labels:
+      - "dependencies"
+      - "github-actions"
+    milestone: 1
+    assignees:
+      - "HeavenzFire"
+    ignore:
+      - dependency-name: "actions/checkout"
+        versions: ["v2", "v3"]
+      - dependency-name: "actions/setup-python"
+        versions: ["v2", "v3"]
