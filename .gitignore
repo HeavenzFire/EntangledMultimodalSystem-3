@@ -28,6 +28,7 @@ wheels/
 venv/
 ENV/
 env/
+quantum_ai_py311/
 
 # IDE
 .idea/
@@ -93,6 +94,6 @@ coverage.xml
 # Jupyter Notebook
 .ipynb_checkpoints
 
-# Environment variables
+# Local development
 .env.local
 .env.*.local 
