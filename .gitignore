@@ -72,4 +72,25 @@ quantum_results/
 holographic_cache/
 neural_data/
 temp/
-cache/ 
+cache/
+*.csv
+*.dat
+*.out
+*.pid
+*.gz
+*.tar
+
+# Testing
+.nox/
+.coverage.*
+coverage.xml
+*.cover
+*.py,cover
+.hypothesis/
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# Environment variables
+.env.local
+.env.*.local 
