@@ -43,6 +43,11 @@ from magic import QuantumFractalBridge, QuantumStateEntangler, CrossModalAttenti
 from MultifunctionalModule import MultimodalSystem
 from QuantumOptimizer import QuantumOptimizer
 from superintelligence import QuantumNonlinearNN, QuantumAttention
+# Import Visionary Minds module
+from src.core.visionary_minds import apply_visionary_thought, VisionaryMind, get_mind
+# Import Archetypes and Vortex Math
+from src.core.archetypes import Archetype, get_archetype
+from src.core.vortex_math import ToroidalGenerator
 
 # Configure logging
 logging.basicConfig(
@@ -132,6 +137,15 @@ class HyperIntelligentConfig:
     enable_causal_inference: bool = True
     enable_parallel_universes: bool = True
     num_parallel_universes: int = 8
+
+    # Visionary Mind Computation
+    enable_visionary_computation: bool = True # Enable by default
+    default_visionary_mind: str = "einstein" # Default mind to use
+
+    # Archetype and Vortex Configuration (Phase 0)
+    active_archetype: str = "krishna" # Default archetype from roadmap
+    vortex_dimensions: int = 3 # Default dimensions for toroidal generator
+    target_heart_coherence: float = 0.85 # From roadmap metric
 
 
 # Available integration modes
@@ -551,6 +565,18 @@ class HyperIntelligentSystem(nn.Module):
             }
         )
 
+        # Archetype and Vortex Components (Phase 0 Integration)
+        self.active_archetype_instance: Optional[Archetype] = get_archetype(config.active_archetype)
+        if self.active_archetype_instance:
+            self.toroidal_generator = ToroidalGenerator(
+                vortex_code=self.active_archetype_instance.vortex_code,
+                dimensions=config.vortex_dimensions
+            )
+            logger.info(f"Initialized Toroidal Generator for Archetype: {self.active_archetype_instance.name}")
+        else:
+            self.toroidal_generator = None
+            logger.warning(f"Could not find or initialize archetype: {config.active_archetype}")
+
         # System state and metrics tracking
         self._system_state = {}
         self._performance_metrics = {
@@ -558,6 +584,9 @@ class HyperIntelligentSystem(nn.Module):
             "integration_quality": [],
             "memory_utilization": [],
             "circuit_optimizations": [],
+            "visionary_computations": 0,
+            "archetype_resonance": [], # Track archetype resonance
+            "heart_coherence": [], # Track heart coherence metric
         }
 
     def _optimize_quantum_circuits(self):
@@ -606,10 +635,59 @@ class HyperIntelligentSystem(nn.Module):
                 new_state_info["integration_quality"]
             )
 
+        # Track archetype resonance if calculated
+        if "archetype_resonance" in new_state_info:
+            self._performance_metrics["archetype_resonance"].append(
+                new_state_info["archetype_resonance"]
+            )
+        # Track heart coherence if calculated
+        if "heart_coherence" in new_state_info:
+            self._performance_metrics["heart_coherence"].append(
+                new_state_info["heart_coherence"]
+            )
+
         # Maintain memory efficiency
         if len(self._performance_metrics["quantum_coherence"]) > 1000:
             for metric_list in self._performance_metrics.values():
-                metric_list.pop(0)
+                if isinstance(metric_list, list): # Ensure it's a list before popping
+                    metric_list.pop(0)
+
+    def set_active_archetype(self, archetype_name: str) -> bool:
+        """Sets the active archetype and reinitializes the toroidal generator."""
+        new_archetype = get_archetype(archetype_name)
+        if new_archetype:
+            self.active_archetype_instance = new_archetype
+            self.config.active_archetype = archetype_name
+            self.toroidal_generator = ToroidalGenerator(
+                vortex_code=new_archetype.vortex_code,
+                dimensions=self.config.vortex_dimensions
+            )
+            logger.info(f"Switched active archetype to: {new_archetype.name}")
+            # Reset resonance history when archetype changes
+            self._performance_metrics["archetype_resonance"] = []
+            self._performance_metrics["heart_coherence"] = []
+            return True
+        else:
+            logger.error(f"Failed to set archetype: '{archetype_name}' not found.")
+            return False
+
+    def calculate_current_resonance(self) -> Optional[float]:
+        """Calculates resonance score for the active archetype's frequency."""
+        if self.toroidal_generator and self.active_archetype_instance:
+            resonance = self.toroidal_generator.calculate_resonance(
+                self.active_archetype_instance.activation_frequency_hz
+            )
+            # Simulate heart coherence based on resonance (placeholder)
+            # Δω = resonance * target_coherence
+            heart_coherence = resonance * self.config.target_heart_coherence
+
+            self._update_system_state({
+                "archetype_resonance": resonance,
+                "heart_coherence": heart_coherence
+            })
+            logger.debug(f"Calculated resonance for {self.active_archetype_instance.name}: {resonance:.4f}, Heart Coherence: {heart_coherence:.4f}")
+            return resonance
+        return None
 
     def forward(self, text_ids=None, images=None, attention_mask=None):
         """Enhanced forward pass with advanced quantum-classical integration"""
@@ -742,6 +820,32 @@ class HyperIntelligentSystem(nn.Module):
             quantum_weight * fractal_enhanced + (1 - quantum_weight) * classical_fusion
         )
 
+    def apply_visionary_paradigm(self, mind_name: str = None, problem_context: Dict[str, Any] = None) -> Dict[str, Any] | None:
+        """Applies a selected visionary mind's paradigm to a problem context."""
+        if not self.config.enable_visionary_computation:
+            logger.warning("Visionary computation is disabled in the configuration.")
+            return None
+
+        if mind_name is None:
+            mind_name = self.config.default_visionary_mind
+
+        if problem_context is None:
+            # Create a default problem context if none provided
+            problem_context = {"description": "Analyze current system state and suggest improvements"}
+            if self._system_state:
+                problem_context["current_state"] = self._system_state
+
+        logger.info(f"Applying visionary paradigm: {mind_name}")
+        result = apply_visionary_thought(mind_name, problem_context)
+
+        if result:
+            self._performance_metrics["visionary_computations"] += 1
+            logger.info(f"Visionary computation successful using {mind_name}. Approach: {result.get('approach')}")
+        else:
+            logger.error(f"Failed to apply visionary paradigm: {mind_name}")
+
+        return result
+
     def get_performance_metrics(self):
         """Return system performance metrics"""
         metrics = {
@@ -779,6 +883,31 @@ class HyperIntelligentSystem(nn.Module):
                 loss_value=self._system_state.get("last_loss", 0),
                 execution_time=self._system_state.get("last_exec_time", 0),
             )[0],
+            "visionary_computations": self._performance_metrics.get("visionary_computations", 0),
+            "archetype_status": {
+                "active_archetype": self.config.active_archetype,
+                "current_resonance": (
+                    self._performance_metrics["archetype_resonance"][-1]
+                    if self._performance_metrics["archetype_resonance"]
+                    else None
+                ),
+                "average_resonance": (
+                    np.mean(self._performance_metrics["archetype_resonance"])
+                    if self._performance_metrics["archetype_resonance"]
+                    else None
+                ),
+                 "current_heart_coherence": (
+                    self._performance_metrics["heart_coherence"][-1]
+                    if self._performance_metrics["heart_coherence"]
+                    else None
+                ),
+                "average_heart_coherence": (
+                    np.mean(self._performance_metrics["heart_coherence"])
+                    if self._performance_metrics["heart_coherence"]
+                    else None
+                ),
+                "target_heart_coherence": self.config.target_heart_coherence,
+            }
         }
         return metrics
 

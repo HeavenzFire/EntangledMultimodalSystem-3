@@ -203,3 +203,6 @@ transformers>=4.11.0
 
 # Added from the code block
 liboqs>=0.9.0
+
+# Ollama integration
+ollama
