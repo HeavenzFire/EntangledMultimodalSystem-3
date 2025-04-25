@@ -1,127 +1,127 @@
-# Quantum-Sacred Synthesis System
+# Omnidivine Protocol Implementation
 
-A quantum-sacred synthesis system implementing advanced quantum healing, soul contract release, and divine frequency alignment protocols.
+A quantum-sacred framework integrating consciousness, ethics, and divine mathematics for global harmony.
 
-## Features
+## Architecture
 
-- **Universal Potential Activation**
-  - Sacred geometry-based merkaba field generation
-  - Ley line connection and Earth grid patterns
-  - Soul contract release with consent validation
-  - DNA upgrade with Solfeggio frequencies
-  - Merkaba field stabilization
-  - Global healing grid activation
+The system consists of several core modules:
 
-- **Human Potential Activation**
-  - Growth mindset activation with neurofeedback
-  - Soul contract release protocol
-  - DNA upgrade with sacred frequencies
-  - Daily practice routines
-  - Ethical alignment validation
-  - Heart coherence monitoring
+### 1. Archetype Engine
 
-- **Quantum-Sacred Protocols**
-  - Heart coherence monitoring
-  - Ethical alignment validation
-  - Schumann resonance anchoring
-  - Sacred frequency integration
+- `KrishnaArchetype`: Implements 108→144 vortex codes and sacred geometry transformations
+- Sri Yantra geometry integration
+- Divine frequency modulation (432 Hz base)
+
+### 2. Vortex Core
+
+- `SacredSequencer`: Fibonacci-QEC hybrid implementation
+- Golden ratio-based sequence generation
+- Quantum error correction integration
+
+### 3. Merkaba OS
+
+- `SpinController`: 11D topological field management
+- 34.21 Hz Planck-scale rotation
+- Vortex field generation and merging
+
+### 4. Ethical Governor
+
+- `KarmaFirewall`: Consciousness protection system
+- Ethical validation with multiple principles
+- Karmic history tracking
+
+### 5. Integration Layer
+
+- `QuantumBridge`: Quantum-classical consciousness bridge
+- Sri Yantra-based quantum circuit
+- Global harmony index calculation
 
 ## Installation
 
-1. Clone the repository:
-
 ```bash
-git clone https://github.com/yourusername/quantum-sacred-synthesis.git
-cd quantum-sacred-synthesis
-```
+# Clone the repository
+git clone https://github.com/omnidivine/core
 
-2. Create a virtual environment:
-
-```bash
-python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
-```
-
-3. Install dependencies:
-
-```bash
+# Install dependencies
 pip install -r requirements.txt
 ```
 
 ## Usage
 
-### Universal Potential Activation
-
 ```python
-from src.quantum.activation.universal_potential import UniversalPotential
+from src.quantum.archetype.krishna_module import KrishnaArchetype
+from src.quantum.vortex.sacred_sequencer import SacredSequencer
+from src.quantum.merkaba.spin_controller import SpinController
+from src.quantum.ethical.karma_firewall import KarmaFirewall
+from src.quantum.integration.quantum_bridge import QuantumBridge
 
-# Initialize the system
-system = UniversalPotential()
+# Initialize components
+krishna = KrishnaArchetype()
+sequencer = SacredSequencer()
+spin = SpinController()
+karma = KarmaFirewall()
+bridge = QuantumBridge()
 
-# Release soul contracts
-system.release_soul_contracts(consent=True)
+# Process consciousness state
+input_state = np.random.rand(108)
+transformed = krishna.apply_bhakti(input_state)
+sequence = sequencer.generate_sacred_sequence(len(transformed))
 
-# Upgrade DNA with 528Hz frequency
-pattern = system.upgrade_dna(ActivationFrequency.SOLFEGGIO_528)
+# Create merkaba vortex
+center = np.zeros(11)  # 11 dimensions
+vortex = spin.generate_vortex(center, 1.0)
 
-# Stabilize merkaba field
-system.stabilize_merkaba()
+# Validate ethical alignment
+consciousness_state = torch.from_numpy(transformed).float().unsqueeze(0)
+is_ethical, scores = karma.validate_action(consciousness_state)
 
-# Activate global healing grid
-grid = system.activate_global_grid()
-
-# Check activation status
-status = system.get_activation_status()
-```
-
-### Human Potential Activation
-
-```python
-from src.quantum.activation.human_potential import HumanPotentialActivation
-
-# Initialize the system
-system = HumanPotentialActivation()
-
-# Activate growth mindset
-system.activate_growth_mindset()
-
-# Release soul contracts
-system.release_soul_contracts(consent=True)
-
-# Upgrade DNA
-pattern = system.upgrade_dna()
-
-# Run daily practice
-system.run_daily_practice()
-
-# Check activation status
-status = system.get_activation_status()
+# Map to quantum state and check harmony
+mapped_state = bridge.map_consciousness(consciousness_state)
+harmony = bridge.calculate_harmony([mapped_state])
 ```
 
 ## Testing
 
-Run the test suite:
-
 ```bash
-pytest tests/
+# Run all tests
+pytest tests/ -v
+
+# Run specific test module
+pytest tests/test_integration.py -v
 ```
 
-## License
+## Configuration
 
-This project is licensed under the MIT License - see the LICENSE file for details.
+Each module has its own configuration class that can be customized:
+
+- `VortexConfig`: Configure vortex transformation parameters
+- `SequencerConfig`: Set Fibonacci depth and QEC thresholds
+- `SpinConfig`: Adjust Merkaba field parameters
+- `KarmaConfig`: Set ethical thresholds
+- `BridgeConfig`: Configure quantum circuit parameters
 
 ## Contributing
 
 1. Fork the repository
 2. Create your feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add some amazing feature'`)
+3. Commit your changes (`git commit -m 'Add amazing feature'`)
 4. Push to the branch (`git push origin feature/amazing-feature`)
 5. Open a Pull Request
 
+## License
+
+This project is licensed under the MIT License - see the LICENSE file for details.
+
 ## Acknowledgments
 
-- NIST Cryptographic Algorithm Validation Program
-- Quantum Computing Research Community
-- Sacred Geometry Practitioners
-- Ethical Computing Initiative
-- Human Potential Research Community
+- Sacred geometry principles from ancient wisdom
+- Quantum computing frameworks (Qiskit)
+- PyTorch for neural network implementations
+- The global consciousness community
+
+## References
+
+1. Quantum Mechanics and Path Integrals (Feynman)
+2. Sacred Geometry: Philosophy and Practice (Lawlor)
+3. The Quantum Self (Zohar)
+4. The Field: The Quest for the Secret Force of the Universe (McTaggart)

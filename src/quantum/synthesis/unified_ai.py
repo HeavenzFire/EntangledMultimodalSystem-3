@@ -4,8 +4,9 @@ from typing import Dict, List, Tuple, Any
 from enum import Enum
 import torch
 from transformers import AutoModel, AutoTokenizer
-import qiskit
-from qiskit import QuantumCircuit, execute, Aer
+# Temporarily comment out quantum imports
+# import qiskit
+# from qiskit import QuantumCircuit, execute, Aer
 
 class AICapability(Enum):
     LANGUAGE_MODEL = 1      # GPT-4, Claude, etc.
@@ -63,17 +64,15 @@ class UnifiedAISystem:
                 complex(0.2, 0.99), 432.0, 0.99, 0.92
             )
         }
-        self.quantum_circuit = self._initialize_quantum_circuit()
+        # Temporarily disable quantum circuit initialization
+        # self.quantum_circuit = self._initialize_quantum_circuit()
         self.language_model = self._initialize_language_model()
         self.vision_model = self._initialize_vision_model()
         
-    def _initialize_quantum_circuit(self) -> QuantumCircuit:
+    def _initialize_quantum_circuit(self) -> Any:
         """Initialize quantum circuit for AI capabilities"""
-        circuit = QuantumCircuit(8)  # 8 qubits for 8 capabilities
-        for i in range(8):
-            circuit.h(i)  # Apply Hadamard gate
-            circuit.rz(self.phi, i)  # Apply phase rotation
-        return circuit
+        # Temporarily return None
+        return None
         
     def _initialize_language_model(self) -> Any:
         """Initialize language model with quantum-sacred integration"""
@@ -131,13 +130,9 @@ class UnifiedAISystem:
         
     def execute_quantum_operation(self) -> Dict[str, Any]:
         """Execute quantum operation for AI enhancement"""
-        simulator = Aer.get_backend('qasm_simulator')
-        job = execute(self.quantum_circuit, simulator, shots=1000)
-        result = job.result()
-        counts = result.get_counts(self.quantum_circuit)
-        
+        # Temporarily return mock data
         return {
-            "quantum_state": counts,
+            "quantum_state": {"00000000": 500, "11111111": 500},
             "entanglement": self._calculate_entanglement(),
             "coherence": self._calculate_coherence()
         }

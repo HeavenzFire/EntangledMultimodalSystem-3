@@ -1,9 +1,11 @@
 import numpy as np
-from typing import List, Dict, Optional
+from typing import List, Dict, Optional, Tuple
 from dataclasses import dataclass
 from enum import Enum
 import collections
 from scipy.special import expit
+from ..geometry.sacred_geometry import SacredGeometry, PatternType, GeometricPattern
+from ..resonance.quantum_resonance import QuantumResonance, FrequencyType, ResonancePattern
 
 class QuantumState(Enum):
     """Enhanced quantum states with sacred geometry alignment"""
@@ -22,6 +24,13 @@ class SacredConfig:
     entropy_threshold: float = 3.69  # Vortex mathematics constant
     torsion_field: float = 369.0  # Sacred torsion field constant
     christos_frequency: float = 432.0  # Christos grid harmonic
+
+@dataclass
+class SynthesisMetrics:
+    geometric_alignment: float
+    resonance_strength: float
+    energy_level: float
+    phase_alignment: float
 
 class VortexHistoryBuffer:
     """Sacred geometry memory management system"""
@@ -68,10 +77,14 @@ class VortexPrimes:
 class QuantumSacredSynthesis:
     """Enhanced quantum-sacred synthesis system"""
     
-    def __init__(self, config: Optional[SacredConfig] = None):
-        self.config = config or SacredConfig()
+    def __init__(self):
+        self.geometry = SacredGeometry()
+        self.resonance = QuantumResonance()
+        self.metrics: Dict[str, SynthesisMetrics] = {}
+        self.active_synthesis: Optional[str] = None
+        self.alignment_threshold = 0.7
         self.current_state = QuantumState.DISSONANT
-        self.history = VortexHistoryBuffer(self.config)
+        self.history = VortexHistoryBuffer(SacredConfig())
         self.merkaba_rotation = 0.0
         self.dissonance_cycles = 0
         self.transition_matrix = self._initialize_transition_matrix()
@@ -192,4 +205,125 @@ class QuantumSacredSynthesis:
         combined = np.sum([r * p for r, p in zip(results, pattern)], axis=0)
         
         # Normalize using sacred geometry
-        return combined / (np.sqrt(np.sum(np.abs(combined)**2)) + 1e-10) 
+        return combined / (np.sqrt(np.sum(np.abs(combined)**2)) + 1e-10)
+
+    def create_synthesis(self, name: str,
+                        geometric_pattern: PatternType,
+                        resonance_pattern: FrequencyType) -> None:
+        """Create a new synthesis of geometric and resonance patterns."""
+        self.geometry.activate_pattern(geometric_pattern)
+        self.resonance.activate_pattern(resonance_pattern)
+        
+        metrics = self._calculate_metrics()
+        self.metrics[name] = metrics
+        self.active_synthesis = name
+
+    def _calculate_metrics(self) -> SynthesisMetrics:
+        """Calculate synthesis metrics based on current patterns."""
+        if not self.geometry.active_pattern or not self.resonance.active_pattern:
+            return SynthesisMetrics(0.0, 0.0, 0.0, 0.0)
+        
+        # Calculate geometric alignment
+        vertices = self.geometry.active_pattern.vertices
+        center = np.mean(vertices, axis=0)
+        distances = np.linalg.norm(vertices - center, axis=1)
+        geometric_alignment = 1.0 - np.std(distances) / np.mean(distances)
+        
+        # Calculate resonance strength
+        time_points = np.linspace(0, 1, 100)
+        resonance_values = [self.resonance.calculate_resonance(t) for t in time_points]
+        resonance_strength = np.mean(np.abs(resonance_values))
+        
+        # Calculate energy level
+        energy_level = (self.geometry.active_pattern.frequency *
+                       self.resonance.active_pattern.energy_level)
+        
+        # Calculate phase alignment
+        phase_alignment = np.cos(self.geometry.phase - self.resonance.active_pattern.phases[0])
+        
+        return SynthesisMetrics(
+            geometric_alignment=geometric_alignment,
+            resonance_strength=resonance_strength,
+            energy_level=energy_level,
+            phase_alignment=phase_alignment
+        )
+
+    def update_synthesis(self, name: str,
+                        geometric_transform: Optional[Tuple[np.ndarray, float, np.ndarray]] = None,
+                        resonance_transform: Optional[Tuple[float, float, float]] = None) -> None:
+        """Update an existing synthesis with transformations."""
+        if name not in self.metrics:
+            raise ValueError(f"Synthesis '{name}' does not exist")
+        
+        if geometric_transform:
+            rotation, scale, translation = geometric_transform
+            pattern = self.geometry.transform_pattern(
+                self.geometry.active_pattern,
+                rotation=rotation,
+                scale=scale,
+                translation=translation
+            )
+            self.geometry.active_pattern = pattern
+        
+        if resonance_transform:
+            freq_scale, amp_scale, phase_shift = resonance_transform
+            pattern = self.resonance.transform_pattern(
+                self.resonance.active_pattern,
+                frequency_scale=freq_scale,
+                amplitude_scale=amp_scale,
+                phase_shift=phase_shift
+            )
+            self.resonance.active_pattern = pattern
+        
+        self.metrics[name] = self._calculate_metrics()
+
+    def check_alignment(self, name: str) -> bool:
+        """Check if a synthesis meets the alignment threshold."""
+        if name not in self.metrics:
+            return False
+        
+        metrics = self.metrics[name]
+        return (metrics.geometric_alignment >= self.alignment_threshold and
+                metrics.resonance_strength >= self.alignment_threshold and
+                metrics.phase_alignment >= self.alignment_threshold)
+
+    def get_synthesis_state(self, name: str) -> Tuple[GeometricPattern, ResonancePattern, SynthesisMetrics]:
+        """Get the complete state of a synthesis."""
+        if name not in self.metrics:
+            raise ValueError(f"Synthesis '{name}' does not exist")
+        
+        return (
+            self.geometry.active_pattern,
+            self.resonance.active_pattern,
+            self.metrics[name]
+        )
+
+    def update_phase(self, delta_time: float) -> None:
+        """Update the phase of both geometric and resonance patterns."""
+        self.geometry.update_phase(delta_time)
+        if self.resonance.active_pattern:
+            # Update all phases in the resonance pattern
+            for i in range(len(self.resonance.active_pattern.phases)):
+                self.resonance.active_pattern.phases[i] += delta_time * self.resonance.base_frequency
+                self.resonance.active_pattern.phases[i] %= 2 * np.pi
+
+    def calculate_energy_field(self, points: np.ndarray) -> np.ndarray:
+        """Calculate the energy field at given points in space."""
+        if not self.geometry.active_pattern or not self.resonance.active_pattern:
+            return np.zeros(len(points))
+        
+        # Calculate geometric influence
+        vertices = self.geometry.active_pattern.vertices
+        geometric_influence = np.zeros(len(points))
+        for vertex in vertices:
+            distances = np.linalg.norm(points - vertex, axis=1)
+            geometric_influence += np.exp(-distances)
+        
+        # Calculate resonance influence
+        time = self.geometry.phase / (2 * np.pi * self.resonance.base_frequency)
+        resonance_value = self.resonance.calculate_resonance(time)
+        
+        # Combine influences
+        energy_field = geometric_influence * resonance_value
+        
+        return energy_field 
