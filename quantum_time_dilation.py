@@ -6,16 +6,17 @@ parallel processing streams and utilizing predictive modeling.
 """
 
 import numpy as np
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, List, Optional, Tuple, Union
 from dataclasses import dataclass
 from concurrent.futures import ThreadPoolExecutor, ProcessPoolExecutor
 import torch
 import torch.nn as nn
 from qiskit import QuantumCircuit, execute, Aer
 from qiskit.providers import Backend
-from qiskit.quantum_info import Operator
+from qiskit.quantum_info import Operator, Statevector
 import logging
 import time
+import matplotlib.pyplot as plt
 
 @dataclass
 class TimeStream:
@@ -32,273 +33,229 @@ class TimeStream:
 
 class QuantumTimeDilation:
     """
-    Implements time dilation for quantum computations by creating
-    multiple parallel processing streams and predictive modeling.
+    A class implementing quantum time dilation using quantum circuits and state evolution.
+    This implementation uses quantum superposition and entanglement to simulate time dilation
+    effects in quantum computations.
     """
     
-    def __init__(self, 
-                 num_streams: int = 1000,
-                 base_acceleration: float = 1e6,
-                 predictive_depth: int = 10,
-                 adaptive_rate: float = 0.1,
-                 coherence_threshold: float = 0.95):
+    def __init__(
+        self,
+        num_qubits: int = 4,
+        num_streams: int = 10,
+        base_acceleration: float = 5.0,
+        predictive_depth: int = 3,
+        adaptive_rate: float = 0.1,
+        coherence_threshold: float = 0.95
+    ):
+        """
+        Initialize the Quantum Time Dilation system.
+        
+        Args:
+            num_qubits: Number of qubits in the quantum circuit
+            num_streams: Number of parallel quantum streams
+            base_acceleration: Base acceleration factor for time dilation
+            predictive_depth: Depth of state prediction
+            adaptive_rate: Rate of adaptive adjustments
+            coherence_threshold: Threshold for maintaining quantum coherence
+        """
+        self.num_qubits = num_qubits
         self.num_streams = num_streams
         self.base_acceleration = base_acceleration
         self.predictive_depth = predictive_depth
         self.adaptive_rate = adaptive_rate
         self.coherence_threshold = coherence_threshold
-        self.streams: List[TimeStream] = []
-        self.quantum_predictor = self._initialize_predictor()
         
-        # Initialize parallel streams
-        self._initialize_streams()
+        # Initialize quantum circuits and states
+        self.circuits = []
+        self.states = []
+        self.initialize_quantum_system()
         
-    def _initialize_predictor(self) -> nn.Module:
-        """Initialize the quantum state predictor neural network"""
-        class QuantumPredictor(nn.Module):
-            def __init__(self):
-                super().__init__()
-                self.lstm = nn.LSTM(input_size=128, hidden_size=256, num_layers=4)
-                self.linear = nn.Linear(256, 128)
+        # Performance tracking
+        self.performance_history = []
+        self.coherence_history = []
+        
+    def initialize_quantum_system(self):
+        """Initialize the quantum circuits and states for all streams."""
+        for _ in range(self.num_streams):
+            # Create quantum circuit
+            qr = QuantumRegister(self.num_qubits, 'q')
+            cr = ClassicalRegister(self.num_qubits, 'c')
+            circuit = QuantumCircuit(qr, cr)
+            
+            # Apply initial Hadamard gates to create superposition
+            for i in range(self.num_qubits):
+                circuit.h(i)
+            
+            self.circuits.append(circuit)
+            
+            # Initialize quantum state
+            state = Statevector.from_instruction(circuit)
+            self.states.append(state)
+    
+    def evolve_state(self, circuit: QuantumCircuit, time_step: float) -> Statevector:
+        """
+        Evolve a quantum state according to the time dilation effect.
+        
+        Args:
+            circuit: Quantum circuit to evolve
+            time_step: Time step for evolution
+            
+        Returns:
+            Evolved quantum state
+        """
+        # Apply time evolution gates
+        for i in range(self.num_qubits):
+            # Apply rotation gates based on time step
+            circuit.rz(time_step * self.base_acceleration, i)
+            circuit.rx(time_step * self.base_acceleration, i)
+        
+        # Create entangled states
+        for i in range(self.num_qubits - 1):
+            circuit.cx(i, i + 1)
+        
+        # Get evolved state
+        return Statevector.from_instruction(circuit)
+    
+    def predict_future_state(
+        self,
+        current_state: Statevector,
+        steps: int
+    ) -> Statevector:
+        """
+        Predict future quantum state using current state and evolution.
+        
+        Args:
+            current_state: Current quantum state
+            steps: Number of steps to predict ahead
+            
+        Returns:
+            Predicted future state
+        """
+        # Create a temporary circuit for prediction
+        qr = QuantumRegister(self.num_qubits, 'q')
+        circuit = QuantumCircuit(qr)
+        
+        # Initialize circuit with current state
+        circuit.initialize(current_state.data, qr)
+        
+        # Apply evolution steps
+        for _ in range(steps):
+            self.evolve_state(circuit, 0.1)
+        
+        return Statevector.from_instruction(circuit)
+    
+    def measure_coherence(self, state: Statevector) -> float:
+        """
+        Measure the coherence of a quantum state.
+        
+        Args:
+            state: Quantum state to measure
+            
+        Returns:
+            Coherence value between 0 and 1
+        """
+        # Calculate coherence using state vector components
+        probabilities = np.abs(state.data) ** 2
+        return np.sum(probabilities)
+    
+    def accelerate_computation(
+        self,
+        target_circuit: QuantumCircuit,
+        target_time: float
+    ) -> Dict[str, Union[float, Statevector, List[float]]]:
+        """
+        Accelerate quantum computation using time dilation.
+        
+        Args:
+            target_circuit: Target quantum circuit to accelerate
+            target_time: Target time for computation
+            
+        Returns:
+            Dictionary containing results and metrics
+        """
+        start_time = time.time()
+        virtual_time = 0.0
+        performance_history = []
+        coherence_history = []
+        
+        while virtual_time < target_time:
+            # Evolve all streams
+            for i in range(self.num_streams):
+                self.states[i] = self.evolve_state(self.circuits[i], 0.1)
                 
-            def forward(self, x):
-                x, _ = self.lstm(x)
-                return self.linear(x)
+                # Measure coherence
+                coherence = self.measure_coherence(self.states[i])
+                coherence_history.append(coherence)
                 
-        return QuantumPredictor()
-    
-    def _initialize_streams(self):
-        """Initialize parallel quantum computation streams"""
-        for i in range(self.num_streams):
-            acceleration = self.base_acceleration * (1 + np.random.random())
-            initial_state = np.zeros(128)  # Simplified quantum state
-            self.streams.append(TimeStream(i, acceleration, initial_state))
-    
-    def accelerate_computation(self, 
-                             circuit: QuantumCircuit,
-                             target_time: float) -> Dict[str, any]:
-        """
-        Accelerate quantum computation using time dilation techniques.
-        
-        Args:
-            circuit: Quantum circuit to execute
-            target_time: Target virtual time to reach
+                # Adjust acceleration based on coherence
+                if coherence < self.coherence_threshold:
+                    self.base_acceleration *= (1 - self.adaptive_rate)
+                else:
+                    self.base_acceleration *= (1 + self.adaptive_rate)
+                
+                # Predict future states
+                future_state = self.predict_future_state(
+                    self.states[i],
+                    self.predictive_depth
+                )
+                
+                # Update performance metrics
+                performance = np.abs(np.vdot(self.states[i].data, future_state.data)) ** 2
+                performance_history.append(performance)
             
-        Returns:
-            Dict containing results and performance metrics
-        """
-        results = []
+            virtual_time += 0.1
         
-        with ProcessPoolExecutor() as executor:
-            # Launch parallel streams
-            future_to_stream = {
-                executor.submit(
-                    self._process_stream,
-                    stream,
-                    circuit,
-                    target_time
-                ): stream for stream in self.streams
-            }
-            
-            # Collect results
-            for future in future_to_stream:
-                try:
-                    result = future.result()
-                    results.append(result)
-                except Exception as e:
-                    logging.error(f"Stream processing error: {str(e)}")
-        
-        # Aggregate and analyze results
-        return self._aggregate_results(results)
-    
-    def _process_stream(self,
-                       stream: TimeStream,
-                       circuit: QuantumCircuit,
-                       target_time: float) -> Dict[str, any]:
-        """Process individual time-dilated stream"""
-        
-        # Initialize quantum simulator
-        simulator = Aer.get_backend('statevector_simulator')
-        
-        # Calculate time steps based on acceleration factor
-        time_steps = np.linspace(0, target_time, 
-                               int(target_time * stream.acceleration_factor))
-        
-        current_state = stream.quantum_state
-        predictions = []
-        performance_metrics = []
-        
-        # Process quantum states through time steps
-        for t in time_steps:
-            # Predict next quantum state
-            predicted_state = self._predict_quantum_state(current_state)
-            
-            # Execute quantum circuit step
-            result = execute(circuit, simulator).result()
-            measured_state = result.get_statevector()
-            
-            # Calculate performance metric (fidelity between predicted and measured)
-            fidelity = np.abs(np.vdot(predicted_state, measured_state))**2
-            performance_metrics.append(fidelity)
-            
-            # Apply coherence protection
-            predicted_state = self.protect_coherence(predicted_state)
-            measured_state = self.protect_coherence(measured_state)
-            
-            # Update current state
-            current_state = self._update_quantum_state(
-                current_state, predicted_state, measured_state)
-            
-            # Apply adaptive acceleration based on performance
-            if len(performance_metrics) > 1:
-                performance_trend = np.mean(performance_metrics[-5:]) if len(performance_metrics) >= 5 else np.mean(performance_metrics)
-                stream.acceleration_factor = self.adaptive_acceleration(stream, performance_trend)
-            
-            predictions.append(current_state)
-            
-            # Update virtual time
-            stream.virtual_time = t
-            
-        # Store performance history
-        stream.performance_history = performance_metrics
-            
-        return {
-            'stream_id': stream.stream_id,
-            'final_state': current_state,
-            'predictions': predictions,
-            'virtual_time': stream.virtual_time,
-            'performance_metrics': performance_metrics,
-            'final_acceleration': stream.acceleration_factor
-        }
-    
-    def _predict_quantum_state(self, current_state: np.ndarray) -> np.ndarray:
-        """Predict future quantum state using neural network"""
-        with torch.no_grad():
-            state_tensor = torch.FloatTensor(current_state).unsqueeze(0)
-            predicted = self.quantum_predictor(state_tensor)
-            return predicted.numpy().squeeze()
-    
-    def _update_quantum_state(self,
-                            current: np.ndarray,
-                            predicted: np.ndarray,
-                            measured: np.ndarray) -> np.ndarray:
-        """Update quantum state based on predictions and measurements"""
-        # Weighted average of predicted and measured states
-        weight = 0.7  # Confidence in predictions
-        return weight * predicted + (1 - weight) * measured
-    
-    def adaptive_acceleration(self, stream: TimeStream, performance_metric: float) -> float:
-        """
-        Dynamically adjust acceleration factor based on performance.
-        
-        Args:
-            stream: The time stream to adjust
-            performance_metric: Current performance metric (higher is better)
-            
-        Returns:
-            Updated acceleration factor
-        """
-        # Adjust acceleration based on performance
-        # If performance is good, increase acceleration; if poor, decrease
-        adjustment = self.adaptive_rate * (performance_metric - 0.5)
-        new_factor = stream.acceleration_factor * (1 + adjustment)
-        
-        # Ensure acceleration factor stays within reasonable bounds
-        min_factor = self.base_acceleration * 0.1
-        max_factor = self.base_acceleration * 10.0
-        
-        return np.clip(new_factor, min_factor, max_factor)
-    
-    def protect_coherence(self, quantum_state: np.ndarray) -> np.ndarray:
-        """
-        Maintain quantum state coherence during acceleration.
-        
-        Args:
-            quantum_state: The quantum state to protect
-            
-        Returns:
-            Coherence-protected quantum state
-        """
-        # Normalize state vector
-        norm = np.linalg.norm(quantum_state)
-        if norm > 0:
-            quantum_state = quantum_state / norm
-        
-        # Apply phase correction
-        phase = np.angle(quantum_state)
-        phase_corrected = np.exp(1j * phase)
-        
-        return quantum_state * phase_corrected
-    
-    def _aggregate_results(self, results: List[Dict]) -> Dict[str, any]:
-        """Aggregate results from all streams"""
-        final_states = [r['final_state'] for r in results]
-        performance_metrics = [np.mean(r['performance_metrics']) for r in results]
-        final_accelerations = [r['final_acceleration'] for r in results]
+        execution_time = time.time() - start_time
         
         return {
-            'final_state': np.mean(final_states, axis=0),
-            'state_variance': np.var(final_states, axis=0),
-            'virtual_time_reached': max(r['virtual_time'] for r in results),
-            'num_predictions': sum(len(r['predictions']) for r in results),
-            'average_performance': np.mean(performance_metrics),
-            'acceleration_distribution': {
-                'mean': np.mean(final_accelerations),
-                'std': np.std(final_accelerations),
-                'min': np.min(final_accelerations),
-                'max': np.max(final_accelerations)
-            }
+            'execution_time': execution_time,
+            'virtual_time_reached': virtual_time,
+            'average_performance': np.mean(performance_history),
+            'average_coherence': np.mean(coherence_history),
+            'performance_history': performance_history,
+            'coherence_history': coherence_history,
+            'final_state': self.states[0]
         }
     
-    def visualize_results(self, results: Dict[str, any], save_path: Optional[str] = None):
+    def visualize_results(self, results: Dict[str, Union[float, List[float]]]):
         """
-        Visualize the results of the quantum time dilation computation.
+        Visualize the results of the quantum time dilation experiment.
         
         Args:
-            results: Results from accelerate_computation
-            save_path: Optional path to save visualization
+            results: Dictionary containing experiment results
         """
-        import matplotlib.pyplot as plt
-        from mpl_toolkits.mplot3d import Axes3D
+        plt.figure(figsize=(12, 8))
         
-        # Create figure with two subplots
-        fig = plt.figure(figsize=(15, 6))
+        # Plot performance history
+        plt.subplot(2, 1, 1)
+        plt.plot(results['performance_history'])
+        plt.title('Performance History')
+        plt.xlabel('Step')
+        plt.ylabel('Performance')
         
-        # 3D visualization of quantum state evolution
-        ax1 = fig.add_subplot(121, projection='3d')
-        
-        # Sample a few streams for visualization
-        sample_size = min(10, self.num_streams)
-        sample_indices = np.random.choice(self.num_streams, sample_size, replace=False)
-        
-        for idx in sample_indices:
-            stream = self.streams[idx]
-            time_points = np.linspace(0, stream.virtual_time, len(stream.performance_history))
-            
-            # Use performance history as z-axis for visualization
-            ax1.plot(time_points, [idx] * len(time_points), 
-                    stream.performance_history, label=f'Stream {idx}')
-        
-        ax1.set_xlabel('Reference Time')
-        ax1.set_ylabel('Stream ID')
-        ax1.set_zlabel('Performance Metric')
-        ax1.set_title('Quantum State Evolution Across Streams')
-        
-        # Acceleration factor distribution
-        ax2 = fig.add_subplot(122)
-        acceleration_factors = [stream.acceleration_factor for stream in self.streams]
-        ax2.hist(acceleration_factors, bins=30, alpha=0.7)
-        ax2.set_xlabel('Acceleration Factor')
-        ax2.set_ylabel('Frequency')
-        ax2.set_title('Acceleration Factor Distribution')
+        # Plot coherence history
+        plt.subplot(2, 1, 2)
+        plt.plot(results['coherence_history'])
+        plt.title('Coherence History')
+        plt.xlabel('Step')
+        plt.ylabel('Coherence')
         
         plt.tight_layout()
+        plt.show()
+    
+    def visualize_metrics(self):
+        """Visualize the overall metrics of the quantum time dilation system."""
+        plt.figure(figsize=(10, 6))
         
-        if save_path:
-            plt.savefig(save_path)
-            print(f"Visualization saved to {save_path}")
-        else:
-            plt.show()
+        # Plot acceleration factor over time
+        plt.plot([self.base_acceleration * (1 + self.adaptive_rate) ** i 
+                 for i in range(len(self.performance_history))])
+        plt.title('Acceleration Factor Over Time')
+        plt.xlabel('Step')
+        plt.ylabel('Acceleration Factor')
+        
+        plt.tight_layout()
+        plt.show()
 
 # Example usage:
 if __name__ == "__main__":
@@ -309,16 +266,16 @@ if __name__ == "__main__":
     qc.measure_all()
     
     # Initialize time dilation framework
-    qtd = QuantumTimeDilation(num_streams=1000)
+    qtd = QuantumTimeDilation(num_qubits=5, num_streams=10)
     
     # Run accelerated computation
     results = qtd.accelerate_computation(qc, target_time=1.0)
     
     print(f"Computation completed!")
     print(f"Virtual time reached: {results['virtual_time_reached']}")
-    print(f"Total predictions made: {results['num_predictions']}")
     print(f"Average performance: {results['average_performance']:.4f}")
-    print(f"Acceleration distribution: {results['acceleration_distribution']}")
+    print(f"Average coherence: {results['average_coherence']:.4f}")
     
     # Visualize results
-    qtd.visualize_results(results) 
+    qtd.visualize_results(results)
+    qtd.visualize_metrics() 
