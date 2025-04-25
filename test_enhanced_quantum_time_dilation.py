@@ -14,7 +14,8 @@ This test suite validates:
 import unittest
 import numpy as np
 import time
-from qiskit import QuantumCircuit, execute, Aer
+from qiskit import QuantumCircuit, Aer
+from qiskit.primitives import Sampler
 from enhanced_quantum_time_dilation import QuantumTimeDilation, QuantumStream, PerformanceMetrics
 
 class TestEnhancedQuantumTimeDilation(unittest.TestCase):
@@ -166,8 +167,9 @@ class TestEnhancedQuantumTimeDilation(unittest.TestCase):
         """Test accuracy of quantum state predictions."""
         # Run multiple predictions and compare with actual quantum evolution
         simulator = Aer.get_backend('statevector_simulator')
-        actual_result = execute(self.test_circuit, simulator).result()
-        actual_state = actual_result.get_statevector()
+        sampler = Sampler()
+        actual_result = sampler.run(self.test_circuit).result()
+        actual_state = actual_result.quasi_dists[0]
         
         predicted_states = []
         for _ in range(5):
@@ -175,7 +177,7 @@ class TestEnhancedQuantumTimeDilation(unittest.TestCase):
             predicted_states.append(predicted_state)
         
         # Check that predictions maintain reasonable fidelity with actual state
-        fidelities = [np.abs(np.vdot(actual_state.data, pred_state.data))**2 
+        fidelities = [np.abs(np.vdot(actual_state, pred_state))**2 
                      for pred_state in predicted_states]
         self.assertGreater(np.mean(fidelities), 0.5)
     

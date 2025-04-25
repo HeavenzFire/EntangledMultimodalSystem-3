@@ -15,7 +15,9 @@ from dataclasses import dataclass
 from concurrent.futures import ThreadPoolExecutor, ProcessPoolExecutor
 import torch
 import torch.nn as nn
-from qiskit import QuantumCircuit, execute, Aer
+from qiskit import QuantumCircuit
+from qiskit_aer import Aer
+from qiskit.primitives import Sampler
 from qiskit.quantum_info import Statevector, Operator
 from scipy.linalg import norm
 import matplotlib.pyplot as plt
@@ -184,6 +186,7 @@ class QuantumTimeDilation:
         
         # Initialize quantum simulator
         simulator = Aer.get_backend('statevector_simulator')
+        sampler = Sampler()
         
         # Calculate time steps based on acceleration factor
         time_steps = np.linspace(0, target_time, 
@@ -199,8 +202,8 @@ class QuantumTimeDilation:
             predicted_state = self._predict_quantum_state(current_state)
             
             # Execute quantum circuit step
-            result = execute(circuit, simulator).result()
-            measured_state = result.get_statevector()
+            result = sampler.run(circuit).result()
+            measured_state = Statevector(result.quasi_dists[0])
             
             # Calculate performance metric (fidelity between predicted and measured)
             fidelity = np.abs(np.vdot(predicted_state.data, measured_state.data))**2
@@ -249,73 +252,141 @@ class QuantumTimeDilation:
         }
     
     def _predict_quantum_state(self, current_state: Statevector) -> Statevector:
-        """Predict future quantum state using neural network"""
+        """
+        Predict the next quantum state using the neural network predictor.
+        
+        Args:
+            current_state: Current quantum state vector
+            
+        Returns:
+            Predicted next quantum state vector
+        """
+        # Convert complex state vector to real representation for neural network
+        state_data = current_state.data
+        real_part = np.real(state_data)
+        imag_part = np.imag(state_data)
+        
+        # Combine real and imaginary parts
+        combined_data = np.concatenate([real_part, imag_part])
+        
+        # Ensure data has the right shape for the neural network
+        if len(combined_data) < 128:
+            # Pad with zeros if needed
+            padded_data = np.zeros(128)
+            padded_data[:len(combined_data)] = combined_data
+            combined_data = padded_data
+        elif len(combined_data) > 128:
+            # Truncate if too large
+            combined_data = combined_data[:128]
+        
+        # Convert to PyTorch tensor
+        state_tensor = torch.tensor(combined_data, dtype=torch.float32).unsqueeze(0)
+        
+        # Use the neural network to predict the next state
         with torch.no_grad():
-            # Convert complex state to real representation
-            state_data = current_state.data
-            real_state = np.concatenate([state_data.real, state_data.imag])
-            
-            # Ensure state has correct size for the network
-            if len(real_state) < 128:
-                padded_state = np.zeros(128)
-                padded_state[:len(real_state)] = real_state
-                real_state = padded_state
-            elif len(real_state) > 128:
-                real_state = real_state[:128]
-                
-            state_tensor = torch.FloatTensor(real_state).unsqueeze(0)
-            predicted = self.quantum_predictor(state_tensor)
-            
-            # Convert back to complex
-            half_size = predicted.shape[1] // 2
-            real_part = predicted[:, :half_size].numpy()
-            imag_part = predicted[:, half_size:].numpy()
-            complex_state = real_part + 1j * imag_part
-            
-            # Normalize
-            complex_state = complex_state / np.linalg.norm(complex_state)
-            
-            return Statevector(complex_state.squeeze())
+            predicted_data = self.quantum_predictor(state_tensor).squeeze().numpy()
+        
+        # Split back into real and imaginary parts
+        half_size = len(predicted_data) // 2
+        real_pred = predicted_data[:half_size]
+        imag_pred = predicted_data[half_size:]
+        
+        # Combine into complex state vector
+        complex_pred = real_pred + 1j * imag_pred
+        
+        # Normalize the predicted state
+        norm_factor = np.sqrt(np.sum(np.abs(complex_pred)**2))
+        if norm_factor > 0:
+            complex_pred = complex_pred / norm_factor
+        
+        # Create and return the predicted state vector
+        return Statevector(complex_pred)
     
     def _update_quantum_state(self,
                             current: Statevector,
                             predicted: Statevector,
                             measured: Statevector) -> Statevector:
-        """Update quantum state based on predictions and measurements"""
+        """
+        Update the quantum state based on predicted and measured states.
+        
+        Args:
+            current: Current quantum state
+            predicted: Predicted quantum state
+            measured: Measured quantum state
+            
+        Returns:
+            Updated quantum state
+        """
         # Weighted average of predicted and measured states
-        weight = 0.7  # Confidence in predictions
-        updated_data = weight * predicted.data + (1 - weight) * measured.data
+        # Higher weight for measured state as it's more reliable
+        alpha = 0.7  # Weight for measured state
+        beta = 0.3   # Weight for predicted state
         
-        # Normalize
-        updated_data = updated_data / np.linalg.norm(updated_data)
+        # Combine states with weights
+        updated_data = alpha * measured.data + beta * predicted.data
         
+        # Normalize the updated state
+        norm_factor = np.sqrt(np.sum(np.abs(updated_data)**2))
+        if norm_factor > 0:
+            updated_data = updated_data / norm_factor
+        
+        # Return the updated state vector
         return Statevector(updated_data)
     
     def _aggregate_results(self, results: List[Dict]) -> Dict[str, Any]:
-        """Aggregate results from all streams"""
-        final_states = [r['final_state'] for r in results]
-        performance_metrics = [np.mean([m.fidelity for m in r['performance_metrics']]) 
-                             for r in results]
-        final_accelerations = [r['final_acceleration'] for r in results]
+        """
+        Aggregate results from all quantum streams.
         
-        # Calculate average coherence
-        coherence_levels = []
-        for r in results:
-            for m in r['performance_metrics']:
-                coherence_levels.append(m.coherence_level)
+        Args:
+            results: List of results from each stream
+            
+        Returns:
+            Dictionary containing aggregated results and metrics
+        """
+        # Extract final states from all streams
+        final_states = [result['final_state'] for result in results]
         
+        # Calculate average state vector
+        avg_state_data = np.mean([state.data for state in final_states], axis=0)
+        avg_state = Statevector(avg_state_data)
+        
+        # Calculate state variance
+        state_variance = np.var([np.abs(state.data)**2 for state in final_states], axis=0)
+        
+        # Extract performance metrics
+        all_metrics = [metric for result in results for metric in result['performance_metrics']]
+        
+        # Calculate average performance metrics
+        avg_fidelity = np.mean([metric.fidelity for metric in all_metrics])
+        avg_coherence = np.mean([metric.coherence_level for metric in all_metrics])
+        avg_prediction_accuracy = np.mean([metric.prediction_accuracy for metric in all_metrics])
+        
+        # Calculate acceleration distribution
+        acceleration_factors = [result['final_acceleration'] for result in results]
+        avg_acceleration = np.mean(acceleration_factors)
+        std_acceleration = np.std(acceleration_factors)
+        
+        # Calculate virtual time reached
+        virtual_times = [result['virtual_time'] for result in results]
+        max_virtual_time = max(virtual_times)
+        
+        # Count total predictions
+        total_predictions = sum(len(result['predictions']) for result in results)
+        
+        # Return aggregated results
         return {
-            'final_state': np.mean([s.data for s in final_states], axis=0),
-            'state_variance': np.var([s.data for s in final_states], axis=0),
-            'virtual_time_reached': max(r['virtual_time'] for r in results),
-            'num_predictions': sum(len(r['predictions']) for r in results),
-            'average_performance': np.mean(performance_metrics),
-            'average_coherence': np.mean(coherence_levels),
+            'final_state': avg_state,
+            'state_variance': state_variance,
+            'virtual_time_reached': max_virtual_time,
+            'num_predictions': total_predictions,
+            'average_performance': avg_fidelity,
+            'average_coherence': avg_coherence,
+            'average_prediction_accuracy': avg_prediction_accuracy,
             'acceleration_distribution': {
-                'mean': np.mean(final_accelerations),
-                'std': np.std(final_accelerations),
-                'min': np.min(final_accelerations),
-                'max': np.max(final_accelerations)
+                'mean': avg_acceleration,
+                'std': std_acceleration,
+                'min': min(acceleration_factors),
+                'max': max(acceleration_factors)
             }
         }
     
