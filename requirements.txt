@@ -10,7 +10,7 @@ numba>=0.56.0
 scikit-learn>=0.24.0
 
 # Quantum computing
-qiskit>=0.44.0
+qiskit>=0.34.0
 qiskit-aer>=0.17.0
 qiskit-terra>=0.46.3
 qiskit-ignis>=0.7.1
@@ -61,8 +61,8 @@ dask>=2023.3.0
 ray>=2.8.0
 
 # Testing and Development
-pytest>=6.2.0
-pytest-cov>=4.1.0
+pytest>=6.2.5
+pytest-cov>=2.12.0
 pytest-benchmark>=3.4.1
 pytest-asyncio>=0.15.1
 pytest-xdist>=2.4.0
@@ -194,3 +194,12 @@ pillow>=8.3.0
 jupyter>=1.0.0
 ipywidgets>=7.6.0
 notebook>=6.4.0
+
+# Added from the code block
+sentence-transformers>=2.2.0
+faiss-cpu>=1.7.0
+
+# Added from the code block
+codecov>=2.1.11
+tensorflow>=2.6.0
+transformers>=4.11.0

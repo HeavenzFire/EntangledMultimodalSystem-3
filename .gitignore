@@ -79,6 +79,8 @@ cache/
 *.pid
 *.gz
 *.tar
+*.npy
+*.npz
 
 # Testing
 .nox/
