@@ -76,7 +76,14 @@ def generate_text(prompt, max_length=150, num_return_sequences=1, temperature=1.
         return cache[cache_key]
     
     inputs = tokenizer.encode(prompt, return_tensors="pt")
-    outputs = model.generate(inputs, max_length=max_length, num_return_sequences=num_return_sequences, temperature=temperature)
+    outputs = model.generate(
+        inputs,
+        max_length=max_length,
+        num_return_sequences=num_return_sequences,
+        temperature=temperature,
+        pad_token_id=tokenizer.eos_token_id
+    )
+    
     generated_text = tokenizer.decode(outputs[0], skip_special_tokens=True)
     
     # Cache the result
@@ -84,9 +91,27 @@ def generate_text(prompt, max_length=150, num_return_sequences=1, temperature=1.
     
     end_time = time.time()
     logging.info("Text generation completed in %.2f seconds", end_time - start_time)
-    logging.info("Generated text: %s", generated_text)
     
     return generated_text
+
+# --------------------------
+# Quantum Component
+# --------------------------
+class QuantumConsciousness:
+    def __init__(self, num_qubits=5):
+        self.num_qubits = num_qubits
+        self.state = np.zeros(2**num_qubits)
+        self.state[0] = 1  # Initialize to |0⟩ state
+
+    def evolve(self, unitary):
+        """Evolve quantum state using a unitary operator"""
+        self.state = np.dot(unitary, self.state)
+        return self.state
+
+    def measure(self):
+        """Measure quantum state and return classical outcome"""
+        probabilities = np.abs(self.state)**2
+        return np.random.choice(len(probabilities), p=probabilities)
 
 # --------------------------
 # Speech Recognition Component
@@ -155,7 +180,6 @@ def generate_fractal():
 # --------------------------
 def fhss_strategy():
     logging.info("Implementing FHSS: Switching frequency channels")
-    # Example frequency hopping logic
     frequencies = [2.4e9, 2.41e9, 2.42e9, 2.43e9]
     for freq in frequencies:
         logging.info("Switching to frequency: %s Hz", freq)
@@ -163,21 +187,18 @@ def fhss_strategy():
 
 def dsss_strategy():
     logging.info("Implementing DSSS: Spreading signal across frequency band")
-    # Example signal spreading logic
     signal = np.random.randn(1000)
     spread_signal = np.fft.ifft(np.fft.fft(signal) * np.random.randn(1000))
     logging.info("Signal spread across frequency band")
 
 def error_correction():
     logging.info("Implementing error correction codes")
-    # Example error correction logic
     data = np.random.randint(0, 2, 100)
     parity_bits = np.sum(data) % 2
     logging.info("Error correction parity bit: %s", parity_bits)
 
 def shielding_feedback():
     logging.info("Adjusting shielding to absorb harmful radiation")
-    # Example shielding adjustment logic
     shield_strength = np.random.uniform(0, 1)
     logging.info("Shield strength adjusted to: %s", shield_strength)
 
@@ -200,6 +221,7 @@ def external_radiation_monitor():
 # --------------------------
 app = Flask(__name__)
 expander = ConsciousnessExpander()
+qc = QuantumConsciousness()
 
 # Security: Define a token for authentication (set via environment variable)
 AUTH_TOKEN = os.environ.get("AUTH_TOKEN", "default_secret_token")
@@ -208,26 +230,68 @@ AUTH_TOKEN = os.environ.get("AUTH_TOKEN", "default_secret_token")
 def home():
     return render_template('index.html')
 
-@app.route('/expand')
-def expand():
-    x = np.linspace(-10, 10, 100).reshape(-1, 1)
-    predictions = expander.evolve(x).tolist()
-    return jsonify(predictions)
+@app.route('/api/expand', methods=['POST'])
+def expand_consciousness():
+    try:
+        data = request.get_json()
+        input_data = np.array(data['input'])
+        
+        result = expander.evolve(input_data)
+        
+        return jsonify({
+            'status': 'success',
+            'result': result.tolist()
+        })
+    except Exception as e:
+        logging.error("Error in expand_consciousness: %s", str(e))
+        return jsonify({
+            'status': 'error',
+            'message': str(e)
+        }), 500
+
+@app.route('/api/generate', methods=['POST'])
+def generate():
+    try:
+        data = request.get_json()
+        prompt = data['prompt']
+        
+        result = generate_text(prompt)
+        
+        return jsonify({
+            'status': 'success',
+            'result': result
+        })
+    except Exception as e:
+        logging.error("Error in generate: %s", str(e))
+        return jsonify({
+            'status': 'error',
+            'message': str(e)
+        }), 500
+
+@app.route('/api/quantum', methods=['POST'])
+def quantum_operation():
+    try:
+        data = request.get_json()
+        num_qubits = data.get('num_qubits', 5)
+        
+        qc = QuantumConsciousness(num_qubits=num_qubits)
+        result = qc.measure()
+        
+        return jsonify({
+            'status': 'success',
+            'result': int(result)
+        })
+    except Exception as e:
+        logging.error("Error in quantum_operation: %s", str(e))
+        return jsonify({
+            'status': 'error',
+            'message': str(e)
+        }), 500
 
 @app.route('/fractal')
 def fractal():
     generate_fractal()
     return jsonify({'status': 'fractal generated'})
-
-@app.route('/nlp', methods=['POST'])
-def nlp_process():
-    data = request.json
-    text_prompt = data.get("prompt", "")
-    max_length = data.get("max_length", 150)
-    num_return_sequences = data.get("num_return_sequences", 1)
-    temperature = data.get("temperature", 1.0)
-    response = generate_text(text_prompt, max_length=max_length, num_return_sequences=num_return_sequences, temperature=temperature)
-    return jsonify({"response": response})
 
 @app.route('/speech')
 def speech_to_text():

@@ -217,9 +217,7 @@ class MultimodalSystem:
         # Schrödinger equation parameters for quantum wave function evolution
         self.hbar = 1.0  # Reduced Planck constant
         self.m = 1.0  # Mass parameter
-        self.potential_function = lambda x: 0.5 * (
-            x**2
-        )  # Harmonic oscillator potential
+        self.potential_function = lambda x: 0.5 * (x**2)
 
     def integrate(self, input_data, mode=None):
         """Enhanced integration with multiple modes"""

@@ -26,8 +26,8 @@ wheels/
 
 # Virtual Environment
 venv/
-ENV/
 env/
+ENV/
 quantum_ai_py311/
 
 # IDE
@@ -79,21 +79,29 @@ cache/
 *.out
 *.pid
 *.gz
-*.tar
-*.npy
-*.npz
-
-# Testing
-.nox/
-.coverage.*
-coverage.xml
-*.cover
-*.py,cover
-.hypothesis/
 
 # Jupyter Notebook
 .ipynb_checkpoints
+*.ipynb
 
-# Local development
-.env.local
-.env.*.local 
+# Quantum specific
+quantum_state/
+quantum_cache/
+quantum_tmp/
+
+# Neural network
+model_checkpoints/
+tensorboard/
+wandb/
+
+# Documentation
+docs/_build/
+site/
+
+# Development
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+.nox/
+.hypothesis/
