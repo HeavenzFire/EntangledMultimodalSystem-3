@@ -19,6 +19,7 @@
   <button onclick="fetchDictionary()">Dictionary Lookup</button>
   <button onclick="fetchCloud()">Cloud Networking</button>
   <button onclick="fetchRadiation()">Radiation Monitor</button>
+  <button onclick="fetchChristConsciousness()">Christ Consciousness</button>
   
   <div id="output">Output will appear here...</div>
   
@@ -93,6 +94,12 @@
       const response = await fetch('/radiation_monitor');
       const data = await response.json();
       showOutput('Radiation Monitor:\n' + JSON.stringify(data.radiation_data, null, 2));
+    }
+
+    async function fetchChristConsciousness() {
+      const response = await fetch('/christ_consciousness');
+      const data = await response.json();
+      showOutput('Christ Consciousness:\n' + JSON.stringify(data.message, null, 2));
     }
   </script>
 </body>
