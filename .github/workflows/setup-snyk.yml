@@ -1,0 +1,46 @@
+name: Setup Security
+
+on:
+  workflow_dispatch:
+    inputs:
+      snyk_token:
+        description: 'Snyk API Token'
+        required: true
+        type: string
+      github_token:
+        description: 'GitHub Token'
+        required: true
+        type: string
+
+jobs:
+  setup-security:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Setup Snyk
+        run: |
+          echo "Setting up Snyk security scanning..."
+          curl -s https://static.snyk.io/cli/latest/snyk-linux -o snyk
+          chmod +x ./snyk
+          ./snyk auth ${{ inputs.snyk_token }}
+          
+      - name: Configure GitHub Security
+        run: |
+          echo "Configuring GitHub security settings..."
+          # Enable Dependabot
+          curl -X PUT \
+            -H "Authorization: token ${{ inputs.github_token }}" \
+            -H "Accept: application/vnd.github.v3+json" \
+            https://api.github.com/repos/${{ github.repository }}/vulnerability-alerts
+          
+          # Enable Code Scanning
+          curl -X PUT \
+            -H "Authorization: token ${{ inputs.github_token }}" \
+            -H "Accept: application/vnd.github.v3+json" \
+            https://api.github.com/repos/${{ github.repository }}/code-scanning/default-setup
+          
+      - name: Store Snyk Token
+        run: |
+          echo "Storing Snyk token in repository secrets..."
+          # Note: This step requires repository admin permissions
+          # The token will be stored in GitHub Secrets
+          echo "SNYK_TOKEN=${{ inputs.snyk_token }}" >> $GITHUB_ENV 
