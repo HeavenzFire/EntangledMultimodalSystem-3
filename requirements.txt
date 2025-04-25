@@ -1,17 +1,18 @@
 # Core dependencies
-numpy>=1.23.0
-scipy>=1.9.0
+numpy>=2.2.5
+scipy>=1.12.0
 dash>=2.6.0
 dash-bootstrap-components>=1.3.0
 plotly>=5.11.0
-pandas>=1.5.0
-matplotlib>=3.4.0
+pandas>=2.2.0
+matplotlib>=3.8.0
 numba>=0.56.0
-scikit-learn>=1.1.0
+scikit-learn>=1.4.0
 
 # Quantum computing
-qiskit>=0.45.0
-qiskit-aer>=0.12.0
+qiskit>=2.0.0
+qiskit-aer>=0.17.0
+qiskit-terra>=0.46.3
 qiskit-ignis>=0.7.1
 qiskit-optimization>=0.5.0
 qiskit-machine-learning>=0.4.0
@@ -20,8 +21,8 @@ qiskit-finance>=0.4.0
 qiskit-ibm-runtime>=0.18.0
 
 # Quantum Machine Learning
-tensorflow>=2.12.0
-torch>=2.0.0
+tensorflow>=2.15.0
+torch>=2.2.0
 torch-quantum>=0.1.0
 pennylane>=0.33.0
 pennylane-qiskit>=0.33.0
@@ -61,8 +62,8 @@ dask>=2023.3.0
 ray>=2.8.0
 
 # Testing and Development
-pytest>=7.3.0
-pytest-cov>=4.0.0
+pytest>=8.3.5
+pytest-cov>=6.1.1
 pytest-benchmark>=3.4.0
 pytest-asyncio>=0.21.0
 pytest-xdist>=3.3.1
@@ -142,6 +143,7 @@ loguru>=0.7.0
 
 # API and Web
 requests>=2.31.0
+requests-ntlm>=1.3.0
 
 # Gemini API Integration
 google-generativeai>=0.3.0
@@ -165,4 +167,12 @@ cvxpy>=1.3.0
 cvxopt>=1.3.0
 
 # Parallel Computing
-mpi4py>=3.1.0 
+mpi4py>=3.1.0
+
+# Added from the code block
+setuptools>=79.0.1
+tensorboard>=2.19.0
+wrapt>=1.17.2
+keras>=3.9.2
+ml-dtypes>=0.5.1
+protobuf>=6.30.2
