@@ -333,6 +333,7 @@ class QuantumOptimizer:
                 cost_landscape[i, j] = cost
         
         return param_vals, cost_landscape
+<<<<<<< HEAD
 
     def optimize(self, input_data):
         """
@@ -398,3 +399,5 @@ class QuantumOptimizer:
         self.max_iterations = 300  # Further increase the number of iterations for superior convergence
         
         self.logger.info("Quantum optimization process expanded and mastered.")
+=======
+>>>>>>> origin/main

@@ -1,0 +1,58 @@
+# Model paths
+diagnostic_model_path: "models/diagnostic_transformer"
+tokenizer_path: "models/tokenizer"
+interaction_model_path: "models/empathic_interaction"
+
+# Quantum circuit parameters
+quantum_circuit:
+  num_qubits: 4
+  entanglement_depth: 3
+  optimization_iterations: 1000
+
+# Diagnostic parameters
+diagnostic:
+  genomic_analysis:
+    min_confidence: 0.85
+    max_variants: 1000
+  biosensor_analysis:
+    sampling_rate: 100  # Hz
+    window_size: 60  # seconds
+  ehr_analysis:
+    max_history_days: 365
+    min_data_points: 10
+  behavioral_analysis:
+    pattern_window: 7  # days
+    min_observations: 5
+
+# Treatment optimization
+treatment:
+  max_iterations: 100
+  convergence_threshold: 0.01
+  exploration_rate: 0.2
+  learning_rate: 0.001
+
+# Patient interaction
+interaction:
+  max_context_length: 512
+  min_response_length: 20
+  max_response_length: 200
+  empathy_threshold: 0.7
+
+# Memory settings
+memory:
+  max_history_entries: 1000
+  retention_period: 365  # days
+  compression_threshold: 100
+
+# Performance metrics
+metrics:
+  update_interval: 60  # seconds
+  window_size: 100
+  min_samples: 10
+
+# Logging
+logging:
+  level: INFO
+  file: "logs/medical_doctor.log"
+  max_size: 10485760  # 10MB
+  backup_count: 5 

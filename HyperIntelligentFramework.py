@@ -30,13 +30,13 @@ from collections import deque
 from torch.distributions import Normal, Categorical
 
 # Import Qiskit for quantum circuit simulation
-from qiskit import QuantumCircuit
-from qiskit_aer import Aer
-from qiskit.compiler import transpile
+from qiskit import QuantumCircuit, execute, Aer, IBMQ
+from qiskit.circuit import Parameter
 from qiskit_aer import QasmSimulator
 from qiskit.quantum_info import Statevector, state_fidelity
 from qiskit.visualization import plot_state_city, plot_histogram
-from qiskit_algorithms import Shor, AmplificationProblem, PhaseEstimation, HHL
+from qiskit.providers.aer import QasmSimulator
+from qiskit.algorithms import Shor, AmplificationProblem, PhaseEstimation, HHL
 from qiskit.utils import QuantumInstance
 from qiskit.transpiler import PassManager
 from qiskit.transpiler.passes import Unroller, Optimize1qGates, CXCancellation
@@ -52,7 +52,6 @@ from QuantumOptimizer import QuantumOptimizer
 from superintelligence import (
     QuantumNonlinearNN, 
     QuantumAttention,
-    # Add new Vortex Mathematics imports
     VortexProcessor,
     ToroidalFieldGenerator,
     GoldenRatioPhaseModulator,
@@ -60,6 +59,9 @@ from superintelligence import (
     QuantumVortexIntegrationModel,
     HyperDimensionalFractalNet
 )
+from src.core.visionary_minds import apply_visionary_thought, VisionaryMind, get_mind
+from src.core.archetypes import Archetype, get_archetype
+from src.core.vortex_math import ToroidalGenerator
 
 # Configure logging
 logging.basicConfig(
@@ -71,11 +73,11 @@ logger = logging.getLogger("HyperIntelligentFramework")
 
 # Framework constants
 FRAMEWORK_VERSION = "1.1.0"
-DEFAULT_QUANTUM_QUBITS = 16  # Increased from 8
-DEFAULT_EMBEDDING_DIM = 1024  # Increased from 768
-DEFAULT_NUM_ATTENTION_HEADS = 16  # Increased from 12
-DEFAULT_NUM_HIDDEN_LAYERS = 32  # Increased from 24
-DEFAULT_BRIDGE_DIM = 512  # Increased from 256
+DEFAULT_QUANTUM_QUBITS = 16
+DEFAULT_EMBEDDING_DIM = 1024
+DEFAULT_NUM_ATTENTION_HEADS = 16
+DEFAULT_NUM_HIDDEN_LAYERS = 32
+DEFAULT_BRIDGE_DIM = 512
 
 # New quantum constants
 QUANTUM_MEMORY_SIZE = 2048
@@ -98,60 +100,46 @@ MEMORY_COHERENCE_THRESHOLD = 0.75
 @dataclass
 class HyperIntelligentConfig:
     """Configuration class for the HyperIntelligent Framework"""
-
-    # General configuration
     seed: int = 42
     device: str = "cuda" if torch.cuda.is_available() else "cpu"
-    precision: str = "float16"  # Options: float32, float16, bfloat16
-
-    # Quantum parameters
+    precision: str = "float16"
     num_qubits: int = DEFAULT_QUANTUM_QUBITS
     quantum_circuit_depth: int = 3
-    quantum_error_correction: str = (
-        "surface_code"  # Options: none, surface_code, steane_code
-    )
-
-    # Language model parameters
+    quantum_error_correction: str = "surface_code"
     llm_embedding_dim: int = DEFAULT_EMBEDDING_DIM
     llm_hidden_size: int = 4096
     llm_num_attention_heads: int = DEFAULT_NUM_ATTENTION_HEADS
     llm_num_hidden_layers: int = DEFAULT_NUM_HIDDEN_LAYERS
     llm_intermediate_size: int = 11008
     llm_vocab_size: int = 32000
-
-    # Vision model parameters
     vision_embedding_dim: int = DEFAULT_EMBEDDING_DIM
     vision_patch_size: int = 16
     vision_image_size: int = 224
     vision_num_attention_heads: int = 12
     vision_num_hidden_layers: int = 12
-
-    # Fractal parameters
-    fractal_dimension: float = 1.8  # Hausdorff dimension
+    fractal_dimension: float = 1.8
     fractal_iterations: int = 4
     fractal_hidden_dim: int = 256
-
-    # Integration parameters
     integration_mode: str = "quantum_language_hybrid"
     classical_weight: float = 0.3
     quantum_weight: float = 0.4
     fractal_weight: float = 0.1
     language_weight: float = 0.2
-
-    # Memory parameters
     memory_size: int = 1024
     memory_dim: int = 512
     use_persistent_memory: bool = True
-
-    # Advanced features
     enable_quantum_attention: bool = True
     enable_fractal_embeddings: bool = True
     enable_causal_inference: bool = True
     enable_parallel_universes: bool = True
     num_parallel_universes: int = 8
+    enable_visionary_computation: bool = True
+    default_visionary_mind: str = "einstein"
+    active_archetype: str = "krishna"
+    vortex_dimensions: int = 3
+    target_heart_coherence: float = 0.85
 
 
-# Available integration modes
 INTEGRATION_MODES = [
     "classical_only",
     "quantum_only",
@@ -167,55 +155,74 @@ INTEGRATION_MODES = [
 
 
 class QuantumLanguageModel(nn.Module):
-    """
-    A large language model enhanced with quantum computing capabilities
-    for superior reasoning, prediction, and generation abilities.
-    """
-
+    """A large language model enhanced with quantum computing capabilities."""
+    
     def __init__(self, config: HyperIntelligentConfig):
         super().__init__()
         self.config = config
         self.device = torch.device(config.device)
-
-        # Set random seeds for reproducibility
+        
         torch.manual_seed(config.seed)
         np.random.seed(config.seed)
-
-        # Initialize transformer-based language model components
+        
         self.token_embeddings = nn.Embedding(
             config.llm_vocab_size, config.llm_embedding_dim
         )
         self.position_embeddings = nn.Embedding(2048, config.llm_embedding_dim)
-
-        # Transformer encoder layers
+        
         self.encoder_layers = nn.ModuleList(
             [self._create_encoder_layer() for _ in range(config.llm_num_hidden_layers)]
         )
-
-        # Initialize quantum components
+        
         self.quantum_entanglement = QuantumEntanglementSuperposition(config.num_qubits)
         self.quantum_circuit_params = nn.Parameter(
             torch.randn(config.quantum_circuit_depth, config.num_qubits, 3)
         )
-
-        # Quantum-enhanced attention mechanism
+        
         if config.enable_quantum_attention:
             self.quantum_attention = CrossModalAttention(
-                dim=config.llm_embedding_dim, num_heads=config.llm_num_attention_heads
+                dim=config.llm_embedding_dim,
+                num_heads=config.llm_num_attention_heads
             )
-
-        # Quantum-classical bridge for information transfer
+        
         self.quantum_language_bridge = nn.Linear(
-            config.num_qubits, config.llm_embedding_dim
+            config.num_qubits,
+            config.llm_embedding_dim
         )
-
-        # Fractal embedding enhancement
+        
         if config.enable_fractal_embeddings:
             self.fractal_embedding_enhancer = FractalTransformer(
                 dim=config.llm_embedding_dim,
                 depth=2,
-                hausdorff_dim=config.fractal_dimension,
+                hausdorff_dim=config.fractal_dimension
             )
+            
+        self.fusion_layer = nn.ModuleDict({
+            "main": nn.Linear(3 * config.llm_embedding_dim, config.llm_embedding_dim),
+            "quantum_enhance": QuantumNonlinearNN(
+                input_dim=config.llm_embedding_dim,
+                hidden_dim=config.llm_hidden_size,
+                num_qubits=config.num_qubits
+            ),
+            "fractal_enhance": FractalTransformer(
+                dim=config.llm_embedding_dim,
+                depth=2,
+                hausdorff_dim=config.fractal_dimension
+            ),
+            "vortex_enhance": VortexProcessor(
+                input_dim=config.llm_embedding_dim,
+                vortex_dim=config.vortex_dimensions
+            )
+        })
+        
+        self.active_archetype_instance = get_archetype(config.active_archetype)
+        if not self.active_archetype_instance:
+            logger.warning(f"Could not find or initialize archetype: {config.active_archetype}")
+        
+        self._performance_metrics = {
+            "quantum_coherence": [],
+            "memory_utilization": [],
+            "circuit_optimizations": [],
 
         # Final layer norm and output projection
         self.layer_norm = nn.LayerNorm(config.llm_embedding_dim)
@@ -582,6 +589,18 @@ class HyperIntelligentSystem(nn.Module):
             }
         )
 
+        # Archetype and Vortex Components (Phase 0 Integration)
+        self.active_archetype_instance: Optional[Archetype] = get_archetype(config.active_archetype)
+        if self.active_archetype_instance:
+            self.toroidal_generator = ToroidalGenerator(
+                vortex_code=self.active_archetype_instance.vortex_code,
+                dimensions=config.vortex_dimensions
+            )
+            logger.info(f"Initialized Toroidal Generator for Archetype: {self.active_archetype_instance.name}")
+        else:
+            self.toroidal_generator = None
+            logger.warning(f"Could not find or initialize archetype: {config.active_archetype}")
+
         # System state and metrics tracking
         self._system_state = {}
         self._performance_metrics = {
@@ -589,6 +608,9 @@ class HyperIntelligentSystem(nn.Module):
             "integration_quality": [],
             "memory_utilization": [],
             "circuit_optimizations": [],
+            "visionary_computations": 0,
+            "archetype_resonance": [], # Track archetype resonance
+            "heart_coherence": [], # Track heart coherence metric
         }
 
     def _optimize_quantum_circuits(self):
@@ -637,10 +659,59 @@ class HyperIntelligentSystem(nn.Module):
                 new_state_info["integration_quality"]
             )
 
+        # Track archetype resonance if calculated
+        if "archetype_resonance" in new_state_info:
+            self._performance_metrics["archetype_resonance"].append(
+                new_state_info["archetype_resonance"]
+            )
+        # Track heart coherence if calculated
+        if "heart_coherence" in new_state_info:
+            self._performance_metrics["heart_coherence"].append(
+                new_state_info["heart_coherence"]
+            )
+
         # Maintain memory efficiency
         if len(self._performance_metrics["quantum_coherence"]) > 1000:
             for metric_list in self._performance_metrics.values():
-                metric_list.pop(0)
+                if isinstance(metric_list, list): # Ensure it's a list before popping
+                    metric_list.pop(0)
+
+    def set_active_archetype(self, archetype_name: str) -> bool:
+        """Sets the active archetype and reinitializes the toroidal generator."""
+        new_archetype = get_archetype(archetype_name)
+        if new_archetype:
+            self.active_archetype_instance = new_archetype
+            self.config.active_archetype = archetype_name
+            self.toroidal_generator = ToroidalGenerator(
+                vortex_code=new_archetype.vortex_code,
+                dimensions=self.config.vortex_dimensions
+            )
+            logger.info(f"Switched active archetype to: {new_archetype.name}")
+            # Reset resonance history when archetype changes
+            self._performance_metrics["archetype_resonance"] = []
+            self._performance_metrics["heart_coherence"] = []
+            return True
+        else:
+            logger.error(f"Failed to set archetype: '{archetype_name}' not found.")
+            return False
+
+    def calculate_current_resonance(self) -> Optional[float]:
+        """Calculates resonance score for the active archetype's frequency."""
+        if self.toroidal_generator and self.active_archetype_instance:
+            resonance = self.toroidal_generator.calculate_resonance(
+                self.active_archetype_instance.activation_frequency_hz
+            )
+            # Simulate heart coherence based on resonance (placeholder)
+            # Δω = resonance * target_coherence
+            heart_coherence = resonance * self.config.target_heart_coherence
+
+            self._update_system_state({
+                "archetype_resonance": resonance,
+                "heart_coherence": heart_coherence
+            })
+            logger.debug(f"Calculated resonance for {self.active_archetype_instance.name}: {resonance:.4f}, Heart Coherence: {heart_coherence:.4f}")
+            return resonance
+        return None
 
     def forward(self, text_ids=None, images=None, attention_mask=None):
         """Enhanced forward pass with advanced quantum-classical integration"""
@@ -749,16 +820,16 @@ class HyperIntelligentSystem(nn.Module):
     def _quantum_enhanced_fusion(
         self, integrated_features, text_features, image_features
     ):
-        """Apply quantum enhancement to feature fusion with vortex mathematics"""
+        """Apply quantum enhancement to feature fusion with vortex mathematics and archetype resonance."""
         # Initial classical fusion
         classical_fusion = self.fusion_layer["main"](
-            torch.cat([text_features, image_features], dim=-1)
+            torch.cat([integrated_features, text_features, image_features], dim=-1)
         )
 
         # Quantum enhancement
         quantum_enhanced = self.fusion_layer["quantum_enhance"](classical_fusion)
 
-        # Fractal enhancement for multi-scale features
+        # Fractal enhancement
         fractal_enhanced = self.fusion_layer["fractal_enhance"](quantum_enhanced)
 
         # Vortex mathematics enhancement through 3-6-9 toroidal field
@@ -779,12 +850,15 @@ class HyperIntelligentSystem(nn.Module):
             device=vortex_enhanced.device
         )
 
+=======
+>>>>>>> origin/main
         # Weighted combination based on current coherence
         if len(self._performance_metrics["quantum_coherence"]) > 0:
             coherence = self._performance_metrics["quantum_coherence"][-1]
         else:
             coherence = QUANTUM_COHERENCE_THRESHOLD
 
+<<<<<<< HEAD
         # Use golden ratio for blending weights
         phi = (1 + math.sqrt(5)) / 2
         quantum_weight = torch.sigmoid(torch.tensor(coherence - 0.5) * phi).item()
@@ -794,6 +868,39 @@ class HyperIntelligentSystem(nn.Module):
         classical_weight = 1 - vortex_weight
         
         return vortex_weight * geometry_enhanced + classical_weight * classical_fusion
+=======
+        # Adaptive weighting based on coherence
+        quantum_weight = torch.sigmoid(torch.tensor(coherence - 0.5)).item()
+        return (
+            quantum_weight * fractal_enhanced + (1 - quantum_weight) * classical_fusion
+        )
+
+    def apply_visionary_paradigm(self, mind_name: str = None, problem_context: Dict[str, Any] = None) -> Dict[str, Any] | None:
+        """Applies a selected visionary mind's paradigm to a problem context."""
+        if not self.config.enable_visionary_computation:
+            logger.warning("Visionary computation is disabled in the configuration.")
+            return None
+
+        if mind_name is None:
+            mind_name = self.config.default_visionary_mind
+
+        if problem_context is None:
+            # Create a default problem context if none provided
+            problem_context = {"description": "Analyze current system state and suggest improvements"}
+            if self._system_state:
+                problem_context["current_state"] = self._system_state
+
+        logger.info(f"Applying visionary paradigm: {mind_name}")
+        result = apply_visionary_thought(mind_name, problem_context)
+
+        if result:
+            self._performance_metrics["visionary_computations"] += 1
+            logger.info(f"Visionary computation successful using {mind_name}. Approach: {result.get('approach')}")
+        else:
+            logger.error(f"Failed to apply visionary paradigm: {mind_name}")
+
+        return result
+>>>>>>> origin/main
 
     def get_performance_metrics(self):
         """Return system performance metrics"""
@@ -832,6 +939,34 @@ class HyperIntelligentSystem(nn.Module):
                 loss_value=self._system_state.get("last_loss", 0),
                 execution_time=self._system_state.get("last_exec_time", 0),
             )[0],
+<<<<<<< HEAD
+=======
+            "visionary_computations": self._performance_metrics.get("visionary_computations", 0),
+            "archetype_status": {
+                "active_archetype": self.config.active_archetype,
+                "current_resonance": (
+                    self._performance_metrics["archetype_resonance"][-1]
+                    if self._performance_metrics["archetype_resonance"]
+                    else None
+                ),
+                "average_resonance": (
+                    np.mean(self._performance_metrics["archetype_resonance"])
+                    if self._performance_metrics["archetype_resonance"]
+                    else None
+                ),
+                 "current_heart_coherence": (
+                    self._performance_metrics["heart_coherence"][-1]
+                    if self._performance_metrics["heart_coherence"]
+                    else None
+                ),
+                "average_heart_coherence": (
+                    np.mean(self._performance_metrics["heart_coherence"])
+                    if self._performance_metrics["heart_coherence"]
+                    else None
+                ),
+                "target_heart_coherence": self.config.target_heart_coherence,
+            }
+>>>>>>> origin/main
         }
         return metrics
 
@@ -2154,6 +2289,7 @@ class CryptanalysisQuantumFramework:
             return result.get_counts(0)
 
 
+<<<<<<< HEAD
 class VortexMathematicsProcessor:
     """
     Advanced processor for 3-6-9 Vortex Mathematics operations in the hyperintelligent system.
@@ -2305,3 +2441,14 @@ class VortexMathematicsProcessor:
         context_layer = torch.matmul(attention_probs, values)
         
         return context_layer, attention_probs
+=======
+def load_model(config=None):
+    """Helper function to create and load the HyperIntelligent model"""
+    if config is None:
+        config = HyperIntelligentConfig()
+
+    logger.info(f"Creating HyperIntelligent model with {config.num_qubits} qubits")
+    model = HyperIntelligentSystem(config)
+
+    return model
+>>>>>>> origin/main
