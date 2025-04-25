@@ -62,11 +62,31 @@ class ConsciousnessExpander:
 tokenizer = GPT3Tokenizer.from_pretrained("gpt3")
 model = GPT3LMHeadModel.from_pretrained("gpt3")
 
-def generate_text(prompt):
+# Caching mechanism for repeated prompts
+cache = {}
+
+def generate_text(prompt, max_length=150, num_return_sequences=1, temperature=1.0):
+    start_time = time.time()
     logging.info("Generating text for prompt: %s", prompt)
+    
+    # Check cache
+    cache_key = (prompt, max_length, num_return_sequences, temperature)
+    if cache_key in cache:
+        logging.info("Cache hit for prompt: %s", prompt)
+        return cache[cache_key]
+    
     inputs = tokenizer.encode(prompt, return_tensors="pt")
-    outputs = model.generate(inputs, max_length=150, num_return_sequences=1)
-    return tokenizer.decode(outputs[0], skip_special_tokens=True)
+    outputs = model.generate(inputs, max_length=max_length, num_return_sequences=num_return_sequences, temperature=temperature)
+    generated_text = tokenizer.decode(outputs[0], skip_special_tokens=True)
+    
+    # Cache the result
+    cache[cache_key] = generated_text
+    
+    end_time = time.time()
+    logging.info("Text generation completed in %.2f seconds", end_time - start_time)
+    logging.info("Generated text: %s", generated_text)
+    
+    return generated_text
 
 # --------------------------
 # Speech Recognition Component
@@ -203,7 +223,10 @@ def fractal():
 def nlp_process():
     data = request.json
     text_prompt = data.get("prompt", "")
-    response = generate_text(text_prompt)
+    max_length = data.get("max_length", 150)
+    num_return_sequences = data.get("num_return_sequences", 1)
+    temperature = data.get("temperature", 1.0)
+    response = generate_text(text_prompt, max_length=max_length, num_return_sequences=num_return_sequences, temperature=temperature)
     return jsonify({"response": response})
 
 @app.route('/speech')
