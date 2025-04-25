@@ -18,6 +18,10 @@ from ..core.digital_twin import DigitalTwin, DigitalTwinState
 from ..core.digital_twin_visualization import DigitalTwinVisualizer
 from ..core.avatar_agent import AvatarAgent
 from ..core.avatar_visualization import AvatarVisualizer
+from ..core.safeguard_orchestrator import SafeguardOrchestrator
+from ..core.quantum_archetypal_network import QuantumArchetypeLayer
+from ..core.conflict_resolution import ConflictResolutionSystem
+from ..core.divine_feminine_balance import DivineFeminineBalanceSystem
 import numpy as np
 import time
 import json
@@ -26,6 +30,8 @@ from scipy.optimize import minimize
 from concurrent.futures import ThreadPoolExecutor
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
+from datetime import datetime
+import logging
 
 # Initialize app with dark theme
 app = dash.Dash(__name__, external_stylesheets=[dbc.themes.DARKLY])
@@ -48,6 +54,12 @@ digital_twin = DigitalTwin()
 digital_twin_visualizer = DigitalTwinVisualizer()
 avatar_agent = AvatarAgent()
 avatar_visualizer = AvatarVisualizer()
+
+# Initialize systems
+orchestrator = SafeguardOrchestrator()
+archetypal_network = QuantumArchetypeLayer()
+conflict_resolution = ConflictResolutionSystem()
+divine_balance = DivineFeminineBalanceSystem()
 
 # Parameter controls with tooltips
 params_controls = [
@@ -1287,6 +1299,108 @@ def update_avatar_visualization(consciousness_clicks, light_clicks,
     system_evolution = avatar_visualizer.plot_system_evolution(avatar_agent)
     
     return consciousness, emotional_spectrum, integration, light_essence, anatomical_state, system_evolution
+
+@app.callback(
+    Output('system-status-gauge', 'figure'),
+    [Input('status-interval', 'n_intervals')]
+)
+def update_system_status(n):
+    report = orchestrator.get_orchestration_report()
+    fig = go.Figure(go.Indicator(
+        mode="gauge+number",
+        value=report['overall_safeguard_score'],
+        title={'text': "Overall Safeguard Score"},
+        gauge={'axis': {'range': [0, 1]}}
+    ))
+    return fig
+
+@app.callback(
+    Output('quantum-security-graph', 'figure'),
+    [Input('security-interval', 'n_intervals')]
+)
+def update_quantum_security(n):
+    report = orchestrator.quantum_security.get_security_report()
+    fig = go.Figure(data=[
+        go.Bar(
+            x=['Entanglement', 'Coherence', 'Error Rate'],
+            y=[report['entanglement_strength'], report['coherence_level'], 1-report['error_rate']]
+        )
+    ])
+    return fig
+
+@app.callback(
+    Output('future-protection-graph', 'figure'),
+    [Input('future-interval', 'n_intervals')]
+)
+def update_future_protection(n):
+    report = orchestrator.future_protection.get_protection_report()
+    fig = go.Figure(data=[
+        go.Scatter(
+            x=np.arange(len(report['predicted_states'])),
+            y=report['predicted_states'],
+            mode='lines+markers'
+        )
+    ])
+    return fig
+
+@app.callback(
+    Output('integration-graph', 'figure'),
+    [Input('integration-interval', 'n_intervals')]
+)
+def update_integration(n):
+    report = orchestrator.integration_safeguard.get_safeguard_report()
+    fig = go.Figure(data=[
+        go.Heatmap(
+            z=report['coherence_matrix'],
+            colorscale='Viridis'
+        )
+    ])
+    return fig
+
+@app.callback(
+    Output('conflict-resolution-graph', 'figure'),
+    [Input('conflict-interval', 'n_intervals')]
+)
+def update_conflict_resolution(n):
+    report = orchestrator.conflict_resolution.get_resolution_report()
+    fig = go.Figure(data=[
+        go.Pie(
+            labels=list(report['potentials'].keys()),
+            values=list(report['potentials'].values())
+        )
+    ])
+    return fig
+
+@app.callback(
+    Output('divine-balance-graph', 'figure'),
+    [Input('balance-interval', 'n_intervals')]
+)
+def update_divine_balance(n):
+    report = orchestrator.divine_balance.get_balance_report()
+    fig = go.Figure(data=[
+        go.Scatterpolar(
+            r=report['nurturing_energy'],
+            theta=np.linspace(0, 360, len(report['nurturing_energy'])),
+            fill='toself'
+        )
+    ])
+    return fig
+
+@app.callback(
+    Output('archetypal-graph', 'figure'),
+    [Input('archetypal-interval', 'n_intervals')]
+)
+def update_archetypal(n):
+    report = orchestrator.archetypal_network.get_archetypal_report()
+    fig = go.Figure(data=[
+        go.Scatter3d(
+            x=report['christ_state'],
+            y=report['krishna_state'],
+            z=report['buddha_state'],
+            mode='markers'
+        )
+    ])
+    return fig
 
 if __name__ == "__main__":
     app.run_server(debug=True, port=8050) 
