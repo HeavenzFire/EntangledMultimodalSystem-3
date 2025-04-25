@@ -3,18 +3,19 @@ updates:
   - package-ecosystem: "pip"
     directory: "/"
     schedule:
-      interval: "daily"
+      interval: "weekly"
     open-pull-requests-limit: 10
     reviewers:
       - "HeavenzFire"
-    assignees:
-      - "HeavenzFire"
-    labels:
-      - "dependencies"
-      - "security"
     commit-message:
       prefix: "chore"
       include: "scope"
+    labels:
+      - "dependencies"
+      - "python"
+    milestone: 1
+    assignees:
+      - "HeavenzFire"
     ignore:
       - dependency-name: "numpy"
         versions: ["1.24.0", "1.24.1"]
