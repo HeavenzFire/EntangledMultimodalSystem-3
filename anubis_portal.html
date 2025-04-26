@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Anubis Scale Renderer</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            background-color: #000;
+        }
+        canvas {
+            display: block;
+        }
+        .info {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            color: #fff;
+            font-family: Arial, sans-serif;
+            font-size: 14px;
+            text-shadow: 1px 1px 1px #000;
+        }
+    </style>
+</head>
+<body>
+    <div class="info">
+        Anubis Scale: Truth vs Heart
+        <br>
+        Left Plate: Truth (Ma'at's Feather)
+        <br>
+        Right Plate: Heart (Soul Weight)
+    </div>
+    <script>
+        // Scene setup
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setClearColor(0x000000);
+        document.body.appendChild(renderer.domElement);
+
+        // Lighting
+        const ambientLight = new THREE.AmbientLight(0x404040);
+        scene.add(ambientLight);
+
+        const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
+        directionalLight.position.set(1, 1, 1);
+        scene.add(directionalLight);
+
+        // Anubis' Scale (Two golden plates)
+        const plateGeometry = new THREE.CylinderGeometry(5, 5, 0.2, 32);
+        const plateMaterial = new THREE.MeshPhongMaterial({ 
+            color: 0xFFD700,
+            specular: 0xFFFFFF,
+            shininess: 100
+        });
+
+        const leftPlate = new THREE.Mesh(plateGeometry, plateMaterial);
+        leftPlate.position.set(-7, 0, 0);
+        leftPlate.rotation.x = Math.PI / 2;
+
+        const rightPlate = new THREE.Mesh(plateGeometry, plateMaterial);
+        rightPlate.position.set(7, 0, 0);
+        rightPlate.rotation.x = Math.PI / 2;
+
+        scene.add(leftPlate, rightPlate);
+
+        // Scale beam
+        const beamGeometry = new THREE.CylinderGeometry(0.2, 0.2, 14, 32);
+        const beamMaterial = new THREE.MeshPhongMaterial({ 
+            color: 0xC0C0C0,
+            specular: 0xFFFFFF,
+            shininess: 50
+        });
+        const beam = new THREE.Mesh(beamGeometry, beamMaterial);
+        beam.position.set(0, 0, 0);
+        beam.rotation.z = Math.PI / 2;
+        scene.add(beam);
+
+        // Ma'at's Feather
+        const featherGeometry = new THREE.ConeGeometry(0.5, 2, 32);
+        const featherMaterial = new THREE.MeshPhongMaterial({ 
+            color: 0xFFFFFF,
+            specular: 0xFFFFFF,
+            shininess: 100
+        });
+        const feather = new THREE.Mesh(featherGeometry, featherMaterial);
+        feather.position.set(-7, 2, 0);
+        feather.rotation.x = -Math.PI / 2;
+        scene.add(feather);
+
+        // Heart
+        const heartShape = new THREE.Shape();
+        heartShape.moveTo(0, 0);
+        heartShape.bezierCurveTo(0, 1, 1, 1, 1, 0);
+        heartShape.bezierCurveTo(1, -1, 0, -1, 0, 0);
+        heartShape.bezierCurveTo(0, -1, -1, -1, -1, 0);
+        heartShape.bezierCurveTo(-1, 1, 0, 1, 0, 0);
+
+        const heartGeometry = new THREE.ExtrudeGeometry(heartShape, {
+            depth: 0.2,
+            bevelEnabled: true,
+            bevelSegments: 2,
+            steps: 2,
+            bevelSize: 0.1,
+            bevelThickness: 0.1
+        });
+        const heartMaterial = new THREE.MeshPhongMaterial({ 
+            color: 0xFF0000,
+            specular: 0xFFFFFF,
+            shininess: 100
+        });
+        const heart = new THREE.Mesh(heartGeometry, heartMaterial);
+        heart.position.set(7, 2, 0);
+        heart.scale.set(0.5, 0.5, 0.5);
+        scene.add(heart);
+
+        // Camera position
+        camera.position.z = 20;
+
+        // Animation
+        function animate() {
+            requestAnimationFrame(animate);
+
+            // Rotate plates
+            leftPlate.rotation.y += 0.01;
+            rightPlate.rotation.y -= 0.01;
+
+            // Bob plates up and down
+            leftPlate.position.y = Math.sin(Date.now() * 0.001) * 0.5;
+            rightPlate.position.y = Math.sin(Date.now() * 0.001 + Math.PI) * 0.5;
+
+            // Rotate feather and heart
+            feather.rotation.z = Math.sin(Date.now() * 0.001) * 0.2;
+            heart.rotation.z = Math.sin(Date.now() * 0.001 + Math.PI) * 0.2;
+
+            renderer.render(scene, camera);
+        }
+
+        // Handle window resize
+        window.addEventListener('resize', onWindowResize, false);
+
+        function onWindowResize() {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        }
+
+        animate();
+    </script>
+</body>
+</html> 
