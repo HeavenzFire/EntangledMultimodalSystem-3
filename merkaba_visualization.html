@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Merkaba Field Visualization</title>
+    <style>
+        body { margin: 0; overflow: hidden; background-color: #000; }
+        canvas { display: block; }
+        #info {
+            position: absolute;
+            top: 10px;
+            width: 100%;
+            text-align: center;
+            color: #fff;
+            font-family: Arial, sans-serif;
+            pointer-events: none;
+        }
+        #frequency {
+            position: absolute;
+            bottom: 10px;
+            width: 100%;
+            text-align: center;
+            color: #00ffff;
+            font-family: monospace;
+            font-size: 18px;
+            pointer-events: none;
+        }
+    </style>
+</head>
+<body>
+    <div id="info">Merkaba Field Projection - 3-6-9 Sacred Geometry</div>
+    <div id="frequency">Frequency: 7.83 Hz (Schumann Resonance)</div>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script>
+        // Initialize scene, camera, and renderer
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        document.body.appendChild(renderer.domElement);
+        
+        // Create Merkaba geometry (tetrahedron)
+        const geometry = new THREE.TetrahedronGeometry(9, 3); // 3-6-9 fractal
+        const material = new THREE.MeshPhongMaterial({
+            color: 0x00ffff,
+            wireframe: true,
+            emissive: 0x12321, // Palindromic light code
+            transparent: true,
+            opacity: 0.8
+        });
+        const merkaba = new THREE.Mesh(geometry, material);
+        scene.add(merkaba);
+        
+        // Add lights
+        const ambientLight = new THREE.AmbientLight(0x404040);
+        scene.add(ambientLight);
+        
+        const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
+        directionalLight.position.set(1, 1, 1);
+        scene.add(directionalLight);
+        
+        // Add golden spiral
+        const spiralGeometry = new THREE.BufferGeometry();
+        const spiralPoints = [];
+        const goldenRatio = (1 + Math.sqrt(5)) / 2;
+        
+        for (let i = 0; i < 1000; i++) {
+            const theta = i * 0.1;
+            const radius = Math.pow(goldenRatio, theta / Math.PI);
+            const x = radius * Math.cos(theta);
+            const y = radius * Math.sin(theta);
+            const z = radius * Math.sin(theta / 2);
+            spiralPoints.push(new THREE.Vector3(x, y, z));
+        }
+        
+        spiralGeometry.setFromPoints(spiralPoints);
+        const spiralMaterial = new THREE.LineBasicMaterial({ color: 0xffd700 });
+        const spiral = new THREE.Line(spiralGeometry, spiralMaterial);
+        scene.add(spiral);
+        
+        // Position camera
+        camera.position.z = 30;
+        
+        // Animation variables
+        let time = 0;
+        const schumannFrequency = 7.83; // Hz
+        
+        // Handle window resize
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+        
+        // Animation loop
+        function animate() {
+            requestAnimationFrame(animate);
+            
+            // Update time
+            time += 0.01;
+            
+            // Rotate Merkaba at Schumann resonance
+            merkaba.rotation.x = Math.sin(time * schumannFrequency * 0.1) * 0.2;
+            merkaba.rotation.y += 0.01;
+            merkaba.rotation.z = Math.cos(time * schumannFrequency * 0.1) * 0.2;
+            
+            // Pulse the Merkaba
+            const scale = 1 + Math.sin(time * schumannFrequency * 0.1) * 0.1;
+            merkaba.scale.set(scale, scale, scale);
+            
+            // Update frequency display
+            document.getElementById('frequency').textContent = 
+                `Frequency: ${schumannFrequency.toFixed(2)} Hz (Schumann Resonance) | Amplitude: ${scale.toFixed(2)}`;
+            
+            renderer.render(scene, camera);
+        }
+        
+        animate();
+    </script>
+</body>
+</html> 

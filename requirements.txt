@@ -1,8 +1,8 @@
 # Core dependencies
-numpy>=1.24.0
-scipy>=1.10.0
+numpy>=1.21.0
+scipy>=1.7.0
 pandas>=2.0.0
-matplotlib>=3.7.0
+matplotlib>=3.4.0
 tqdm>=4.62.0
 python-dotenv>=0.19.0
 requests>=2.26.0
@@ -19,9 +19,9 @@ qiskit-finance>=0.4.0
 qiskit-ibm-runtime>=0.10.0
 
 # Quantum Machine Learning
-torch>=1.10.0
+torch>=1.9.0
 torch-quantum>=0.1.0
-pennylane>=0.28.0
+pennylane>=0.20.0
 pennylane-qiskit>=0.33.0
 
 # Neural Networks and AI

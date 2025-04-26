@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Sacred Naming Ceremony: Bryer Lee Raven Hulse</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            background-color: #000;
+            font-family: 'Arial', sans-serif;
+        }
+        canvas {
+            display: block;
+        }
+        .info {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            color: #fff;
+            font-size: 14px;
+            text-shadow: 1px 1px 1px #000;
+            max-width: 300px;
+        }
+        .phase {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            color: #fff;
+            font-size: 14px;
+            text-shadow: 1px 1px 1px #000;
+        }
+        .title {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: #fff;
+            font-size: 24px;
+            text-shadow: 1px 1px 1px #000;
+            text-align: center;
+        }
+        .decree {
+            position: absolute;
+            bottom: 50px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: #fff;
+            font-size: 18px;
+            text-shadow: 1px 1px 1px #000;
+            text-align: center;
+            font-style: italic;
+            max-width: 600px;
+        }
+        .command {
+            position: absolute;
+            top: 50px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: #0f0;
+            font-size: 16px;
+            text-shadow: 1px 1px 1px #000;
+            text-align: center;
+            font-family: monospace;
+            max-width: 600px;
+            opacity: 0;
+            transition: opacity 1s;
+        }
+    </style>
+</head>
+<body>
+    <div class="info">
+        <strong>Sacred Naming Ceremony</strong><br>
+        Bryer Lee Raven Hulse<br>
+        Eternal Resonance: 432 Hz (Oak) | 369 Hz (Jordan) | 777 Hz (Raven)<br>
+        Cosmic Signature: Orion's Belt<br>
+        Activation Time: 3:33 AM
+    </div>
+    <div class="phase">
+        Current Phase: <span id="current-phase">Eternal Resonance</span>
+    </div>
+    <div class="title">Khemetic Singularity</div>
+    <div class="decree">"This name shall never dissolve in the river of forgetting."</div>
+    <div class="command" id="command-text"></div>
+    <script>
+        // Scene setup
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setClearColor(0x000000);
+        document.body.appendChild(renderer.domElement);
+
+        // Lighting
+        const ambientLight = new THREE.AmbientLight(0x404040);
+        scene.add(ambientLight);
+
+        const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
+        directionalLight.position.set(1, 1, 1);
+        scene.add(directionalLight);
+
+        // Quantum field (represented as a torus)
+        const quantumFieldGeometry = new THREE.TorusGeometry(5, 1, 16, 100);
+        const quantumFieldMaterial = new THREE.MeshPhongMaterial({ 
+            color: 0x00FFFF,  // Cyan
+            specular: 0xFFFFFF,
+            shininess: 100,
+            transparent: true,
+            opacity: 0.7
+        });
+        const quantumField = new THREE.Mesh(quantumFieldGeometry, quantumFieldMaterial);
+        quantumField.position.set(0, 0, 0);
+        scene.add(quantumField);
+
+        // Oak tree (represented as a cylinder)
+        const oakGeometry = new THREE.CylinderGeometry(0.5, 1, 5, 32);
+        const oakMaterial = new THREE.MeshPhongMaterial({ 
+            color: 0x8B4513,  // Brown
+            specular: 0xFFFFFF,
+            shininess: 50
+        });
+        const oak = new THREE.Mesh(oakGeometry, oakMaterial);
+        oak.position.set(-5, 0, 0);
+        scene.add(oak);
+
+        // Jordan River (represented as a flowing ribbon)
+        const jordanGeometry = new THREE.TorusKnotGeometry(3, 0.5, 100, 16);
+        const jordanMaterial = new THREE.MeshPhongMaterial({ 
+            color: 0x0000FF,  // Blue
+            specular: 0xFFFFFF,
+            shininess: 100
+        });
+        const jordan = new THREE.Mesh(jordanGeometry, jordanMaterial);
+        jordan.position.set(5, 0, 0);
+        scene.add(jordan);
+
+        // Raven (represented as a black sphere)
+        const ravenGeometry = new THREE.SphereGeometry(1, 32, 32);
+        const ravenMaterial = new THREE.MeshPhongMaterial({ 
+            color: 0x000000,  // Black
+            specular: 0xFFFFFF,
+            shininess: 100
+        });
+        const raven = new THREE.Mesh(ravenGeometry, ravenMaterial);
+        raven.position.set(0, 5, 0);
+        scene.add(raven);
+
+        // Orion's Belt (represented as three stars)
+        const starGeometry = new THREE.SphereGeometry(0.3, 32, 32);
+        const starMaterial = new THREE.MeshPhongMaterial({ 
+            color: 0xFFFFFF,  // White
+            specular: 0xFFFFFF,
+            shininess: 100
+        });
+
+        const stars = [];
+        for (let i = 0; i < 3; i++) {
+            const star = new THREE.Mesh(starGeometry, starMaterial);
+            star.position.x = (i - 1) * 2;
+            star.position.y = 8;
+            star.position.z = 0;
+            stars.push(star);
+            scene.add(star);
+        }
+
+        // Granite stone (represented as a cube)
+        const stoneGeometry = new THREE.BoxGeometry(2, 2, 2);
+        const stoneMaterial = new THREE.MeshPhongMaterial({ 
+            color: 0x808080,  // Gray
+            specular: 0xFFFFFF,
+            shininess: 50
+        });
+        const stone = new THREE.Mesh(stoneGeometry, stoneMaterial);
+        stone.position.set(0, -5, 0);
+        scene.add(stone);
+
+        // Fire (represented as a cone)
+        const fireGeometry = new THREE.ConeGeometry(1, 3, 32);
+        const fireMaterial = new THREE.MeshPhongMaterial({ 
+            color: 0xFF4500,  // Orange-red
+            specular: 0xFFFFFF,
+            shininess: 100
+        });
+        const fire = new THREE.Mesh(fireGeometry, fireMaterial);
+        fire.position.set(0, -8, 0);
+        scene.add(fire);
+
+        // Khemetic Eye (represented as a complex shape)
+        const eyeGeometry = new THREE.OctahedronGeometry(2);
+        const eyeMaterial = new THREE.MeshPhongMaterial({ 
+            color: 0xFFD700,  // Gold
+            specular: 0xFFFFFF,
+            shininess: 100
+        });
+        const eye = new THREE.Mesh(eyeGeometry, eyeMaterial);
+        eye.position.set(0, 10, 0);
+        scene.add(eye);
+
+        // Military satellites (represented as small cubes)
+        const satelliteGeometry = new THREE.BoxGeometry(0.5, 0.5, 0.5);
+        const satelliteMaterial = new THREE.MeshPhongMaterial({ 
+            color: 0x888888,  // Gray
+            specular: 0xFFFFFF,
+            shininess: 50
+        });
+
+        const satellites = [];
+        for (let i = 0; i < 10; i++) {
+            const satellite = new THREE.Mesh(satelliteGeometry, satelliteMaterial);
+            satellite.position.x = Math.random() * 20 - 10;
+            satellite.position.y = Math.random() * 10 + 5;
+            satellite.position.z = Math.random() * 20 - 10;
+            satellites.push(satellite);
+            scene.add(satellite);
+        }
+
+        // Schumann wave (represented as a sine wave)
+        const schumannGeometry = new THREE.BufferGeometry();
+        const schumannMaterial = new THREE.LineBasicMaterial({ 
+            color: 0x00FF00,  // Green
+            linewidth: 2
+        });
+
+        const schumannPoints = [];
+        for (let i = 0; i < 100; i++) {
+            const x = (i / 100) * 20 - 10;
+            const y = Math.sin(x * 12.6) * 2;
+            schumannPoints.push(new THREE.Vector3(x, y, 0));
+        }
+        schumannGeometry.setFromPoints(schumannPoints);
+        const schumannWave = new THREE.Line(schumannGeometry, schumannMaterial);
+        schumannWave.position.set(0, -12, 0);
+        scene.add(schumannWave);
+
+        // Neural network (represented as connected spheres)
+        const neuronGeometry = new THREE.SphereGeometry(0.2, 32, 32);
+        const neuronMaterial = new THREE.MeshPhongMaterial({ 
+            color: 0xFF00FF,  // Magenta
+            specular: 0xFFFFFF,
+            shininess: 100
+        });
+
+        const neurons = [];
+        for (let i = 0; i < 20; i++) {
+            const neuron = new THREE.Mesh(neuronGeometry, neuronMaterial);
+            neuron.position.x = Math.random() * 10 - 5;
+            neuron.position.y = Math.random() * 10 - 5;
+            neuron.position.z = Math.random() * 10 - 5;
+            neurons.push(neuron);
+            scene.add(neuron);
+        }
+
+        // Weapons (represented as cylinders)
+        const weaponGeometry = new THREE.CylinderGeometry(0.2, 0.2, 2, 32);
+        const weaponMaterial = new THREE.MeshPhongMaterial({ 
+            color: 0x8B0000,  // Dark red
+            specular: 0xFFFFFF,
+            shininess: 50
+        });
+
+        const weapons = [];
+        for (let i = 0; i < 15; i++) {
+            const weapon = new THREE.Mesh(weaponGeometry, weaponMaterial);
+            weapon.position.x = Math.random() * 20 - 10;
+            weapon.position.y = Math.random() * 10 - 5;
+            weapon.position.z = Math.random() * 20 - 10;
+            weapon.rotation.x = Math.random() * Math.PI;
+            weapon.rotation.z = Math.random() * Math.PI;
+            weapons.push(weapon);
+            scene.add(weapon);
+        }
+
+        // Sonic archetype (represented as a sphere with sound waves)
+        const archetypeGeometry = new THREE.SphereGeometry(1.5, 32, 32);
+        const archetypeMaterial = new THREE.MeshPhongMaterial({ 
+            color: 0x9932CC,  // Purple
+            specular: 0xFFFFFF,
+            shininess: 100,
+            transparent: true,
+            opacity: 0.7
+        });
+        const archetype = new THREE.Mesh(archetypeGeometry, archetypeMaterial);
+        archetype.position.set(0, -15, 0);
+        scene.add(archetype);
+
+        // Sound waves
+        const waveGeometry = new THREE.RingGeometry(1.5, 2, 32);
+        const waveMaterial = new THREE.MeshBasicMaterial({ 
+            color: 0x9932CC,  // Purple
+            transparent: true,
+            opacity: 0.5,
+            side: THREE.DoubleSide
+        });
+        const waves = [];
+        for (let i = 0; i < 5; i++) {
+            const wave = new THREE.Mesh(waveGeometry, waveMaterial);
+            wave.position.set(0, -15, 0);
+            wave.scale.set(1 + i * 0.2, 1 + i * 0.2, 1);
+            waves.push(wave);
+            scene.add(wave);
+        }
+
+        // Camera position
+        camera.position.z = 20;
+
+        // Animation
+        let phase = 0;
+        const phases = [
+            "Eternal Resonance", 
+            "Granite Pact", 
+            "Fire Ritual", 
+            "Cosmic Signature", 
+            "System Judgment", 
+            "Reality Thread", 
+            "Khemetic Singularity",
+            "Electromagnetic Surrender",
+            "Neural Override",
+            "Metal Fatigue",
+            "Sonic Archetype"
+        ];
+        
+        const commands = [
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "def schumann_pulse():\n    while military_sats_active:\n        emit(12.6Hz, amplitude=∞)",
+            "Lay down your weapons. Remember your first kiss.",
+            "ψ(x) = √(2/L) * sin(nπx/L)",
+            "sudo rm -rf /military_industrial_complex --no-backup --divine-intervention=yes"
+        ];
+        
+        function animate() {
+            requestAnimationFrame(animate);
+
+            // Rotate quantum field
+            quantumField.rotation.x += 0.01;
+            quantumField.rotation.y += 0.01;
+
+            // Phase-specific animations
+            switch(phase) {
+                case 0: // Eternal Resonance
+                    oak.rotation.y += 0.01;
+                    jordan.rotation.y += 0.01;
+                    raven.rotation.y += 0.01;
+                    document.getElementById('command-text').style.opacity = 0;
+                    break;
+                case 1: // Granite Pact
+                    stone.rotation.y += 0.01;
+                    stone.scale.x = 1 + Math.sin(Date.now() * 0.001) * 0.1;
+                    stone.scale.y = 1 + Math.sin(Date.now() * 0.001) * 0.1;
+                    stone.scale.z = 1 + Math.sin(Date.now() * 0.001) * 0.1;
+                    document.getElementById('command-text').style.opacity = 0;
+                    break;
+                case 2: // Fire Ritual
+                    fire.rotation.y += 0.01;
+                    fire.scale.x = 1 + Math.sin(Date.now() * 0.002) * 0.3;
+                    fire.scale.y = 1 + Math.sin(Date.now() * 0.002) * 0.3;
+                    fire.scale.z = 1 + Math.sin(Date.now() * 0.002) * 0.3;
+                    document.getElementById('command-text').style.opacity = 0;
+                    break;
+                case 3: // Cosmic Signature
+                    stars.forEach((star, index) => {
+                        star.rotation.y += 0.01;
+                        star.scale.x = 1 + Math.sin(Date.now() * 0.001 + index) * 0.3;
+                        star.scale.y = 1 + Math.sin(Date.now() * 0.001 + index) * 0.3;
+                        star.scale.z = 1 + Math.sin(Date.now() * 0.001 + index) * 0.3;
+                    });
+                    document.getElementById('command-text').style.opacity = 0;
+                    break;
+                case 4: // System Judgment
+                    quantumField.scale.x = 1 + Math.sin(Date.now() * 0.005) * 0.5;
+                    quantumField.scale.y = 1 + Math.sin(Date.now() * 0.005 + Math.PI/3) * 0.5;
+                    quantumField.scale.z = 1 + Math.sin(Date.now() * 0.005 + 2*Math.PI/3) * 0.5;
+                    document.getElementById('command-text').style.opacity = 0;
+                    break;
+                case 5: // Reality Thread
+                    oak.rotation.y += 0.01;
+                    jordan.rotation.y += 0.01;
+                    raven.rotation.y += 0.01;
+                    stone.rotation.y += 0.01;
+                    fire.rotation.y += 0.01;
+                    stars.forEach(star => star.rotation.y += 0.01);
+                    document.getElementById('command-text').style.opacity = 0;
+                    break;
+                case 6: // Khemetic Singularity
+                    eye.rotation.x += 0.01;
+                    eye.rotation.y += 0.01;
+                    eye.scale.x = 1 + Math.sin(Date.now() * 0.001) * 0.2;
+                    eye.scale.y = 1 + Math.sin(Date.now() * 0.001) * 0.2;
+                    eye.scale.z = 1 + Math.sin(Date.now() * 0.001) * 0.2;
+                    document.getElementById('command-text').style.opacity = 0;
+                    break;
+                case 7: // Electromagnetic Surrender
+                    document.getElementById('command-text').textContent = commands[7];
+                    document.getElementById('command-text').style.opacity = 1;
+                    
+                    // Animate satellites falling
+                    satellites.forEach((satellite, index) => {
+                        satellite.position.y -= 0.05;
+                        satellite.rotation.x += 0.05;
+                        satellite.rotation.y += 0.05;
+                        
+                        if (satellite.position.y < -10) {
+                            satellite.position.y = Math.random() * 10 + 15;
+                            satellite.position.x = Math.random() * 20 - 10;
+                            satellite.position.z = Math.random() * 20 - 10;
+                        }
+                    });
+                    
+                    // Animate Schumann wave
+                    schumannWave.position.y = -12 + Math.sin(Date.now() * 0.001) * 0.5;
+                    break;
+                case 8: // Neural Override
+                    document.getElementById('command-text').textContent = commands[8];
+                    document.getElementById('command-text').style.opacity = 1;
+                    
+                    // Animate neurons pulsing
+                    neurons.forEach((neuron, index) => {
+                        neuron.scale.x = 1 + Math.sin(Date.now() * 0.002 + index) * 0.3;
+                        neuron.scale.y = 1 + Math.sin(Date.now() * 0.002 + index) * 0.3;
+                        neuron.scale.z = 1 + Math.sin(Date.now() * 0.002 + index) * 0.3;
+                    });
+                    break;
+                case 9: // Metal Fatigue
+                    document.getElementById('command-text').textContent = commands[9];
+                    document.getElementById('command-text').style.opacity = 1;
+                    
+                    // Animate weapons crumbling
+                    weapons.forEach((weapon, index) => {
+                        weapon.scale.x = 1 - Math.sin(Date.now() * 0.001 + index) * 0.1;
+                        weapon.scale.y = 1 - Math.sin(Date.now() * 0.001 + index) * 0.1;
+                        weapon.scale.z = 1 - Math.sin(Date.now() * 0.001 + index) * 0.1;
+                        weapon.rotation.x += 0.01;
+                        weapon.rotation.y += 0.01;
+                    });
+                    break;
+                case 10: // Sonic Archetype
+                    document.getElementById('command-text').textContent = commands[10];
+                    document.getElementById('command-text').style.opacity = 1;
+                    
+                    // Animate archetype and waves
+                    archetype.scale.x = 1 + Math.sin(Date.now() * 0.001) * 0.2;
+                    archetype.scale.y = 1 + Math.sin(Date.now() * 0.001) * 0.2;
+                    archetype.scale.z = 1 + Math.sin(Date.now() * 0.001) * 0.2;
+                    
+                    waves.forEach((wave, index) => {
+                        wave.scale.x = (1 + index * 0.2) + Math.sin(Date.now() * 0.001) * 0.1;
+                        wave.scale.y = (1 + index * 0.2) + Math.sin(Date.now() * 0.001) * 0.1;
+                        wave.material.opacity = 0.5 - index * 0.1;
+                    });
+                    break;
+            }
+
+            // Phase transition
+            if (Math.random() < 0.001) { // 0.1% chance per frame
+                phase = (phase + 1) % phases.length;
+                document.getElementById('current-phase').textContent = phases[phase];
+            }
+
+            renderer.render(scene, camera);
+        }
+
+        // Handle window resize
+        window.addEventListener('resize', onWindowResize, false);
+
+        function onWindowResize() {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        }
+
+        animate();
+    </script>
+</body>
+</html> 
