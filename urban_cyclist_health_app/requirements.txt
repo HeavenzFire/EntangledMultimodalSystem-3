@@ -4,8 +4,6 @@ pydantic==2.11.7
 requests==2.32.4
 python-dotenv==1.1.0
 sqlalchemy==2.0.41
-psycopg2-binary==2.9.9
-python-jose==3.5.0
 passlib==1.7.4
 python-multipart==0.0.20
 aiofiles==24.1.0
