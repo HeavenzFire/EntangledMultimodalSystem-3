@@ -11,20 +11,24 @@ class ScalabilityManager:
     def scale_up(self):
         for module in self.modules:
             module.scale_up()
+            module.advanced_scale_up()
 
     def scale_down(self):
         for module in self.modules:
             module.scale_down()
+            module.advanced_scale_down()
 
     def monitor_performance(self):
         performance_data = {}
         for module in self.modules:
             performance_data[module.name] = module.get_performance_metrics()
+            performance_data[module.name].update(module.get_advanced_performance_metrics())
         return performance_data
 
     def optimize_resources(self):
         for module in self.modules:
             module.optimize_resources()
+            module.advanced_optimize_resources()
 
     def handle_failover(self):
         for module in self.modules:
@@ -33,6 +37,7 @@ class ScalabilityManager:
     def distribute_load(self):
         for module in self.modules:
             module.distribute_load()
+            module.advanced_distribute_load()
 
     def ensure_high_availability(self):
         for module in self.modules:

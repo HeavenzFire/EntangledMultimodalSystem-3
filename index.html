@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Unified Modal Platform</title>
   <style>
     body { font-family: Arial, sans-serif; margin: 20px; }
@@ -19,8 +20,6 @@
   <button onclick="fetchDictionary()">Dictionary Lookup</button>
   <button onclick="fetchCloud()">Cloud Networking</button>
   <button onclick="fetchRadiation()">Radiation Monitor</button>
-  <button onclick="fetchChristConsciousness()">Christ Consciousness</button>
-  
   <div id="output">Output will appear here...</div>
   
   <script>
@@ -96,10 +95,7 @@
       showOutput('Radiation Monitor:\n' + JSON.stringify(data.radiation_data, null, 2));
     }
 
-    async function fetchChristConsciousness() {
-      const response = await fetch('/christ_consciousness');
-      const data = await response.json();
-      showOutput('Christ Consciousness:\n' + JSON.stringify(data.message, null, 2));
+
     }
   </script>
 </body>
