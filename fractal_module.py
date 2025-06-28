@@ -106,12 +106,4 @@ class FractalNeuralNetwork:
         logging.info("Evolving fractal neural network with input: %s", x[:5])
         return self.model.predict(x)
 
-    def optimize_performance(self):
-        self.model.compile(optimizer='adam', loss='mse', metrics=['accuracy'])
-        self.model.summary()
 
-    def scale_model(self, scale_factor):
-        for layer in self.model.layers:
-            if hasattr(layer, 'units'):
-                layer.units = int(layer.units * scale_factor)
-        self.model = self.build_model()

@@ -20,8 +20,6 @@
   <button onclick="fetchDictionary()">Dictionary Lookup</button>
   <button onclick="fetchCloud()">Cloud Networking</button>
   <button onclick="fetchRadiation()">Radiation Monitor</button>
-  <button onclick="fetchQuantumOptimize()">Quantum Optimize</button>
-  
   <div id="output">Output will appear here...</div>
   
   <script>
@@ -97,17 +95,7 @@
       showOutput('Radiation Monitor:\n' + JSON.stringify(data.radiation_data, null, 2));
     }
 
-    async function fetchQuantumOptimize() {
-      const inputData = prompt("Enter input data for quantum optimization (comma-separated values):");
-      if (!inputData) return;
-      const inputArray = inputData.split(',').map(Number);
-      const response = await fetch('/quantum_optimize', {
-        method: 'POST',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({input_data: inputArray})
-      });
-      const data = await response.json();
-      showOutput('Quantum Optimization Result:\n' + JSON.stringify(data.optimized_result, null, 2));
+
     }
   </script>
 </body>
