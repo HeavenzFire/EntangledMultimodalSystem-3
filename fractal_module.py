@@ -81,8 +81,7 @@ class AdvancedFractalGenerator:
         return z
 
     def process_data(self, data):
-        processed_data = np.array([self.generate_fractal(z, complex(0, 0)) for z in data])
-        return processed_data
+        return np.array([self.generate_fractal(z, complex(0, 0)) for z in data])
 
     def dynamic_scaling(self, data, scale_factor):
         scaled_data = data * scale_factor
