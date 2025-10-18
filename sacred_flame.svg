@@ -1,0 +1,16 @@
+<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+  <!-- Tetrahedral Flame -->
+  <path d="M50 10 L85 70 L15 70 Z" fill="url(#fireGradient)"/>
+  <defs>
+    <linearGradient id="fireGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ff0000"/>
+      <stop offset="100%" stop-color="#ffff00"/>
+    </linearGradient>
+  </defs>
+  <!-- 144° Arc of Covenant -->
+  <path d="M20 50 A30 30 0 0 1 80 50" stroke="#fff" stroke-width="2" fill="none"/>
+  <!-- Sacred Numbers -->
+  <text x="50" y="85" font-family="Arial" font-size="8" fill="#fff" text-anchor="middle">3-6-9</text>
+  <!-- Christ Thermal Threshold -->
+  <text x="50" y="95" font-family="Arial" font-size="6" fill="#fff" text-anchor="middle">111,000°K</text>
+</svg> 

@@ -1,0 +1,58 @@
+name: Quantum-Secure CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  schedule:
+    - cron: '0 0 * * 0'  # Run weekly
+
+jobs:
+  quantum-security:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install qiskit[all] pennylane cirq mitiq
+
+      - name: Generate Quantum-Secure SBOM
+        uses: anchore/sbom-action@v3
+        with:
+          format: 'spdx-json'
+          quantum-safe: true
+          pqc-algorithms: ML-DSA-65,SLH-DSA-SHA2
+
+      - name: Run Quantum Vulnerability Scan
+        uses: shift-left-security/scan-action@v4
+        with:
+          targets: 'src/'
+          quantum-threat-level: 'crqc'
+          ruleset: 'nist-pqc-phase3'
+
+      - name: Check Quantum-Safe Secrets
+        uses: qryptic/qvault-scan@2.1
+        with:
+          key-protection: kyber-1024
+          secrets-format: dilithium-signed
+
+      - name: Run Quantum Security Tests
+        run: |
+          python -m pytest tests/security/test_quantum_safe.py -v
+
+      - name: Upload Security Reports
+        uses: actions/upload-artifact@v3
+        with:
+          name: quantum-security-reports
+          path: |
+            sbom.spdx.json
+            security-scan-results.json
+            quantum-safe-secrets-report.json

@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Adamic Pulse Visualizer</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            background-color: #000;
+        }
+        canvas {
+            display: block;
+        }
+        .info {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            color: #fff;
+            font-family: Arial, sans-serif;
+            font-size: 14px;
+            text-shadow: 1px 1px 1px #000;
+        }
+        .phase {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            color: #fff;
+            font-family: Arial, sans-serif;
+            font-size: 14px;
+            text-shadow: 1px 1px 1px #000;
+        }
+    </style>
+</head>
+<body>
+    <div class="info">
+        Adamic Pulse: True Original Human Resonance
+        <br>
+        Day 1: Mitochondrial Unshackling
+        <br>
+        Day 2: Pineal Static Charge
+        <br>
+        Day 3: Torsion Field Ignition
+    </div>
+    <div class="phase">
+        Current Phase: <span id="current-phase">Mitochondrial Unshackling</span>
+    </div>
+    <script>
+        // Scene setup
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setClearColor(0x000000);
+        document.body.appendChild(renderer.domElement);
+
+        // Lighting
+        const ambientLight = new THREE.AmbientLight(0x404040);
+        scene.add(ambientLight);
+
+        const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
+        directionalLight.position.set(1, 1, 1);
+        scene.add(directionalLight);
+
+        // Human biofield (represented as a torus)
+        const biofieldGeometry = new THREE.TorusGeometry(5, 1, 16, 100);
+        const biofieldMaterial = new THREE.MeshPhongMaterial({ 
+            color: 0x00FFFF,  // Cyan
+            specular: 0xFFFFFF,
+            shininess: 100,
+            transparent: true,
+            opacity: 0.7
+        });
+        const biofield = new THREE.Mesh(biofieldGeometry, biofieldMaterial);
+        biofield.position.set(0, 0, 0);
+        scene.add(biofield);
+
+        // 7.83Hz entrainment (represented as a cage)
+        const cageGeometry = new THREE.BoxGeometry(10, 10, 10);
+        const cageMaterial = new THREE.MeshPhongMaterial({ 
+            color: 0xFF0000,  // Red
+            specular: 0xFFFFFF,
+            shininess: 50,
+            wireframe: true
+        });
+        const cage = new THREE.Mesh(cageGeometry, cageMaterial);
+        cage.position.set(0, 0, 0);
+        scene.add(cage);
+
+        // Mitochondria (represented as spheres)
+        const mitochondriaGeometry = new THREE.SphereGeometry(0.5, 32, 32);
+        const mitochondriaMaterial = new THREE.MeshPhongMaterial({ 
+            color: 0x00FF00,  // Green
+            specular: 0xFFFFFF,
+            shininess: 100
+        });
+
+        const mitochondria = [];
+        const numMitochondria = 20;
+        for (let i = 0; i < numMitochondria; i++) {
+            const mitochondrion = new THREE.Mesh(mitochondriaGeometry, mitochondriaMaterial);
+            const angle = (i / numMitochondria) * Math.PI * 2;
+            const radius = 3;
+            mitochondrion.position.x = Math.cos(angle) * radius;
+            mitochondrion.position.z = Math.sin(angle) * radius;
+            mitochondrion.position.y = Math.sin(angle) * radius;
+            mitochondria.push(mitochondrion);
+            scene.add(mitochondrion);
+        }
+
+        // Pineal gland (represented as a sphere)
+        const pinealGeometry = new THREE.SphereGeometry(1, 32, 32);
+        const pinealMaterial = new THREE.MeshPhongMaterial({ 
+            color: 0xFFD700,  // Gold
+            specular: 0xFFFFFF,
+            shininess: 100
+        });
+        const pineal = new THREE.Mesh(pinealGeometry, pinealMaterial);
+        pineal.position.set(0, 2, 0);
+        scene.add(pineal);
+
+        // Torsion field (represented as a spiral)
+        const torsionGeometry = new THREE.TorusKnotGeometry(3, 0.5, 100, 16);
+        const torsionMaterial = new THREE.MeshPhongMaterial({ 
+            color: 0x8A2BE2,  // Violet
+            specular: 0xFFFFFF,
+            shininess: 100
+        });
+        const torsion = new THREE.Mesh(torsionGeometry, torsionMaterial);
+        torsion.position.set(0, -2, 0);
+        scene.add(torsion);
+
+        // Scalar transmitter (represented as a complex shape)
+        const transmitterGeometry = new THREE.OctahedronGeometry(2);
+        const transmitterMaterial = new THREE.MeshPhongMaterial({ 
+            color: 0xFFFFFF,  // White
+            specular: 0xFFFFFF,
+            shininess: 100
+        });
+        const transmitter = new THREE.Mesh(transmitterGeometry, transmitterMaterial);
+        transmitter.position.set(0, 5, 0);
+        scene.add(transmitter);
+
+        // Camera position
+        camera.position.z = 20;
+
+        // Animation
+        let phase = 0;
+        const phases = ["Mitochondrial Unshackling", "Pineal Static Charge", "Torsion Field Ignition", "Scalar Transmission"];
+        
+        function animate() {
+            requestAnimationFrame(animate);
+
+            // Rotate biofield
+            biofield.rotation.x += 0.01;
+            biofield.rotation.y += 0.01;
+
+            // Phase-specific animations
+            switch(phase) {
+                case 0: // Mitochondrial Unshackling
+                    mitochondria.forEach((mitochondrion, index) => {
+                        mitochondrion.rotation.y += 0.01;
+                        mitochondrion.position.y = Math.sin(Date.now() * 0.001 + index) * 2;
+                    });
+                    cage.scale.x = 1 + Math.sin(Date.now() * 0.001) * 0.1;
+                    cage.scale.y = 1 + Math.sin(Date.now() * 0.001) * 0.1;
+                    cage.scale.z = 1 + Math.sin(Date.now() * 0.001) * 0.1;
+                    break;
+                case 1: // Pineal Static Charge
+                    pineal.rotation.x += 0.05;
+                    pineal.rotation.y += 0.05;
+                    pineal.scale.x = 1 + Math.sin(Date.now() * 0.002) * 0.3;
+                    pineal.scale.y = 1 + Math.sin(Date.now() * 0.002) * 0.3;
+                    pineal.scale.z = 1 + Math.sin(Date.now() * 0.002) * 0.3;
+                    break;
+                case 2: // Torsion Field Ignition
+                    torsion.rotation.x += 0.02;
+                    torsion.rotation.y += 0.02;
+                    torsion.scale.x = 1 + Math.sin(Date.now() * 0.001) * 0.2;
+                    torsion.scale.y = 1 + Math.sin(Date.now() * 0.001) * 0.2;
+                    torsion.scale.z = 1 + Math.sin(Date.now() * 0.001) * 0.2;
+                    break;
+                case 3: // Scalar Transmission
+                    transmitter.rotation.x += 0.03;
+                    transmitter.rotation.y += 0.03;
+                    transmitter.scale.x = 1 + Math.sin(Date.now() * 0.001) * 0.2;
+                    transmitter.scale.y = 1 + Math.sin(Date.now() * 0.001) * 0.2;
+                    transmitter.scale.z = 1 + Math.sin(Date.now() * 0.001) * 0.2;
+                    
+                    // Cage breaking apart
+                    cage.scale.x = 1 + Math.sin(Date.now() * 0.005) * 0.5;
+                    cage.scale.y = 1 + Math.sin(Date.now() * 0.005 + Math.PI/3) * 0.5;
+                    cage.scale.z = 1 + Math.sin(Date.now() * 0.005 + 2*Math.PI/3) * 0.5;
+                    break;
+            }
+
+            // Phase transition
+            if (Math.random() < 0.001) { // 0.1% chance per frame
+                phase = (phase + 1) % phases.length;
+                document.getElementById('current-phase').textContent = phases[phase];
+            }
+
+            renderer.render(scene, camera);
+        }
+
+        // Handle window resize
+        window.addEventListener('resize', onWindowResize, false);
+
+        function onWindowResize() {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        }
+
+        animate();
+    </script>
+</body>
+</html> 

@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Cosmic Reboot Visualizer</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            background-color: #000;
+        }
+        canvas {
+            display: block;
+        }
+        .info {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            color: #fff;
+            font-family: Arial, sans-serif;
+            font-size: 14px;
+            text-shadow: 1px 1px 1px #000;
+        }
+        .phase {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            color: #fff;
+            font-family: Arial, sans-serif;
+            font-size: 14px;
+            text-shadow: 1px 1px 1px #000;
+        }
+    </style>
+</head>
+<body>
+    <div class="info">
+        Cosmic Reboot: Divine Task Force
+        <br>
+        Phase 1: Harmonic Alignment
+        <br>
+        Phase 2: Systemic Overhaul
+        <br>
+        Phase 3: Final Strike
+        <br>
+        Phase 4: Celebration Protocol
+    </div>
+    <div class="phase">
+        Current Phase: <span id="current-phase">Harmonic Alignment</span>
+    </div>
+    <script>
+        // Scene setup
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setClearColor(0x000000);
+        document.body.appendChild(renderer.domElement);
+
+        // Lighting
+        const ambientLight = new THREE.AmbientLight(0x404040);
+        scene.add(ambientLight);
+
+        const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
+        directionalLight.position.set(1, 1, 1);
+        scene.add(directionalLight);
+
+        // Divine entities
+        const entityGeometry = new THREE.SphereGeometry(2, 32, 32);
+        const entityMaterial = new THREE.MeshPhongMaterial({ 
+            color: 0xFFFFFF,
+            specular: 0xFFFFFF,
+            shininess: 100
+        });
+
+        // Create divine entities in a circle
+        const entities = [];
+        const numEntities = 7;
+        for (let i = 0; i < numEntities; i++) {
+            const entity = new THREE.Mesh(entityGeometry, entityMaterial);
+            const angle = (i / numEntities) * Math.PI * 2;
+            const radius = 10;
+            entity.position.x = Math.cos(angle) * radius;
+            entity.position.z = Math.sin(angle) * radius;
+            entity.position.y = 0;
+            entities.push(entity);
+            scene.add(entity);
+        }
+
+        // Chakra grid
+        const chakraGeometry = new THREE.TorusGeometry(5, 0.2, 16, 100);
+        const chakraMaterial = new THREE.MeshPhongMaterial({ 
+            color: 0x8A2BE2,  // Violet
+            specular: 0xFFFFFF,
+            shininess: 100
+        });
+        const chakraGrid = new THREE.Mesh(chakraGeometry, chakraMaterial);
+        chakraGrid.position.set(0, 0, 0);
+        scene.add(chakraGrid);
+
+        // Arc lightning
+        const lightningGeometry = new THREE.CylinderGeometry(0.1, 0.1, 20, 32);
+        const lightningMaterial = new THREE.MeshPhongMaterial({ 
+            color: 0x00FFFF,  // Cyan
+            specular: 0xFFFFFF,
+            shininess: 100
+        });
+        const lightning = new THREE.Mesh(lightningGeometry, lightningMaterial);
+        lightning.position.set(0, 10, 0);
+        scene.add(lightning);
+
+        // New constellation
+        const constellationGeometry = new THREE.TorusKnotGeometry(3, 0.5, 100, 16);
+        const constellationMaterial = new THREE.MeshPhongMaterial({ 
+            color: 0xFFD700,  // Gold
+            specular: 0xFFFFFF,
+            shininess: 100
+        });
+        const constellation = new THREE.Mesh(constellationGeometry, constellationMaterial);
+        constellation.position.set(0, -10, 0);
+        scene.add(constellation);
+
+        // Camera position
+        camera.position.z = 30;
+
+        // Animation
+        let phase = 0;
+        const phases = ["Harmonic Alignment", "Systemic Overhaul", "Final Strike", "Celebration Protocol"];
+        
+        function animate() {
+            requestAnimationFrame(animate);
+
+            // Rotate entities
+            entities.forEach((entity, index) => {
+                entity.rotation.y += 0.01;
+                entity.position.y = Math.sin(Date.now() * 0.001 + index) * 2;
+            });
+
+            // Phase-specific animations
+            switch(phase) {
+                case 0: // Harmonic Alignment
+                    chakraGrid.rotation.x += 0.01;
+                    chakraGrid.rotation.y += 0.01;
+                    break;
+                case 1: // Systemic Overhaul
+                    entities.forEach(entity => {
+                        entity.scale.x = 1 + Math.sin(Date.now() * 0.001) * 0.2;
+                        entity.scale.y = 1 + Math.sin(Date.now() * 0.001) * 0.2;
+                        entity.scale.z = 1 + Math.sin(Date.now() * 0.001) * 0.2;
+                    });
+                    break;
+                case 2: // Final Strike
+                    lightning.rotation.x += 0.1;
+                    lightning.rotation.z += 0.1;
+                    break;
+                case 3: // Celebration Protocol
+                    constellation.rotation.x += 0.01;
+                    constellation.rotation.y += 0.01;
+                    break;
+            }
+
+            // Phase transition
+            if (Math.random() < 0.001) { // 0.1% chance per frame
+                phase = (phase + 1) % phases.length;
+                document.getElementById('current-phase').textContent = phases[phase];
+            }
+
+            renderer.render(scene, camera);
+        }
+
+        // Handle window resize
+        window.addEventListener('resize', onWindowResize, false);
+
+        function onWindowResize() {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        }
+
+        animate();
+    </script>
+</body>
+</html> 
