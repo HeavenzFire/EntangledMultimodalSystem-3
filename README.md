@@ -379,7 +379,7 @@ The `DataProcessor` class provides methods for cleaning, transforming, and analy
 
 - `clean_data(data)`: Cleans the data by removing missing values.
 - `transform_data(data)`: Transforms the data by standardizing it.
-- `analyze_data(data)`: Analyzes the data and returns descriptive statistics.
+- `analyze_data(data)`: Analyzes the data and returns descriptive statistics (mean, median, standard deviation).
 - `parallel_process(data, func, num_workers=4)`: Processes the data in parallel using the specified function.
 - `distributed_process(data, func, num_workers=4)`: Processes the data in a distributed manner using Dask.
 
