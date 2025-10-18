@@ -89,10 +89,7 @@ class FractalNN:
         return z
 
     def process_data(self, data):
-        processed_data = np.array(
-            [self.generate_fractal(z, complex(0, 0)) for z in data]
-        )
-        return processed_data
+        return np.array([self.generate_fractal(z, complex(0, 0)) for z in data])
 
 
 # Logging and Monitoring Module
