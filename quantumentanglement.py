@@ -438,5 +438,4 @@ class QuantumEntanglementSuperposition:
             
             # Measure all qubits in the computational basis
             return [qml.expval(qml.PauliZ(i)) for i in range(self.num_qubits)]
-        
-        return circuit()
+<<<
