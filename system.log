@@ -1,0 +1,12 @@
+2025-04-25 13:26:46,858 - INFO - Pass: UnrollCustomDefinitions - 1.00970 (ms)
+2025-04-25 13:26:46,859 - INFO - Begin BasisTranslator from source basis {('u3', 1)} to target basis {'ry', 'rx', 'snapshot', 'delay', 'cx', 'barrier', 'p', 'z', 'x', 'u', 'rz', 'store', 'reset', 'measure'}.
+2025-04-25 13:26:46,861 - INFO - Basis translation path search completed in 0.002s.
+2025-04-25 13:26:46,866 - INFO - Basis translation paths composed in 0.004s.
+2025-04-25 13:26:46,870 - INFO - Basis translation instructions replaced in 0.003s.
+2025-04-25 13:26:46,870 - INFO - Pass: BasisTranslator - 10.99396 (ms)
+2025-04-25 13:27:34,078 - INFO - Pass: UnrollCustomDefinitions - 1.01280 (ms)
+2025-04-25 13:27:34,079 - INFO - Begin BasisTranslator from source basis {('u3', 1)} to target basis {'cx', 'measure', 'ry', 'store', 'x', 'barrier', 'snapshot', 'delay', 'reset', 'p', 'u', 'rx', 'rz', 'z'}.
+2025-04-25 13:27:34,082 - INFO - Basis translation path search completed in 0.003s.
+2025-04-25 13:27:34,091 - INFO - Basis translation paths composed in 0.008s.
+2025-04-25 13:27:34,097 - INFO - Basis translation instructions replaced in 0.006s.
+2025-04-25 13:27:34,097 - INFO - Pass: BasisTranslator - 17.99941 (ms)

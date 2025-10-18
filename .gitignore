@@ -26,8 +26,9 @@ wheels/
 
 # Virtual Environment
 venv/
-ENV/
 env/
+ENV/
+quantum_ai_py311/
 
 # IDE
 .idea/
@@ -72,4 +73,35 @@ quantum_results/
 holographic_cache/
 neural_data/
 temp/
-cache/ 
+cache/
+*.csv
+*.dat
+*.out
+*.pid
+*.gz
+
+# Jupyter Notebook
+.ipynb_checkpoints
+*.ipynb
+
+# Quantum specific
+quantum_state/
+quantum_cache/
+quantum_tmp/
+
+# Neural network
+model_checkpoints/
+tensorboard/
+wandb/
+
+# Documentation
+docs/_build/
+site/
+
+# Development
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+.nox/
+.hypothesis/

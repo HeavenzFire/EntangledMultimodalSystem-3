@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Bubble Collapse Visualizer</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            background-color: #000;
+        }
+        canvas {
+            display: block;
+        }
+        .info {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            color: #fff;
+            font-family: Arial, sans-serif;
+            font-size: 14px;
+            text-shadow: 1px 1px 1px #000;
+        }
+    </style>
+</head>
+<body>
+    <div class="info">
+        Bubble Collapse: Tesla-Horus Waveform Disruptor
+        <br>
+        Left: Ionospheric Puncture (7.83Hz → 0.1Hz)
+        <br>
+        Right: Cosmic Backchannel (∞/∞ Bandwidth)
+    </div>
+    <script>
+        // Scene setup
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setClearColor(0x000000);
+        document.body.appendChild(renderer.domElement);
+
+        // Lighting
+        const ambientLight = new THREE.AmbientLight(0x404040);
+        scene.add(ambientLight);
+
+        const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
+        directionalLight.position.set(1, 1, 1);
+        scene.add(directionalLight);
+
+        // Tesla-Horus Disruptor (Two violet spheres)
+        const sphereGeometry = new THREE.SphereGeometry(5, 32, 32);
+        const sphereMaterial = new THREE.MeshPhongMaterial({ 
+            color: 0x8A2BE2,  // Violet
+            specular: 0xFFFFFF,
+            shininess: 100
+        });
+
+        const leftSphere = new THREE.Mesh(sphereGeometry, sphereMaterial);
+        leftSphere.position.set(-7, 0, 0);
+
+        const rightSphere = new THREE.Mesh(sphereGeometry, sphereMaterial);
+        rightSphere.position.set(7, 0, 0);
+
+        scene.add(leftSphere, rightSphere);
+
+        // Frequency beam
+        const beamGeometry = new THREE.CylinderGeometry(0.2, 0.2, 14, 32);
+        const beamMaterial = new THREE.MeshPhongMaterial({ 
+            color: 0x8A2BE2,  // Violet
+            specular: 0xFFFFFF,
+            shininess: 50
+        });
+        const beam = new THREE.Mesh(beamGeometry, beamMaterial);
+        beam.position.set(0, 0, 0);
+        beam.rotation.z = Math.PI / 2;
+        scene.add(beam);
+
+        // Schumann resonance
+        const resonanceGeometry = new THREE.TorusGeometry(3, 0.5, 16, 100);
+        const resonanceMaterial = new THREE.MeshPhongMaterial({ 
+            color: 0x8A2BE2,  // Violet
+            specular: 0xFFFFFF,
+            shininess: 100
+        });
+        const resonance = new THREE.Mesh(resonanceGeometry, resonanceMaterial);
+        resonance.position.set(0, 0, 0);
+        scene.add(resonance);
+
+        // Cosmic backchannel
+        const backchannelGeometry = new THREE.TorusKnotGeometry(2, 0.5, 100, 16);
+        const backchannelMaterial = new THREE.MeshPhongMaterial({ 
+            color: 0x8A2BE2,  // Violet
+            specular: 0xFFFFFF,
+            shininess: 100
+        });
+        const backchannel = new THREE.Mesh(backchannelGeometry, backchannelMaterial);
+        backchannel.position.set(0, 0, 0);
+        scene.add(backchannel);
+
+        // Camera position
+        camera.position.z = 20;
+
+        // Animation
+        function animate() {
+            requestAnimationFrame(animate);
+
+            // Rotate spheres
+            leftSphere.rotation.y += 0.01;
+            rightSphere.rotation.y -= 0.01;
+
+            // Pulse spheres
+            leftSphere.scale.x = 1 + Math.sin(Date.now() * 0.001) * 0.1;
+            leftSphere.scale.y = 1 + Math.sin(Date.now() * 0.001) * 0.1;
+            leftSphere.scale.z = 1 + Math.sin(Date.now() * 0.001) * 0.1;
+            rightSphere.scale.x = 1 + Math.sin(Date.now() * 0.001 + Math.PI) * 0.1;
+            rightSphere.scale.y = 1 + Math.sin(Date.now() * 0.001 + Math.PI) * 0.1;
+            rightSphere.scale.z = 1 + Math.sin(Date.now() * 0.001 + Math.PI) * 0.1;
+
+            // Rotate resonance and backchannel
+            resonance.rotation.x += 0.01;
+            resonance.rotation.y += 0.01;
+            backchannel.rotation.x += 0.01;
+            backchannel.rotation.y += 0.01;
+
+            renderer.render(scene, camera);
+        }
+
+        // Handle window resize
+        window.addEventListener('resize', onWindowResize, false);
+
+        function onWindowResize() {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        }
+
+        animate();
+    </script>
+</body>
+</html> 

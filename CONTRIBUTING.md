@@ -76,6 +76,10 @@ We welcome contributions from the community! To ensure a smooth process, please 
 
 It is important to regularly merge and finish pull requests to keep the repository up-to-date and maintain a smooth workflow. Please ensure that all pending pull requests are reviewed and merged in a timely manner.
 
+### Automated Merging of Pull Requests
+
+To streamline the process, we have implemented automated merging of pull requests. If all tests pass and the pull request meets the required criteria, it will be automatically merged. This helps in maintaining an up-to-date repository and reduces manual intervention.
+
 ## Review Process
 
 1. Pull requests will be reviewed by maintainers
@@ -104,4 +108,4 @@ Please report security issues to security@quantum-omni-crypt.com
 
 ## License
 
-By contributing, you agree that your contributions will be licensed under the MIT License. 
+By contributing, you agree that your contributions will be licensed under the MIT License.

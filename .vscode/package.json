@@ -1,0 +1,114 @@
+{
+    "name": "entangled-multimodal-vscode",
+    "displayName": "Entangled Multimodal System",
+    "description": "Integration with the Entangled Multimodal System for enhanced coding capabilities",
+    "version": "0.1.0",
+    "publisher": "entangled-multimodal",
+    "engines": {
+        "vscode": "^1.60.0"
+    },
+    "categories": [
+        "Other"
+    ],
+    "activationEvents": [
+        "onCommand:entangled-multimodal.connect",
+        "onCommand:entangled-multimodal.quantumCompletion",
+        "onCommand:entangled-multimodal.fractalRefactoring",
+        "onCommand:entangled-multimodal.delegateToAgent",
+        "onCommand:entangled-multimodal.visualizeQuantumState",
+        "onCommand:entangled-multimodal.activatePyramidReactivation",
+        "onCommand:entangled-multimodal.runQuantumSovereignty",
+        "onCommand:entangled-multimodal.initializeTawhidCircuit",
+        "onCommand:entangled-multimodal.initializeProphetQubitArray",
+        "onCommand:entangled-multimodal.runQuantumVisualization"
+    ],
+    "main": "./extension.js",
+    "contributes": {
+        "commands": [
+            {
+                "command": "entangled-multimodal.connect",
+                "title": "Connect to Entangled Multimodal System"
+            },
+            {
+                "command": "entangled-multimodal.quantumCompletion",
+                "title": "Quantum Code Completion"
+            },
+            {
+                "command": "entangled-multimodal.fractalRefactoring",
+                "title": "Fractal Code Refactoring"
+            },
+            {
+                "command": "entangled-multimodal.delegateToAgent",
+                "title": "Delegate Task to Agent"
+            },
+            {
+                "command": "entangled-multimodal.visualizeQuantumState",
+                "title": "Visualize Quantum State"
+            },
+            {
+                "command": "entangled-multimodal.activatePyramidReactivation",
+                "title": "Activate Pyramid Reactivation"
+            },
+            {
+                "command": "entangled-multimodal.runQuantumSovereignty",
+                "title": "Run Quantum Sovereignty Protocol"
+            },
+            {
+                "command": "entangled-multimodal.initializeTawhidCircuit",
+                "title": "Initialize Tawhid Circuit"
+            },
+            {
+                "command": "entangled-multimodal.initializeProphetQubitArray",
+                "title": "Initialize Prophet Qubit Array"
+            },
+            {
+                "command": "entangled-multimodal.runQuantumVisualization",
+                "title": "Run Quantum Visualization"
+            }
+        ],
+        "configuration": {
+            "title": "Entangled Multimodal System",
+            "properties": {
+                "entangled-multimodal.port": {
+                    "type": "number",
+                    "default": 9735,
+                    "description": "Port number for connecting to the Entangled Multimodal System"
+                },
+                "entangled-multimodal.autoConnect": {
+                    "type": "boolean",
+                    "default": true,
+                    "description": "Automatically connect to the Entangled Multimodal System on startup"
+                },
+                "entangled-multimodal.quantumCompletionEnabled": {
+                    "type": "boolean",
+                    "default": true,
+                    "description": "Enable quantum code completion"
+                },
+                "entangled-multimodal.fractalRefactoringEnabled": {
+                    "type": "boolean",
+                    "default": true,
+                    "description": "Enable fractal code refactoring"
+                }
+            }
+        }
+    },
+    "scripts": {
+        "vscode:prepublish": "npm run compile",
+        "compile": "tsc -p ./",
+        "watch": "tsc -watch -p ./",
+        "pretest": "npm run compile && npm run lint",
+        "lint": "eslint src --ext ts",
+        "test": "node ./out/test/runTest.js"
+    },
+    "devDependencies": {
+        "@types/vscode": "^1.60.0",
+        "@types/glob": "^7.1.3",
+        "@types/mocha": "^8.2.2",
+        "@types/node": "14.x",
+        "eslint": "^7.27.0",
+        "glob": "^7.1.7",
+        "mocha": "^8.4.0",
+        "typescript": "^4.3.2",
+        "vscode-test": "^1.5.2"
+    }
+}
