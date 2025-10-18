@@ -339,17 +339,29 @@ def quantum_operation():
 @app.route('/advanced_expand')
 def advanced_expand():
     x = np.linspace(-10, 10, 100).reshape(-1, 1)
+    predictions = expander.evolve(x).tolist()
+    logging.info("Expand route accessed, predictions: %s", predictions[:5])
     predictions = advanced_expander.evolve(x).tolist()
     return jsonify(predictions)
 
 @app.route('/fractal')
 def fractal():
     generate_fractal()
+    logging.info("Fractal route accessed")
     return jsonify({'status': 'fractal generated'})
+
+@app.route('/nlp', methods=['POST'])
+def nlp_process():
+    data = request.json
+    text_prompt = data.get("prompt", "")
+    response = generate_text(text_prompt)
+    logging.info("NLP route accessed, prompt: %s, response: %s", text_prompt, response[:50])
+    return jsonify({"response": response})
 
 @app.route('/speech')
 def speech_to_text():
     speech_text = recognize_speech()
+    logging.info("Speech route accessed, recognized text: %s", speech_text)
     return jsonify({"recognized_text": speech_text})
 
 @app.route('/dictionary', methods=['POST'])
@@ -358,6 +370,7 @@ def dictionary_lookup():
     word = data.get("word", "")
     synonyms = wordnet.synsets(word)
     definitions = [syn.definition() for syn in synonyms]
+    logging.info("Dictionary route accessed, word: %s, definitions: %s", word, definitions[:5])
     return jsonify({"word": word, "definitions": definitions})
 
 @app.route('/cloud', methods=['POST'])
@@ -371,7 +384,7 @@ def cloud_networking():
     payload = data.get("payload", {})
     try:
         response = requests.post(endpoint, json=payload, timeout=5)
-        logging.info("Payload sent to %s", endpoint)
+        logging.info("Cloud route accessed, payload sent to %s", endpoint)
         return jsonify({"status": "sent", "response": response.json()})
     except Exception as e:
         logging.error("Error sending payload: %s", e)
@@ -380,6 +393,7 @@ def cloud_networking():
 @app.route('/radiation_monitor')
 def radiation_monitor():
     data = external_radiation_monitor()
+    logging.info("Radiation monitor route accessed, data: %s", data)
     return jsonify({"radiation_data": data})
 
 @app.route('/christ_consciousness')
