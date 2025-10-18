@@ -44,7 +44,7 @@ class MLEngine:
 # API Integration Module
 class APIClient:
     def fetch_data(self, url):
-        response = requests.get(url)
+        response = requests.get(url, timeout=30)
         if response.status_code == 200:
             return response.json()
         else:
