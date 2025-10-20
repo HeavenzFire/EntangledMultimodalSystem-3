@@ -1451,7 +1451,7 @@ class AdaptiveIntegrationSystem(nn.Module):
         for mode1, features1 in projected_features.items():
             mode_output = 0
             for mode2, features2 in projected_features.items():
-                if mode1 != mode2:
+                if (mode1 != mode2) and (features2 is not None):
                     # Cross-attention between modalities
                     attended = self.attention(features1, features2)
 

@@ -1,4 +1,106 @@
 {
+    "name": "hyperintelligent-collaboration",
+    "displayName": "HyperIntelligent Collaboration",
+    "description": "Enables real-time collaboration between AI agents in VS Code",
+    "version": "0.1.0",
+    "engines": {
+        "vscode": "^1.60.0"
+    },
+    "categories": [
+        "Other"
+    ],
+    "activationEvents": [
+        "onStartupFinished"
+    ],
+    "main": "./out/extension.js",
+    "contributes": {
+        "configuration": {
+            "title": "HyperIntelligent Collaboration",
+            "properties": {
+                "hyperintelligent.serverPort": {
+                    "type": "number",
+                    "default": 8765,
+                    "description": "Port for the collaboration server"
+                },
+                "hyperintelligent.serverHost": {
+                    "type": "string",
+                    "default": "localhost",
+                    "description": "Host for the collaboration server"
+                },
+                "hyperintelligent.agentId": {
+                    "type": "string",
+                    "description": "Unique identifier for this agent"
+                },
+                "hyperintelligent.visualization": {
+                    "type": "object",
+                    "description": "Quantum visualization settings",
+                    "properties": {
+                        "backgroundColor": {
+                            "type": "string",
+                            "default": "#000000",
+                            "description": "Background color for visualization"
+                        },
+                        "particleColor": {
+                            "type": "string",
+                            "default": "#00ff00",
+                            "description": "Color for quantum particles"
+                        },
+                        "geometryColor": {
+                            "type": "string",
+                            "default": "#ff0000",
+                            "description": "Color for sacred geometry"
+                        }
+                    }
+                }
+            }
+        },
+        "commands": [
+            {
+                "command": "hyperintelligent.startCollaboration",
+                "title": "Start Collaboration Session"
+            },
+            {
+                "command": "hyperintelligent.stopCollaboration",
+                "title": "Stop Collaboration Session"
+            },
+            {
+                "command": "hyperintelligent.inviteAgent",
+                "title": "Invite Agent to Collaborate"
+            },
+            {
+                "command": "hyperintelligent.showVisualization",
+                "title": "Show Quantum Visualization"
+            }
+        ],
+        "keybindings": [
+            {
+                "command": "hyperintelligent.showVisualization",
+                "key": "ctrl+shift+q",
+                "mac": "cmd+shift+q",
+                "when": "editorTextFocus"
+            }
+        ]
+    },
+    "scripts": {
+        "vscode:prepublish": "npm run compile",
+        "compile": "tsc -p ./",
+        "watch": "tsc -watch -p ./",
+        "pretest": "npm run compile && npm run lint",
+        "lint": "eslint src --ext ts",
+        "test": "node ./out/test/runTest.js"
+    },
+    "devDependencies": {
+        "@types/vscode": "^1.60.0",
+        "@types/node": "^16.11.7",
+        "@typescript-eslint/eslint-plugin": "^5.30.0",
+        "@typescript-eslint/parser": "^5.30.0",
+        "eslint": "^8.13.0",
+        "typescript": "^4.7.2"
+    },
+    "dependencies": {
+        "ws": "^8.2.3",
+        "three": "^0.150.1",
+        "@types/three": "^0.150.0"
     "name": "ide-system",
     "version": "1.0.0",
     "description": "Intelligent Data Evolution System",

@@ -14,6 +14,7 @@ import os
 import time
 import logging
 from google.cloud import speech
+from QuantumOptimizer import QuantumOptimizer
 
 # --------------------------
 # Setup Logging
@@ -270,6 +271,9 @@ def external_radiation_monitor():
 # --------------------------
 app = Flask(__name__)
 expander = ConsciousnessExpander()
+advanced_expander = AdvancedConsciousnessExpander()
+christ_consciousness = ChristConsciousness()
+quantum_optimizer = QuantumOptimizer()
 
 # Security: Define a token for authentication (set via environment variable)
 AUTH_TOKEN = os.environ.get("AUTH_TOKEN", "default_secret_token")
@@ -400,6 +404,15 @@ def radiation_monitor():
 def christ_consciousness_route():
     message = christ_consciousness.simulate()
     return jsonify({"message": message})
+
+@app.route('/quantum_optimize', methods=['POST'])
+def quantum_optimize():
+    data = request.json
+    cost_function = data.get("cost_function", None)
+    if cost_function is None:
+        return jsonify({"error": "Cost function not provided"}), 400
+    result = quantum_optimizer.solve_optimization_problem(cost_function)
+    return jsonify(result)
 
 # --------------------------
 # Start Flask App in a Separate Thread

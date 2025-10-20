@@ -1,0 +1,88 @@
+# Universal Registry Configuration
+
+# Auto-discovery settings
+auto_discover: true
+discovery_directories:
+  - integrations/
+  - applications/
+  - core/
+
+# Dependency management
+dependency_check: true
+version_check: true
+dependency_resolution: strict  # strict, warn, or ignore
+
+# Module categories
+categories:
+  ai_ml:
+    - huggingface-llm
+    - google-cloud-ai
+    - azure-ai
+    - meta-ai
+  quantum:
+    - qiskit-backend
+    - braket-backend
+    - ionq-backend
+  iot:
+    - ros-sensor
+    - arduino-sensor
+    - raspberry-pi
+  blockchain:
+    - ethereum-contract
+    - hyperledger-fabric
+    - polkadot
+  xai:
+    - shap-xai
+    - lime-xai
+    - anchor-xai
+  cloud:
+    - aws-ai
+    - gcp-ai
+    - azure-ai
+  social:
+    - twitter-api
+    - facebook-api
+    - linkedin-api
+  web:
+    - web-scraper
+    - rest-api
+    - websocket
+
+# Security settings
+security:
+  api_key_required: true
+  encryption_required: true
+  rate_limiting: true
+  max_requests_per_minute: 60
+
+# Logging settings
+logging:
+  level: INFO
+  file: logs/registry.log
+  max_size: 10MB
+  backup_count: 5
+
+# Performance settings
+performance:
+  cache_enabled: true
+  cache_size: 1000
+  timeout_seconds: 30
+  max_retries: 3
+
+# Integration settings
+integrations:
+  huggingface:
+    api_key: ${HUGGINGFACE_API_KEY}
+    model: gpt-4
+  google_cloud:
+    project_id: ${GOOGLE_CLOUD_PROJECT}
+    region: us-central1
+  qiskit:
+    backend: ibmq_qasm_simulator
+    shots: 1024
+  ethereum:
+    network: mainnet
+    contract_address: ${ETHEREUM_CONTRACT}
+  ros:
+    master_uri: http://localhost:11311
+    node_name: registry_node 

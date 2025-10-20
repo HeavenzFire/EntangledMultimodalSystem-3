@@ -1,5 +1,7 @@
 import numpy as np
 import torch
+from qiskit import QuantumCircuit, Aer, execute
+from qiskit.circuit import Parameter
 
 class QuantumNN:
     def __init__(self, num_qubits):

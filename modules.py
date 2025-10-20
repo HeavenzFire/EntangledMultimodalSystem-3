@@ -46,17 +46,17 @@ class APIClient:
     def fetch_data(self, url):
         """Fetch data from a given URL."""
         response = requests.get(url)
-        if response.status_code == 200 {
+        if response.status_code == 200:
             return response.json()
-        } else {
+        else:
             raise Exception(f"Failed to fetch data: {response.status_code}")
 
     def post_data(self, url, data):
         """Post data to a given URL."""
         response = requests.post(url, json=data)
-        if response.status_code == 200 {
+        if response.status_code == 200:
             return response.json()
-        } else {
+        else:
             raise Exception(f"Failed to post data: {response.status_code}")
 
 
