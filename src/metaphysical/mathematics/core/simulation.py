@@ -175,3 +175,4 @@ class MetaphysicalSimulator:
             return False, "Insufficient temporal symmetry"
         
         return True, "Solution validated successfully" 
+ 

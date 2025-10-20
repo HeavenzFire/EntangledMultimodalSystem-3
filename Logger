@@ -61,3 +61,16 @@ class Logger:
 
     def log_error_details(self, error, details):
         self.logger.error("Error: %s, Details: %s", error, details)
+
+    def test_logging(self):
+        self.log_info("Testing info log")
+        self.log_warning("Testing warning log")
+        self.log_error("Testing error log")
+        self.log_critical("Testing critical log")
+        self.log_debug("Testing debug log")
+        self.log_exception("Testing exception log")
+        self.log_performance_metrics({"CPU": "70%", "Memory": "65%"})
+        self.log_system_status("System is running smoothly")
+        self.log_user_activity("user123", "Logged in")
+        self.log_security_event("Unauthorized access attempt")
+        self.log_error_details("FileNotFoundError", "File not found in the specified path")

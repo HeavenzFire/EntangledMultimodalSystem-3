@@ -26,6 +26,9 @@ yarn-error.log*
 .vscode/
 *.swp
 *.swo
+# Environment variables
+.env
+.env.*
 
 # Python
 __pycache__/
@@ -96,3 +99,80 @@ logs/
 .env.development.local
 .env.test.local
 .env.production.local 
+quantum_ai_py311/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# Logs
+*.log
+logs/
+/var/log/digigod/
+
+# Test coverage
+.coverage
+htmlcov/
+.pytest_cache/
+.tox/
+
+# Distribution
+*.tar.gz
+*.zip
+*.rar
+
+# AWS
+.aws/
+.terraform/
+*.tfstate
+*.tfstate.*
+*.tfvars
+
+# Docker
+.docker/
+docker-compose.override.yml
+
+# System
+.DS_Store
+Thumbs.db
+
+# Project specific
+quantum_results/
+holographic_cache/
+neural_data/
+temp/
+cache/
+*.csv
+*.dat
+*.out
+*.pid
+*.gz
+
+# Jupyter Notebook
+.ipynb_checkpoints
+*.ipynb
+
+# Quantum specific
+quantum_state/
+quantum_cache/
+quantum_tmp/
+
+# Neural network
+model_checkpoints/
+tensorboard/
+wandb/
+
+# Documentation
+docs/_build/
+site/
+
+# Development
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+.nox/
+.hypothesis/

@@ -16,6 +16,39 @@ class FractalNN:
         processed_data = np.array([self.generate_fractal(z, complex(0, 0)) for z in data])
         return processed_data
 
+    def generate_mandelbrot(self, width=800, height=800, max_iter=100):
+        x = np.linspace(-2, 1, width)
+        y = np.linspace(-1.5, 1.5, height)
+        X, Y = np.meshgrid(x, y)
+        c = X + 1j * Y
+        z = np.zeros_like(c)
+        divtime = np.zeros(z.shape, dtype=int)
+        
+        for i in range(max_iter):
+            z = z**2 + c
+            diverge = z * np.conj(z) > 2**2
+            div_now = diverge & (divtime == 0)
+            divtime[div_now] = i
+            z[diverge] = 2
+        
+        return divtime
+
+    def generate_julia(self, c=-0.7 + 0.27j, width=800, height=800, max_iter=100):
+        x = np.linspace(-2, 2, width)
+        y = np.linspace(-2, 2, height)
+        X, Y = np.meshgrid(x, y)
+        z = X + 1j * Y
+        divtime = np.zeros(z.shape, dtype=int)
+        
+        for i in range(max_iter):
+            z = z**2 + c
+            diverge = z * np.conj(z) > 2**2
+            div_now = diverge & (divtime == 0)
+            divtime[div_now] = i
+            z[diverge] = 2
+        
+        return divtime
+
 class AdvancedFractalNN:
     def __init__(self, iterations, dimension=2):
         self.iterations = iterations
@@ -33,6 +66,9 @@ class AdvancedFractalNN:
     def dynamic_scaling(self, data, scale_factor):
         scaled_data = data * scale_factor
         return self.process_data(scaled_data)
+
+    def adjust_dimension(self, new_dimension):
+        self.dimension = new_dimension
 
 class FractalNeuralNetwork:
     def __init__(self, input_dim, iterations, dimension=2):
@@ -70,19 +106,35 @@ class FractalNeuralNetwork:
         logging.info("Evolving fractal neural network with input: %s", x[:5])
         return self.model.predict(x)
 
-class AdvancedFractalGenerator:
-    def __init__(self, iterations, dimension=2):
-        self.iterations = iterations
-        self.dimension = dimension
+class FractalIntegration:
+    def __init__(self, fractal_nn, advanced_fractal_nn):
+        self.fractal_nn = fractal_nn
+        self.advanced_fractal_nn = advanced_fractal_nn
 
-    def generate_fractal(self, z, c):
-        for _ in range(self.iterations):
-            z = z**self.dimension + c
-        return z
+    def integrate_fractals(self, data, scale_factor):
+        basic_fractal = self.fractal_nn.process_data(data)
+        advanced_fractal = self.advanced_fractal_nn.dynamic_scaling(data, scale_factor)
+        return basic_fractal, advanced_fractal
 
-    def process_data(self, data):
-        processed_data = np.array([self.generate_fractal(z, complex(0, 0)) for z in data])
-        return processed_data
+    def generate_combined_fractal(self, data, scale_factor):
+        basic_fractal, advanced_fractal = self.integrate_fractals(data, scale_factor)
+        combined_fractal = (basic_fractal + advanced_fractal) / 2
+        return combined_fractal
+
+class FractalSystem:
+    def __init__(self, fractal_nn, advanced_fractal_nn):
+        self.fractal_nn = fractal_nn
+        self.advanced_fractal_nn = advanced_fractal_nn
+
+    def generate_and_process_fractals(self, data, scale_factor):
+        basic_fractal = self.fractal_nn.process_data(data)
+        advanced_fractal = self.advanced_fractal_nn.dynamic_scaling(data, scale_factor)
+        combined_fractal = (basic_fractal + advanced_fractal) / 2
+        return combined_fractal
+
+    def integrate_with_main_system(self, main_system_data):
+        fractal_data = self.generate_and_process_fractals(main_system_data, 1.5)
+        return fractal_data
 
     def dynamic_scaling(self, data, scale_factor):
         scaled_data = data * scale_factor

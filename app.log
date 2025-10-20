@@ -1,0 +1,6 @@
+2025-04-21 13:38:45,727 - entangled_system - INFO - Starting test execution...
+2025-04-21 13:38:59,308 - entangled_system - ERROR - Tests failed with exit code: 2
+2025-04-21 13:38:59,309 - entangled_system - INFO - Check the report at reports/test_report_20250421_133845.html for details
+2025-04-21 13:50:03,708 - entangled_system - INFO - Starting test execution...
+2025-04-21 13:50:21,992 - entangled_system - ERROR - Tests failed with exit code: 2
+2025-04-21 13:50:21,994 - entangled_system - INFO - Check the report at reports/test_report_20250421_135003.html for details
