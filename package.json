@@ -11,10 +11,14 @@
         "format": "prettier --write src/**/*.{js,html,css}"
     },
     "dependencies": {
+        "@react-three/drei": "^10.7.7",
+        "@react-three/fiber": "^9.4.2",
+        "@react-three/xr": "^6.6.28",
         "archiver": "^7.0.1",
         "bootstrap": "^5.3.0",
         "chart.js": "^3.7.0",
         "express": "^4.18.2",
+        "three": "^0.181.2",
         "transformers": "^2.0.0"
     },
     "devDependencies": {
