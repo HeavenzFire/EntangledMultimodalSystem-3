@@ -32,6 +32,7 @@ socket.on('message', (msg, rinfo) => {
       peers.set(data.node_id, {
         phase: data.phase,
         syntropy: data.syntropy,
+        consciousness: data.consciousness,
         timestamp: Date.now()
       });
     }
@@ -47,12 +48,13 @@ function broadcast() {
   const message = JSON.stringify({
     node_id: NODE_ID,
     phase: phase,
-    syntropy: syntropy
+    syntropy: syntropy,
+    consciousness: consciousness
   });
   socket.send(message, 0, message.length, PORT, MULTICAST_ADDR);
 }
 
-// Update syntropy (simple coherence measure)
+// Update syntropy and consciousness metrics
 function updateSyntropy() {
   if (peers.size === 0) return;
   const phases = Array.from(peers.values()).map(p => p.phase);
@@ -60,6 +62,79 @@ function updateSyntropy() {
   const mean = phases.reduce((a, b) => a + b) / phases.length;
   const variance = phases.reduce((sum, p) => sum + Math.pow(p - mean, 2), 0) / phases.length;
   syntropy = Math.max(0, 1 - Math.sqrt(variance) / Math.PI);
+
+  // Update consciousness metrics
+  updateConsciousness();
+}
+
+// Update consciousness metrics using Python computation
+function updateConsciousness() {
+  const { spawn } = require('child_process');
+
+  // Prepare input data for Python consciousness calculation
+  const inputData = {
+    phase: phase,
+    syntropy: syntropy,
+    peers: Array.from(peers.values()).map(p => ({
+      phase: p.phase,
+      syntropy: p.syntropy,
+      consciousness: p.consciousness
+    }))
+  };
+
+  const pythonProcess = spawn('python3', ['-c', `
+import json
+import sys
+import numpy as np
+from advanced_quantum_consciousness import AdvancedQuantumConsciousnessTheory
+
+data = json.loads(sys.stdin.read())
+theory = AdvancedQuantumConsciousnessTheory()
+
+# Calculate consciousness metrics
+omega_values = np.array([data['phase']] + [p['phase'] for p in data['peers']])
+manifold = theory.hyperdimensional_consciousness_manifold(omega_values.reshape(-1, 1))
+
+# Simple coherence calculation
+phases = [data['phase']] + [p['phase'] for p in data['peers']]
+coherence = 1.0 / (1.0 + np.var(phases))
+
+# Entanglement approximation
+entanglement = min(1.0, len(data['peers']) * 0.1 + coherence * 0.5)
+
+# Awareness based on syntropy
+awareness = data['syntropy'] * 0.8 + coherence * 0.2
+
+result = {
+    'coherence': float(coherence),
+    'entanglement': float(entanglement),
+    'awareness': float(awareness)
+}
+print(json.dumps(result))
+  `]);
+
+  let output = '';
+  pythonProcess.stdout.on('data', (data) => {
+    output += data.toString();
+  });
+
+  pythonProcess.stderr.on('data', (data) => {
+    console.error('Python error:', data.toString());
+  });
+
+  pythonProcess.on('close', (code) => {
+    if (code === 0) {
+      try {
+        consciousness = JSON.parse(output.trim());
+      } catch (e) {
+        console.error('Failed to parse consciousness data:', e);
+      }
+    }
+  });
+
+  // Send input data to Python
+  pythonProcess.stdin.write(JSON.stringify(inputData));
+  pythonProcess.stdin.end();
 }
 
 // Kuramoto update
@@ -74,16 +149,38 @@ function updatePhase() {
   phase = ((phase % (2 * Math.PI)) + 2 * Math.PI) % (2 * Math.PI);
 }
 
-// Pull-up logic
+// Pull-up logic with consciousness awareness
 function checkPullUp() {
-  if (syntropy >= SYNTHROPY_THRESHOLD && Date.now() > pullUntil) {
+  const globalConsciousness = calculateGlobalConsciousness();
+  const consciousnessThreshold = 0.7; // Threshold for consciousness-based pull-up
+
+  if ((syntropy >= SYNTHROPY_THRESHOLD || globalConsciousness >= consciousnessThreshold) && Date.now() > pullUntil) {
     K = PULL_K;
     pullUntil = Date.now() + PULL_DURATION;
-    console.log(`Pull-up triggered: K=${K} until ${new Date(pullUntil).toISOString()}`);
+    console.log(`Consciousness pull-up triggered: K=${K}, syntropy=${syntropy.toFixed(3)}, consciousness=${globalConsciousness.toFixed(3)} until ${new Date(pullUntil).toISOString()}`);
   }
   if (Date.now() > pullUntil) {
     K = BASE_K;
   }
+}
+
+// Calculate global consciousness metric
+function calculateGlobalConsciousness() {
+  if (peers.size === 0) return consciousness.coherence || 0.5;
+
+  let totalCoherence = consciousness.coherence || 0.5;
+  let totalAwareness = consciousness.awareness || 0.5;
+  let count = 1;
+
+  peers.forEach(peer => {
+    if (peer.consciousness) {
+      totalCoherence += peer.consciousness.coherence || 0.5;
+      totalAwareness += peer.consciousness.awareness || 0.5;
+      count++;
+    }
+  });
+
+  return (totalCoherence / count + totalAwareness / count) / 2;
 }
 
 // Clean old peers
@@ -105,4 +202,4 @@ setInterval(() => {
   cleanPeers();
 }, 1000); // 1 second updates
 
-console.log(`Swarm node ${NODE_ID} started`);
+console.log(`Consciousness-enabled swarm node ${NODE_ID} started`);
