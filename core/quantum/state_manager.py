@@ -1,5 +1,9 @@
 import numpy as np
 import torch
+from typing import Dict, List, Optional, Tuple
+import torch.nn as nn
+
+class QuantumStateManager:
 from typing import Dict, List, Optional, Tuple, Any
 import torch.nn as nn
 from datetime import datetime
