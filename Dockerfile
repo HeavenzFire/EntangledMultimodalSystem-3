@@ -1,40 +1,26 @@
-# Use CUDA base image for GPU support
-FROM nvidia/cuda:12.2.0-runtime-ubuntu22.04
-
-# Set environment variables
-ENV DEBIAN_FRONTEND=noninteractive
-ENV PYTHONUNBUFFERED=1
-ENV PYTHONPATH=/app
-
-# Install system dependencies
-RUN apt-get update && apt-get install -y \
-    python3.10 \
-    python3-pip \
-    git \
-    && rm -rf /var/lib/apt/lists/*
+# Use Node.js 18 Alpine as base image
+FROM node:18-alpine
 
 # Set working directory
 WORKDIR /app
 
-# Copy requirements file
-COPY requirements.txt .
+# Install system dependencies
+RUN apk add --no-cache python3 make g++
 
-# Install Python dependencies
-RUN pip3 install --no-cache-dir -r requirements.txt
+# Copy package files
+COPY package*.json ./
 
-# Copy application code
-COPY src/ src/
-COPY tests/ tests/
-COPY deployment/ deployment/
+# Install dependencies
+RUN npm install
 
-# Set up logging directory
-RUN mkdir -p /var/log/digigod
+# Copy application files
+COPY . .
 
-# Expose ports
-EXPOSE 8000
+# Build the application
+RUN npm run build
 
-# Set entrypoint
-ENTRYPOINT ["python3", "-m", "src.core.digigod_nexus"]
+# Expose port
+EXPOSE 8080
 
-# Default command
-CMD ["--mode=cloud", "--qpus=128", "--ethics=asilomar_v5"] 
+# Start the application
+CMD ["npm", "start"] 

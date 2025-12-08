@@ -6,6 +6,13 @@ import os
 import tempfile
 import json
 from pathlib import Path
+import pytest
+import torch
+from src.quantum.archetype.krishna_module import KrishnaArchetype, VortexConfig
+from src.quantum.vortex.sacred_sequencer import SacredSequencer, SequencerConfig
+from src.quantum.merkaba.spin_controller import SpinController, SpinConfig
+from src.quantum.ethical.karma_firewall import KarmaFirewall, KarmaConfig
+from src.quantum.integration.quantum_bridge import QuantumBridge, BridgeConfig
 
 class TestQuantumAvatarIntegration(unittest.TestCase):
     def setUp(self):
@@ -239,6 +246,141 @@ class TestQuantumAvatarIntegration(unittest.TestCase):
         # Verify file
         self.assertTrue(os.path.exists(output_path))
         self.assertGreater(os.path.getsize(output_path), 0)
+
+@pytest.fixture
+def test_configs():
+    """Initialize test configurations."""
+    return {
+        'vortex': VortexConfig(base_frequency=432.0),
+        'sequencer': SequencerConfig(fibonacci_depth=144),
+        'spin': SpinConfig(base_frequency=34.21),
+        'karma': KarmaConfig(compassion_threshold=0.9),
+        'bridge': BridgeConfig(qubits=9)
+    }
+
+@pytest.fixture
+def test_systems(test_configs):
+    """Initialize test systems."""
+    return {
+        'krishna': KrishnaArchetype(test_configs['vortex']),
+        'sequencer': SacredSequencer(test_configs['sequencer']),
+        'spin': SpinController(test_configs['spin']),
+        'karma': KarmaFirewall(test_configs['karma']),
+        'bridge': QuantumBridge(test_configs['bridge'])
+    }
+
+def test_vortex_transformation(test_systems):
+    """Test vortex code transformation."""
+    krishna = test_systems['krishna']
+    input_state = np.random.rand(108)
+    transformed = krishna.apply_bhakti(input_state)
+    
+    assert len(transformed) == 144
+    assert np.all(np.isfinite(transformed))
+    
+def test_sacred_sequence(test_systems):
+    """Test sacred sequence generation and validation."""
+    sequencer = test_systems['sequencer']
+    sequence = sequencer.generate_sacred_sequence(144)
+    
+    assert len(sequence) == 144
+    assert sequencer.validate_sequence(sequence)
+    
+def test_merkaba_field(test_systems):
+    """Test merkaba field operations."""
+    spin = test_systems['spin']
+    field = spin.merkaba_field
+    
+    # Test field rotation
+    rotated = spin.apply_rotation(field, np.pi/4)
+    assert rotated.shape == field.shape
+    
+    # Test vortex generation
+    center = np.zeros(spin.config.dimensions)
+    vortex = spin.generate_vortex(center, 1.0)
+    assert vortex.shape == (spin.config.merkaba_points, spin.config.dimensions)
+    
+def test_ethical_validation(test_systems):
+    """Test ethical validation system."""
+    karma = test_systems['karma']
+    test_state = torch.randn(1, karma.config.karma_depth)
+    
+    # Test action validation
+    is_ethical, scores = karma.validate_action(test_state)
+    assert isinstance(is_ethical, bool)
+    assert all(0 <= score <= 1 for score in scores.values())
+    
+    # Test consciousness protection
+    protected = karma.protect_consciousness(test_state)
+    assert protected.shape == test_state.shape
+    
+def test_quantum_bridge(test_systems):
+    """Test quantum bridge integration."""
+    bridge = test_systems['bridge']
+    
+    # Test archetype entanglement
+    states = [np.random.rand(3) for _ in range(bridge.config.qubits)]
+    circuit = bridge.entangle_archetypes(states)
+    assert len(circuit.qubits) == bridge.config.qubits
+    
+    # Test consciousness mapping
+    state = torch.randn(1, bridge.config.qubits)
+    mapped = bridge.map_consciousness(state)
+    assert mapped.shape == (1, bridge.config.consciousness_depth)
+    
+def test_system_integration(test_systems):
+    """Test full system integration."""
+    # Initialize components
+    krishna = test_systems['krishna']
+    sequencer = test_systems['sequencer']
+    spin = test_systems['spin']
+    karma = test_systems['karma']
+    bridge = test_systems['bridge']
+    
+    # Create test quantum state
+    input_state = np.random.rand(108)
+    
+    # Apply vortex transformation
+    transformed = krishna.apply_bhakti(input_state)
+    
+    # Generate and validate sacred sequence
+    sequence = sequencer.generate_sacred_sequence(len(transformed))
+    assert sequencer.validate_sequence(sequence)
+    
+    # Create merkaba vortex
+    center = np.zeros(spin.config.dimensions)
+    vortex = spin.generate_vortex(center, 1.0)
+    
+    # Validate ethical alignment
+    consciousness_state = torch.from_numpy(transformed).float().unsqueeze(0)
+    is_ethical, _ = karma.validate_action(consciousness_state)
+    
+    # Map to quantum state and check harmony
+    mapped_state = bridge.map_consciousness(consciousness_state)
+    harmony = bridge.calculate_harmony([mapped_state])
+    
+    assert harmony >= 0.0 and harmony <= 1.0
+    
+def test_consciousness_evolution(test_systems):
+    """Test consciousness evolution through the system."""
+    bridge = test_systems['bridge']
+    karma = test_systems['karma']
+    
+    # Initialize consciousness state
+    state = torch.randn(1, bridge.config.consciousness_depth)
+    
+    # Apply ethical protection
+    protected = karma.protect_consciousness(state)
+    
+    # Apply quantum correction
+    corrected, fidelity = bridge.apply_quantum_correction(protected)
+    
+    assert fidelity >= 0.0 and fidelity <= 1.0
+    assert torch.all(torch.isfinite(corrected))
+    
+    # Get harmony metrics
+    metrics = bridge.get_harmony_metrics()
+    assert all(0.0 <= value <= 1.0 for value in metrics.values())
 
 if __name__ == '__main__':
     unittest.main() 

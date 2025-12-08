@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HRV Biofeedback Ring</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #0f0f23 0%, #1a1a2e 100%);
+            color: white;
+            overflow: hidden;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 20px;
+            background: linear-gradient(45deg, #00ff88, #0088ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .status {
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 18px;
+            color: #00ff88;
+        }
+
+        .canvas-container {
+            position: relative;
+            width: 100%;
+            height: 70vh;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 0 30px rgba(0, 255, 136, 0.3);
+        }
+
+        canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+        }
+
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        button {
+            padding: 10px 20px;
+            background: linear-gradient(45deg, #00ff88, #0088ff);
+            border: none;
+            border-radius: 5px;
+            color: white;
+            cursor: pointer;
+            font-size: 16px;
+            transition: transform 0.2s;
+        }
+
+        button:hover {
+            transform: scale(1.05);
+        }
+
+        .info {
+            text-align: center;
+            margin-top: 20px;
+            opacity: 0.7;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>HRV Biofeedback Coherence Ring</h1>
+        <div id="status" class="status">Connecting to biofeedback sensors...</div>
+
+        <div class="canvas-container">
+            <canvas id="hrv-canvas"></canvas>
+        </div>
+
+        <div class="controls">
+            <button id="connect-btn">Connect MQTT</button>
+            <button id="simulate-btn">Simulate Data</button>
+        </div>
+
+        <div class="info">
+            <p>Ring thickness represents HRV RMSSD. Color transitions from red (low coherence) to green (high coherence).</p>
+            <p>Connected to Raspberry Pi MQTT broker at ws://localhost:9001</p>
+        </div>
+    </div>
+
+    <script type="module">
+        import { BiofeedbackApp } from './biofeedback_app.js';
+
+        const canvas = document.getElementById('hrv-canvas');
+        const statusElement = document.getElementById('status');
+        const connectBtn = document.getElementById('connect-btn');
+        const simulateBtn = document.getElementById('simulate-btn');
+
+        let app;
+
+        function initApp() {
+            if (!app) {
+                app = new BiofeedbackApp(canvas, statusElement);
+            }
+        }
+
+        connectBtn.addEventListener('click', () => {
+            initApp();
+            statusElement.textContent = 'Attempting to connect to MQTT broker...';
+        });
+
+        simulateBtn.addEventListener('click', () => {
+            initApp();
+            // Simulate HRV data for testing
+            setInterval(() => {
+                const rmssd = 0.3 + Math.random() * 0.4; // 0.3 to 0.7
+                const coherence = Math.random(); // 0 to 1
+                app.hrvRing.updateHRV(rmssd, coherence);
+                statusElement.textContent = `Simulated HRV RMSSD: ${rmssd.toFixed(3)}, Coherence: ${(coherence * 100).toFixed(1)}%`;
+            }, 100); // Update every 100ms for smooth animation
+        });
+
+        // Auto-initialize on page load
+        window.addEventListener('load', () => {
+            initApp();
+        });
+
+        // Cleanup on page unload
+        window.addEventListener('beforeunload', () => {
+            if (app) {
+                app.dispose();
+            }
+        });
+    </script>
+</body>
+</html>

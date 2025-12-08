@@ -106,12 +106,70 @@ class FractalNeuralNetwork:
         logging.info("Evolving fractal neural network with input: %s", x[:5])
         return self.model.predict(x)
 
-    def optimize_performance(self):
-        self.model.compile(optimizer='adam', loss='mse', metrics=['accuracy'])
-        self.model.summary()
+class FractalIntegration:
+    def __init__(self, fractal_nn, advanced_fractal_nn):
+        self.fractal_nn = fractal_nn
+        self.advanced_fractal_nn = advanced_fractal_nn
 
-    def scale_model(self, scale_factor):
-        for layer in self.model.layers:
-            if hasattr(layer, 'units'):
-                layer.units = int(layer.units * scale_factor)
-        self.model = self.build_model()
+    def integrate_fractals(self, data, scale_factor):
+        basic_fractal = self.fractal_nn.process_data(data)
+        advanced_fractal = self.advanced_fractal_nn.dynamic_scaling(data, scale_factor)
+        return basic_fractal, advanced_fractal
+
+    def generate_combined_fractal(self, data, scale_factor):
+        basic_fractal, advanced_fractal = self.integrate_fractals(data, scale_factor)
+        combined_fractal = (basic_fractal + advanced_fractal) / 2
+        return combined_fractal
+
+class FractalSystem:
+    def __init__(self, fractal_nn, advanced_fractal_nn):
+        self.fractal_nn = fractal_nn
+        self.advanced_fractal_nn = advanced_fractal_nn
+
+    def generate_and_process_fractals(self, data, scale_factor):
+        basic_fractal = self.fractal_nn.process_data(data)
+        advanced_fractal = self.advanced_fractal_nn.dynamic_scaling(data, scale_factor)
+        combined_fractal = (basic_fractal + advanced_fractal) / 2
+        return combined_fractal
+
+    def integrate_with_main_system(self, main_system_data):
+        fractal_data = self.generate_and_process_fractals(main_system_data, 1.5)
+        return fractal_data
+
+    def dynamic_scaling(self, data, scale_factor):
+        scaled_data = data * scale_factor
+        return self.process_data(scaled_data)
+
+class FractalDataPreprocessor:
+    def __init__(self, data):
+        self.data = data
+
+    def clean_data(self):
+        return self.data.dropna()
+
+    def transform_data(self):
+        return (self.data - self.data.mean()) / self.data.std()
+
+    def analyze_data(self):
+        return self.data.describe()
+
+class FractalModelTrainer:
+    def __init__(self, model, X_train, y_train):
+        self.model = model
+        self.X_train = X_train
+        self.y_train = y_train
+
+    def train(self):
+        self.model.fit(self.X_train, self.y_train)
+
+class FractalModelEvaluator:
+    def __init__(self, model, X_test, y_test):
+        self.model = model
+        self.X_test = X_test
+        self.y_test = y_test
+
+    def evaluate(self):
+        predictions = self.model.predict(self.X_test)
+        accuracy = np.mean(predictions == self.y_test)
+        logging.info(f"Model accuracy: {accuracy}")
+        return accuracy

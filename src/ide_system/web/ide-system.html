@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Intelligent Data Evolution System</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/chart.js@3.7.0/dist/chart.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f8f9fa;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 2rem auto;
+        }
+        .card {
+            border-radius: 15px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            margin-bottom: 2rem;
+        }
+        .card-header {
+            background-color: #6c5ce7;
+            color: white;
+            border-radius: 15px 15px 0 0 !important;
+            padding: 1.5rem;
+        }
+        .btn-primary {
+            background-color: #6c5ce7;
+            border-color: #6c5ce7;
+        }
+        .btn-primary:hover {
+            background-color: #5b4bc7;
+            border-color: #5b4bc7;
+        }
+        .evolution-history {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .feedback-rating {
+            cursor: pointer;
+        }
+        .feedback-rating:hover {
+            color: #ffd700;
+        }
+        .domain-selector {
+            margin-bottom: 1rem;
+        }
+        .visualization-container {
+            min-height: 400px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="text-center mb-4">Intelligent Data Evolution System</h1>
+        
+        <!-- Input Section -->
+        <div class="card">
+            <div class="card-header">
+                <h3>Input Data</h3>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <label for="domain" class="form-label">Select Domain</label>
+                    <select class="form-select" id="domain">
+                        <option value="general">General</option>
+                        <option value="energy">Energy</option>
+                        <option value="health">Health</option>
+                        <option value="tech">Technology</option>
+                        <option value="finance">Finance</option>
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label for="inputData" class="form-label">Enter Data (JSON format)</label>
+                    <textarea class="form-control" id="inputData" rows="5" 
+                              placeholder='{"key": "value", ...}'></textarea>
+                </div>
+                <button class="btn btn-primary" id="evolveBtn">Evolve Data</button>
+                <button class="btn btn-secondary" id="clearBtn">Clear</button>
+            </div>
+        </div>
+        
+        <!-- Results Section -->
+        <div class="card">
+            <div class="card-header">
+                <h3>Evolution Results</h3>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h4>Refined Data</h4>
+                        <pre id="refinedData" class="bg-light p-3 rounded"></pre>
+                    </div>
+                    <div class="col-md-6">
+                        <h4>Enhanced Data</h4>
+                        <pre id="enhancedData" class="bg-light p-3 rounded"></pre>
+                    </div>
+                </div>
+                <div class="row mt-4">
+                    <div class="col-12">
+                        <h4>Future Projections</h4>
+                        <pre id="projectedData" class="bg-light p-3 rounded"></pre>
+                    </div>
+                </div>
+                <div class="row mt-4">
+                    <div class="col-12 visualization-container">
+                        <canvas id="evolutionChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Feedback Section -->
+        <div class="card">
+            <div class="card-header">
+                <h3>Feedback</h3>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <label class="form-label">Rate Evolution Quality</label>
+                    <div class="feedback-rating">
+                        <span data-rating="1">★</span>
+                        <span data-rating="2">★</span>
+                        <span data-rating="3">★</span>
+                        <span data-rating="4">★</span>
+                        <span data-rating="5">★</span>
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <label for="feedbackText" class="form-label">Additional Feedback</label>
+                    <textarea class="form-control" id="feedbackText" rows="3"></textarea>
+                </div>
+                <button class="btn btn-primary" id="submitFeedback">Submit Feedback</button>
+            </div>
+        </div>
+        
+        <!-- History Section -->
+        <div class="card">
+            <div class="card-header">
+                <h3>Evolution History</h3>
+            </div>
+            <div class="card-body">
+                <div class="evolution-history" id="historyList"></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.7.0/dist/chart.min.js"></script>
+    <script>
+        // Initialize chart
+        const ctx = document.getElementById('evolutionChart').getContext('2d');
+        let evolutionChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: [],
+                datasets: [{
+                    label: 'Evolution Trend',
+                    data: [],
+                    borderColor: '#6c5ce7',
+                    tension: 0.1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false
+            }
+        });
+
+        // Event listeners
+        document.getElementById('evolveBtn').addEventListener('click', evolveData);
+        document.getElementById('clearBtn').addEventListener('click', clearInput);
+        document.getElementById('submitFeedback').addEventListener('click', submitFeedback);
+        document.querySelectorAll('.feedback-rating span').forEach(star => {
+            star.addEventListener('click', () => setRating(star.dataset.rating));
+        });
+
+        // Evolution history
+        let history = [];
+
+        function evolveData() {
+            const domain = document.getElementById('domain').value;
+            const inputData = document.getElementById('inputData').value;
+            
+            try {
+                const data = JSON.parse(inputData);
+                
+                // Simulate evolution (replace with actual API call)
+                const evolved = {
+                    refined: refineData(data, domain),
+                    enhanced: enhanceData(data, domain),
+                    projected: projectFuture(data, domain)
+                };
+                
+                // Update UI
+                document.getElementById('refinedData').textContent = 
+                    JSON.stringify(evolved.refined, null, 2);
+                document.getElementById('enhancedData').textContent = 
+                    JSON.stringify(evolved.enhanced, null, 2);
+                document.getElementById('projectedData').textContent = 
+                    JSON.stringify(evolved.projected, null, 2);
+                
+                // Update chart
+                updateChart(evolved);
+                
+                // Add to history
+                addToHistory(domain, data, evolved);
+                
+            } catch (error) {
+                alert('Invalid JSON input. Please check your data format.');
+            }
+        }
+
+        function refineData(data, domain) {
+            // Implement refinement logic
+            return data;
+        }
+
+        function enhanceData(data, domain) {
+            // Implement enhancement logic
+            return data;
+        }
+
+        function projectFuture(data, domain) {
+            // Implement projection logic
+            return data;
+        }
+
+        function updateChart(evolved) {
+            const labels = Object.keys(evolved.refined);
+            const values = Object.values(evolved.refined);
+            
+            evolutionChart.data.labels = labels;
+            evolutionChart.data.datasets[0].data = values;
+            evolutionChart.update();
+        }
+
+        function addToHistory(domain, input, output) {
+            const entry = {
+                timestamp: new Date().toISOString(),
+                domain,
+                input,
+                output
+            };
+            
+            history.unshift(entry);
+            updateHistoryUI();
+        }
+
+        function updateHistoryUI() {
+            const historyList = document.getElementById('historyList');
+            historyList.innerHTML = history.map(entry => `
+                <div class="card mb-2">
+                    <div class="card-body">
+                        <h5 class="card-title">${entry.domain} - ${new Date(entry.timestamp).toLocaleString()}</h5>
+                        <pre class="card-text">${JSON.stringify(entry.output, null, 2)}</pre>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function clearInput() {
+            document.getElementById('inputData').value = '';
+            document.getElementById('refinedData').textContent = '';
+            document.getElementById('enhancedData').textContent = '';
+            document.getElementById('projectedData').textContent = '';
+            evolutionChart.data.labels = [];
+            evolutionChart.data.datasets[0].data = [];
+            evolutionChart.update();
+        }
+
+        function setRating(rating) {
+            document.querySelectorAll('.feedback-rating span').forEach(star => {
+                star.style.color = star.dataset.rating <= rating ? '#ffd700' : '#ccc';
+            });
+        }
+
+        function submitFeedback() {
+            const rating = document.querySelector('.feedback-rating span[style="color: rgb(255, 215, 0);"]')?.dataset.rating || 0;
+            const feedback = document.getElementById('feedbackText').value;
+            
+            // Implement feedback submission
+            alert('Thank you for your feedback!');
+            
+            // Clear feedback
+            document.getElementById('feedbackText').value = '';
+            document.querySelectorAll('.feedback-rating span').forEach(star => {
+                star.style.color = '#ccc';
+            });
+        }
+    </script>
+</body>
+</html> 

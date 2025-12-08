@@ -301,4 +301,19 @@ class ConsciousnessIntegrationEngine:
             logger.info("Consciousness integration reset")
         except Exception as e:
             logger.error(f"Integration reset failed: {str(e)}")
-            raise ModelError(f"Integration reset failed: {str(e)}") 
+            raise ModelError(f"Integration reset failed: {str(e)}")
+
+    def process_input(self, input_data):
+        """Process input data through the consciousness integration engine."""
+        try:
+            # Extract parameters from input data
+            n_qubits = input_data.get('n_qubits', 4)
+            hologram_size = input_data.get('hologram_size', (64, 64))
+            
+            # Integrate consciousness
+            integration_result = self.integrate_consciousness(n_qubits, hologram_size)
+            
+            return integration_result
+        except Exception as e:
+            logger.error(f"Input processing failed: {str(e)}")
+            raise ModelError(f"Input processing failed: {str(e)}")
