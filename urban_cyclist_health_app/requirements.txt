@@ -10,10 +10,10 @@ uvicorn==0.39.0
 pydantic==2.12.5
 requests==2.32.5
 python-dotenv==1.2.1
-sqlalchemy==2.0.45
+sqlalchemy==2.0.46
 requests==2.32.5
 python-dotenv==1.2.1
-sqlalchemy==2.0.45
+sqlalchemy==2.0.46
 passlib==1.7.4
 python-multipart==0.0.22
 aiofiles==25.1.0
