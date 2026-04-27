@@ -4,10 +4,10 @@ fastapi==0.128.8
 uvicorn==0.38.0
 fastapi==0.128.8
 uvicorn==0.39.0
-pydantic==2.12.5
+pydantic==2.13.3
 requests==2.33.0
 uvicorn==0.39.0
-pydantic==2.12.5
+pydantic==2.13.3
 requests==2.33.0
 python-dotenv==1.2.1
 sqlalchemy==2.0.49
