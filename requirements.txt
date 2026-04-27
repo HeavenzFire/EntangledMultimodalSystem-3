@@ -185,7 +185,7 @@ pylint>=3.0.0
 rdkit>=2023.9.0
 
 # Quantum Chemistry
-pyscf>=2.3.0
+pyscf>=2.13.0
 openfermion>=1.6.0
 
 # Optimization
