@@ -78,7 +78,7 @@ vtk>=9.3.0
 # Web and API
 fastapi>=0.68.1
 uvicorn>=0.15.0
-pydantic>=1.8.2
+pydantic>=2.13.3
 python-jose>=3.3.0
 passlib>=1.7.4
 python-multipart>=0.0.5
@@ -185,7 +185,7 @@ pylint>=3.0.0
 rdkit>=2023.9.0
 
 # Quantum Chemistry
-pyscf>=2.3.0
+pyscf>=2.13.0
 openfermion>=1.6.0
 
 # Optimization
