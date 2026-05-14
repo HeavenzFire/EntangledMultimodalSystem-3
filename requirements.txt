@@ -90,7 +90,7 @@ pyOpenSSL>=23.2.0
 
 # Database
 sqlalchemy>=2.0.25
-alembic>=1.13.0
+alembic>=1.16.5
 redis>=5.0.0
 motor>=3.3.1
 
