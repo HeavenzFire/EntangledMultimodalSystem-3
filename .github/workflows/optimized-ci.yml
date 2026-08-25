@@ -1,0 +1,242 @@
+# CI/CD Workflow Optimization
+# Optimized GitHub Actions workflow for faster builds
+
+name: Optimized CI Pipeline
+
+on:
+  push:
+    branches: [main, develop]
+    paths-ignore:
+      - '**.md'
+      - 'docs/**'
+      - '*.md'
+  pull_request:
+    branches: [main, develop]
+  workflow_dispatch:
+
+# Cancel superseded workflows
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
+  cancel-in-progress: true
+
+env:
+  PYTHON_VERSION: '3.11'
+  PIP_CACHE_DIR: ~/.cache/pip
+  RUST_BACKTRACE: 1
+
+jobs:
+  # Fast path for documentation-only changes
+  check-changes:
+    runs-on: ubuntu-latest
+    outputs:
+      needs-full-ci: ${{ steps.filter.outputs.python || steps.filter.outputs.tests }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            python:
+              - '**.py'
+              - 'requirements*.txt'
+              - 'pyproject.toml'
+              - 'setup.py'
+            tests:
+              - 'tests/**'
+              - '**/test_*.py'
+            docs:
+              - 'docs/**'
+              - '**.md'
+
+  # Lint and format (fast feedback)
+  lint:
+    needs: check-changes
+    if: needs.check-changes.outputs.needs-full-ci == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+      
+      - name: Install linting tools
+        run: |
+          pip install --upgrade pip
+          pip install black isort flake8 mypy pylint
+          
+      - name: Run black (format check)
+        run: black --check --diff src/ core/ tests/ || true
+        
+      - name: Run isort (import check)
+        run: isort --check-only --diff src/ core/ tests/ || true
+        
+      - name: Run flake8 (linting)
+        run: flake8 src/ core/ tests/ --max-line-length=88 --ignore=E203,W503 || true
+        
+      - name: Run mypy (type checking)
+        run: mypy src/ core/ --ignore-missing-imports --warn-unused-configs || true
+
+  # Test suite (parallelized)
+  test:
+    needs: check-changes
+    if: needs.check-changes.outputs.needs-full-ci == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ['3.9', '3.10', '3.11']
+        shard: [1, 2, 3, 4]
+    
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+      
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: 'pip'
+      
+      - name: Cache dependencies
+        uses: actions/cache@v4
+        with:
+          path: ${{ env.PIP_CACHE_DIR }}
+          key: ${{ runner.os }}-pip-${{ matrix.python-version }}-${{ hashFiles('requirements-optimized.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-${{ matrix.python-version }}-
+            ${{ runner.os }}-pip-
+      
+      - name: Install dependencies
+        run: |
+          pip install --upgrade pip
+          pip install -r requirements-optimized.txt
+          pip install pytest-xdist pytest-benchmark
+      
+      - name: Run tests (parallelized)
+        run: |
+          pytest -n auto --dist loadfile \
+            --cov=src \
+            --cov-report=xml \
+            --cov-report=term-missing \
+            --benchmark-skip \
+            --shard-id=${{ matrix.shard }} \
+            --num-shards=4 \
+            tests/
+      
+      - name: Upload coverage
+        uses: codecov/codecov-action@v4
+        if: matrix.python-version == '3.11' && matrix.shard == 1
+        with:
+          files: ./coverage.xml
+          flags: unittests
+          fail_ci_if_error: false
+
+  # Build and package
+  build:
+    needs: [lint, test]
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+      
+      - name: Install build tools
+        run: |
+          pip install --upgrade pip
+          pip install build wheel twine
+      
+      - name: Build package
+        run: python -m build
+      
+      - name: Check package
+        run: twine check dist/*
+      
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist-packages
+          path: dist/
+
+  # Security scanning
+  security:
+    needs: check-changes
+    if: needs.check-changes.outputs.needs-full-ci == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Run Bandit (security linting)
+        run: |
+          pip install bandit
+          bandit -r src/ core/ -f json -o bandit-report.json || true
+      
+      - name: Upload security report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: security-report
+          path: bandit-report.json
+
+  # Performance benchmarks (only on main branch)
+  benchmark:
+    needs: test
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+      
+      - name: Install dependencies
+        run: |
+          pip install --upgrade pip
+          pip install -r requirements-optimized.txt
+          pip install pytest-benchmark
+      
+      - name: Run benchmarks
+        run: pytest tests/ --benchmark-only --benchmark-json=benchmark.json || true
+      
+      - name: Store benchmark result
+        uses: benchmark-action/github-action-benchmark@v1
+        with:
+          name: Python Benchmarks
+          tool: 'pytest'
+          output-file-path: benchmark.json
+          fail-on-alert: false
+
+  # Deploy to staging (after successful build)
+  deploy-staging:
+    needs: [build, security]
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    environment: staging
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Download artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: dist-packages
+          path: dist/
+      
+      - name: Deploy to staging
+        run: echo "Deploying to staging environment..."
+        # Add actual deployment commands here

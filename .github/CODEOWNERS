@@ -1,0 +1,52 @@
+# Code Ownership Configuration
+# See https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners
+
+# Core Framework
+/core/ @maintainers
+/src/quantum/ @quantum-team
+/src/core/ @core-team
+
+# Testing
+/tests/ @qa-team
+**/test_*.py @qa-team
+
+# Documentation
+/docs/ @docs-team
+*.md @docs-team
+
+# CI/CD
+/.github/workflows/ @devops-team
+*.yml @devops-team
+
+# Configuration
+/config/ @devops-team
+pyproject.toml @maintainers
+requirements*.txt @maintainers
+setup.py @maintainers
+
+# Examples
+/examples/ @examples-team
+*_example.py @examples-team
+
+# Scripts
+*.sh @devops-team
+*.bat @devops-team
+
+# Web Assets
+/web/ @frontend-team
+*.html @frontend-team
+*.js @frontend-team
+*.css @frontend-team
+
+# TypeScript
+*.ts @frontend-team
+*.tsx @frontend-team
+
+# Rust components
+*.rs @systems-team
+
+# Notebooks
+*.ipynb @research-team
+
+# Default reviewers for all other files
+* @maintainers

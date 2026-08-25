@@ -1,178 +1,83 @@
-# Dependencies
-/node_modules
-/.pnp
-.pnp.js
+```markdown
+# Configuration and architecture documents
+*.md
+*.txt
+*.json
+*.yml
+*.yaml
+*.toml
+*.cfg
+*.ini
 
-# Testing
-/coverage
-
-# Production
-/build
-
-# Misc
-.DS_Store
-.env.local
-.env.development.local
-.env.test.local
-.env.production.local
-
-# Logs
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-
-# IDE
-.idea/
-.vscode/
-*.swp
-*.swo
-# Environment variables
-.env
-.env.*
-
-# Python
-__pycache__/
-*.py[cod]
-*$py.class
-*.so
-.Python
-build/
-develop-eggs/
-dist/
-downloads/
-eggs/
-.eggs/
-lib/
-lib64/
-parts/
-sdist/
-var/
-wheels/
-*.egg-info/
-.installed.cfg
-*.egg
-
-# Virtual Environment
-venv/
-env/
-ENV/
-
-# Jupyter Notebook
-.ipynb_checkpoints
-
-# Distribution / packaging
-.Python
-env/
-build/
-develop-eggs/
-dist/
-downloads/
-eggs/
-.eggs/
-lib/
-lib64/
-parts/
-sdist/
-var/
-*.egg-info/
-.installed.cfg
-*.egg
-
-# Unit test / coverage reports
-htmlcov/
-.tox/
-.coverage
-.coverage.*
-.cache
-nosetests.xml
-coverage.xml
-*.cover
-.hypothesis/
-
-# Logs
+# Logs and temporary files
 *.log
-logs/
+*.tmp
+*.temp
 
-# Local development settings
+# Environment files
 .env
 .env.local
-.env.development.local
-.env.test.local
-.env.production.local 
-quantum_ai_py311/
+*.env.*
 
-# IDE
-.idea/
+# Editor/IDE files
 .vscode/
+.idea/
 *.swp
 *.swo
-*~
 
-# Logs
-*.log
-logs/
-/var/log/digigod/
-
-# Test coverage
-.coverage
-htmlcov/
-.pytest_cache/
-.tox/
-
-# Distribution
-*.tar.gz
-*.zip
-*.rar
-
-# AWS
-.aws/
-.terraform/
-*.tfstate
-*.tfstate.*
-*.tfvars
-
-# Docker
-.docker/
-docker-compose.override.yml
-
-# System
+# OS files
 .DS_Store
 Thumbs.db
 
-# Project specific
-quantum_results/
-holographic_cache/
-neural_data/
-temp/
-cache/
-*.csv
-*.dat
-*.out
-*.pid
-*.gz
-
-# Jupyter Notebook
-.ipynb_checkpoints
-*.ipynb
-
-# Quantum specific
-quantum_state/
-quantum_cache/
-quantum_tmp/
-
-# Neural network
-model_checkpoints/
-tensorboard/
-wandb/
-
-# Documentation
-docs/_build/
-site/
-
-# Development
+# Dependencies and build artifacts
+node_modules/
+venv/
+.venv/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+dist/
+build/
+target/
+.gradle/
+.mypy_cache/
 .pytest_cache/
-.coverage
+coverage/
 htmlcov/
-.tox/
-.nox/
-.hypothesis/
+.coverage
+
+# Compiled files
+*.class
+*.o
+*.exe
+*.dll
+*.so
+*.a
+*.obj
+*.out
+
+# Compressed files
+*.zip
+*.gz
+*.tar
+*.tgz
+*.bz2
+*.xz
+*.7z
+*.rar
+*.zst
+*.lz4
+*.lzh
+*.cab
+*.arj
+*.rpm
+*.deb
+*.Z
+*.lz
+*.lzo
+*.tar.gz
+*.tar.bz2
+*.tar.xz
+*.tar.zst
+```
