@@ -15,7 +15,7 @@ qiskit-optimization>=0.5.0
 # Machine Learning
 tensorflow>=2.15.0
 torch>=2.1.0
-pennylane>=0.34.0
+pennylane>=0.41.1
 
 # AI and NLP
 transformers>=4.36.0
