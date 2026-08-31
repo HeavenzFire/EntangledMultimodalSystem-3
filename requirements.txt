@@ -92,7 +92,7 @@ cryptography>=49.0.0
 pyOpenSSL>=23.2.0
 
 # Database
-sqlalchemy>=2.0.25
+sqlalchemy>=2.0.52
 alembic>=1.16.5
 redis>=5.0.0
 motor>=3.3.1
