@@ -18,7 +18,7 @@ torch>=2.1.0
 pennylane>=0.41.1
 
 # AI and NLP
-transformers>=4.36.0
+transformers>=5.16.1
 sentencepiece>=0.1.99
 tokenizers>=0.22.2
 accelerate>=0.25.0
