@@ -115,7 +115,7 @@ loguru>=0.7.2
 
 # Gemini API
 google-generativeai>=0.3.0
-google-auth>=2.23.0
+google-auth>=2.57.0
 google-api-python-client>=2.108.0
 
 # Additional dependencies
