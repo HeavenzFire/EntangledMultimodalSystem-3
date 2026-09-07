@@ -120,7 +120,7 @@ google-api-python-client>=2.108.0
 
 # Additional dependencies
 SpeechRecognition>=3.10.0
-pylint>=3.0.0
+pylint>=4.0.8
 
 # RDKit
 rdkit>=2023.9.0
