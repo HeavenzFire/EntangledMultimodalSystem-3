@@ -63,7 +63,7 @@ pytest-benchmark>=3.4.1
 pytest-asyncio>=1.2.0
 pytest-xdist>=2.4.0
 black>=21.9b0
-flake8>=3.9.2
+flake8>=7.3.0
 
 # Documentation and Type Checking
 sphinx>=6.1.0
