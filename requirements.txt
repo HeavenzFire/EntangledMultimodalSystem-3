@@ -25,7 +25,7 @@ accelerate>=0.25.0
 tokenizers>=0.15.0
 accelerate>=1.10.1
 bitsandbytes>=0.50.2
-optimum>=1.16.0
+optimum>=2.3.0
 
 # Visualization
 plotly>=7.0.0
