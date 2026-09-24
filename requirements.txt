@@ -18,7 +18,7 @@ torch>=2.1.0
 pennylane>=0.41.1
 
 # AI and NLP
-transformers>=5.16.1
+transformers>=5.17.0
 sentencepiece>=0.1.99
 tokenizers>=0.22.2
 accelerate>=0.25.0
@@ -43,7 +43,7 @@ requests>=2.26.0
 # Web and API
 fastapi>=0.68.1
 uvicorn>=0.15.0
-pydantic>=2.13.3
+pydantic>=2.13.5
 python-jose>=3.3.0
 passlib>=1.7.4
 python-multipart>=0.0.31
@@ -61,7 +61,7 @@ pytest>=9.1.1
 pytest-cov>=2.12.0
 pytest-benchmark>=3.4.1
 pytest-asyncio>=1.2.0
-pytest-xdist>=2.4.0
+pytest-xdist>=3.8.0
 black>=21.9b0
 flake8>=7.3.0
 
