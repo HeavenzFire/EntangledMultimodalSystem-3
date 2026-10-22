@@ -358,3 +358,7 @@ The Entangled Multimodal System is a powerful and versatile platform that combin
 2. Sacred Geometry: Philosophy and Practice (Lawlor)
 3. The Quantum Self (Zohar)
 4. The Field: The Quest for the Secret Force of the Universe (McTaggart)
+
+## Credential hygiene
+
+Store API keys only in ignored local files such as `.env.local` or in environment variables. Never commit `.env` or real credentials. If a credential was committed at any point, revoke or rotate it at the provider; deleting the file does not remove it from Git history. Review repository history and follow the provider's key-rotation guidance before re-enabling that integration.
