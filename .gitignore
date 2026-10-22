@@ -176,3 +176,6 @@ htmlcov/
 .tox/
 .nox/
 .hypothesis/
+
+# Keep the placeholder template tracked, never commit real env files.
+!.env.example
