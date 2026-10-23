@@ -16,7 +16,7 @@ seaborn==0.13.2
 python-dateutil==2.9.0.post0
 pytz==2026.1.post1
 gpxpy==1.6.2
-geopy==2.4.1
+geopy==2.5.0
 openweathermap-api==1.0.0
 python-jose[cryptography]==3.5.0
 bcrypt==5.0.0
