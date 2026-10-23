@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Intelligent Data Evolution System</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/chart.js@3.7.0/dist/chart.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f8f9fa;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        .card {
+            border-radius: 15px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+        .btn-primary {
+            background-color: #3b82f6;
+            border: none;
+            border-radius: 8px;
+            padding: 10px 20px;
+        }
+        .rating {
+            display: inline-block;
+            unicode-bidi: bidi-override;
+            direction: rtl;
+        }
+        .rating > span {
+            display: inline-block;
+            position: relative;
+            width: 1.1em;
+            font-size: 1.5em;
+            cursor: pointer;
+        }
+        .rating > span:hover:before,
+        .rating > span:hover ~ span:before {
+            content: "\2605";
+            position: absolute;
+            color: #ffd700;
+        }
+        .chart-container {
+            position: relative;
+            height: 300px;
+            width: 100%;
+        }
+        .encryption-badge {
+            background-color: #10b981;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: 0.8em;
+        }
+    </style>
+</head>
+<body>
+    <div class="container py-5">
+        <h1 class="text-center mb-4">Intelligent Data Evolution System</h1>
+        
+        <!-- Input Section -->
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Data Input</h5>
+                <div class="input-section">
+                    <div class="mb-3">
+                        <label for="domain-select" class="form-label">Select Domain</label>
+                        <select id="domain-select" class="form-select" aria-label="Select data domain">
+                            <option value="finance">Finance</option>
+                            <option value="health">Health</option>
+                            <option value="education">Education</option>
+                        </select>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="data-input" class="form-label">Input Data</label>
+                        <textarea id="data-input" class="form-control" rows="5" 
+                                  placeholder="Enter your data in JSON format" 
+                                  aria-label="Input data for evolution"></textarea>
+                    </div>
+                    
+                    <button class="btn btn-primary" onclick="evolveData()">Evolve Data</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Results Section -->
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Evolution Results</h5>
+                <div class="results-section">
+                    <div class="mb-3">
+                        <label for="refined-output" class="form-label">Refined Data</label>
+                        <textarea id="refined-output" class="form-control" rows="5" readonly
+                                  placeholder="Refined data will appear here" 
+                                  aria-label="Refined data output"></textarea>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="enhanced-output" class="form-label">Enhanced Data</label>
+                        <textarea id="enhanced-output" class="form-control" rows="5" readonly
+                                  placeholder="Enhanced data will appear here" 
+                                  aria-label="Enhanced data output"></textarea>
+                    </div>
+                    
+                    <div class="chart-container">
+                        <canvas id="projectionChart" aria-label="Data projection chart"></canvas>
+                    </div>
+                    
+                    <div class="chart-container">
+                        <canvas id="quantumStateChart" aria-label="Quantum state probabilities chart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Feedback Section -->
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Feedback</h5>
+                <div class="feedback-section">
+                    <div class="mb-3">
+                        <label for="feedback-input" class="form-label">Feedback</label>
+                        <textarea id="feedback-input" class="form-control" rows="3" 
+                                  placeholder="Enter your feedback here" 
+                                  aria-label="Feedback input"></textarea>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Rating</label>
+                        <div id="rating-stars" role="radiogroup" aria-label="Rate the evolution process">
+                            <span role="radio" aria-checked="false" tabindex="0">★</span>
+                            <span role="radio" aria-checked="false" tabindex="0">★</span>
+                            <span role="radio" aria-checked="false" tabindex="0">★</span>
+                            <span role="radio" aria-checked="false" tabindex="0">★</span>
+                            <span role="radio" aria-checked="false" tabindex="0">★</span>
+                        </div>
+                    </div>
+                    
+                    <button class="btn btn-primary" onclick="submitFeedback()">Submit Feedback</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- History Section -->
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Evolution History</h5>
+                <div class="list-group" id="history-list">
+                    <!-- History items will be added here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.7.0/dist/chart.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/transformers@2.0.0/dist/transformers.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/quantumlib@1.4.2/dist/quantumlib.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/web-crypto-utils@3.1.0/dist/web-crypto-utils.min.js"></script>
+
+    <script>
+        // Initialize components
+        let pipeline;
+        let projectionChart;
+        let quantumStateChart;
+        let evolutionHistory = [];
+        const API_BASE_URL = 'http://localhost:8000';
+
+        // Initialize AI model
+        async function initializeModel() {
+            try {
+                pipeline = await transformers.AutoPipeline.forSequenceClassification(
+                    "Xenova/distilbert-base-uncased-finetuned-sst-2-english"
+                );
+                console.log("AI model initialized successfully");
+            } catch (error) {
+                console.error("Error initializing AI model:", error);
+            }
+        }
+
+        // Initialize charts
+        function initializeCharts() {
+            // Projection chart
+            const ctx = document.getElementById('projectionChart').getContext('2d');
+            projectionChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: ['2023', '2025', '2030', '2040'],
+                    datasets: [{
+                        label: 'Projected Growth',
+                        data: [],
+                        borderColor: '#3b82f6',
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false
+                }
+            });
+
+            // Quantum state chart
+            const qctx = document.getElementById('quantumStateChart').getContext('2d');
+            quantumStateChart = new Chart(qctx, {
+                type: 'bar',
+                data: {
+                    labels: ['|0⟩', '|1⟩', '|+⟩', '|-⟩'],
+                    datasets: [{
+                        label: 'Quantum State Probabilities',
+                        data: [],
+                        backgroundColor: '#10b981'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false
+                }
+            });
+        }
+
+        // Enhanced evolveData function
+        async function evolveData() {
+            const input = document.getElementById('data-input').value.trim();
+            const domain = document.getElementById('domain-select').value;
+            
+            try {
+                // Parse JSON input
+                const jsonData = JSON.parse(input);
+                
+                // Send request to backend
+                const response = await fetch(`${API_BASE_URL}/evolve`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        data: jsonData,
+                        domain: domain
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to evolve data');
+                }
+
+                const result = await response.json();
+                
+                // Update UI with results
+                updateResults(result.result);
+                
+                // Add to history
+                addToHistory(result.result, result.session_id);
+                
+            } catch (error) {
+                console.error("Error evolving data:", error);
+                alert("An error occurred while processing the data.");
+            }
+        }
+
+        // Update results in UI
+        function updateResults(results) {
+            // Update refined data
+            document.getElementById('refined-output').value = JSON.stringify(
+                results.refined, null, 2
+            );
+            
+            // Update enhanced data
+            document.getElementById('enhanced-output').value = JSON.stringify(
+                results.enhanced, null, 2
+            );
+            
+            // Update projection chart
+            if (results.projection) {
+                projectionChart.data.datasets[0].data = results.projection;
+                projectionChart.update();
+            }
+            
+            // Update quantum state chart
+            if (results.quantum_state) {
+                quantumStateChart.data.datasets[0].data = results.quantum_state;
+                quantumStateChart.update();
+            }
+        }
+
+        // Add to history
+        function addToHistory(results, sessionId) {
+            const timestamp = new Date().toLocaleString();
+            const historyItem = {
+                timestamp,
+                domain: document.getElementById('domain-select').value,
+                results,
+                sessionId
+            };
+            evolutionHistory.unshift(historyItem);
+            updateHistoryList();
+        }
+
+        // Update history list in UI
+        function updateHistoryList() {
+            const historyList = document.getElementById('history-list');
+            historyList.innerHTML = evolutionHistory.map(item => `
+                <div class="list-group-item">
+                    <small class="text-muted">${item.timestamp}</small>
+                    <p class="mb-1">Domain: ${item.domain}</p>
+                    <button class="btn btn-sm btn-outline-primary" 
+                            onclick="loadHistory('${item.sessionId}')">
+                        Load
+                    </button>
+                </div>
+            `).join('');
+        }
+
+        // Load history item
+        async function loadHistory(sessionId) {
+            try {
+                const response = await fetch(`${API_BASE_URL}/history/${sessionId}`);
+                if (!response.ok) {
+                    throw new Error('Failed to load history');
+                }
+                const result = await response.json();
+                updateResults(result.history);
+            } catch (error) {
+                console.error("Error loading history:", error);
+                alert("Failed to load history item.");
+            }
+        }
+
+        // Rate evolution
+        function rateEvolution(score) {
+            const stars = document.querySelectorAll('#rating-stars span');
+            stars.forEach((star, index) => {
+                star.textContent = index < score ? '★' : '☆';
+            });
+        }
+
+        // Submit feedback
+        async function submitFeedback() {
+            const feedback = document.getElementById('feedback-input').value;
+            const rating = document.querySelectorAll('#rating-stars span')
+                .filter(s => s.textContent === '★').length;
+            const sessionId = evolutionHistory[0]?.sessionId;
+            
+            if (!sessionId) {
+                alert("No active session to provide feedback for.");
+                return;
+            }
+            
+            try {
+                const response = await fetch(`${API_BASE_URL}/feedback`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        rating,
+                        feedback,
+                        session_id: sessionId
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to submit feedback');
+                }
+
+                alert("Feedback submitted successfully!");
+                document.getElementById('feedback-input').value = '';
+                
+            } catch (error) {
+                console.error("Error submitting feedback:", error);
+                alert("Failed to submit feedback.");
+            }
+        }
+
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            initializeModel();
+            initializeCharts();
+        });
+    </script>
+</body>
+</html> 
