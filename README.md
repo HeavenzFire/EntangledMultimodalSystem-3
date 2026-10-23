@@ -362,3 +362,7 @@ The Entangled Multimodal System is a powerful and versatile platform that combin
 ## Credential hygiene
 
 Store API keys only in ignored local files such as `.env.local` or in environment variables. Never commit `.env` or real credentials. If a credential was committed at any point, revoke or rotate it at the provider; deleting the file does not remove it from Git history. Review repository history and follow the provider's key-rotation guidance before re-enabling that integration.
+
+## GitHub Pages deployment
+
+The static IDE site is built from `src/ide_system/frontend/ide_interface.html`. The Pages workflow runs its smoke test and static build for pull requests, and publishes only on pushes to `main`. Publishing requires the workflow token to have repository `contents: write` permission.
