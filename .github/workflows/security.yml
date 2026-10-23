@@ -91,7 +91,7 @@ jobs:
           python -m pytest tests/security/test_quantum_safe.py -v
 
       - name: Upload Security Reports
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: quantum-security-reports
           path: |
