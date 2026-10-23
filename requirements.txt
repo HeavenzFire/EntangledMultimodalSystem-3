@@ -99,7 +99,7 @@ motor>=3.3.1
 
 # Monitoring
 prometheus-client>=0.26.0
-grafana-api>=2.1.0
+grafana-api>=1.0.3
 structlog>=26.1.0
 sentry-sdk>=2.69.2
 
