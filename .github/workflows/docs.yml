@@ -40,7 +40,7 @@ jobs:
           publish_dir: ./docs/_build/html
 
       - name: Upload PDF documentation
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: documentation-pdf
           path: docs/_build/latex/*.pdf
