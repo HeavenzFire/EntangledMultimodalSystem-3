@@ -1,3 +1,4 @@
+--extra-index-url https://download.pytorch.org/whl/cpu
 numpy>=1.21.0
 scipy>=1.7.0
 qiskit>=2.2.0
@@ -27,6 +28,6 @@ pyyaml>=6.0.3
 loguru>=0.5.3
 requests>=2.26.0
 flask>=2.0.0
-torch>=2.0.0
-torchvision>=0.15.0
-torchaudio>=2.0.0 
+torch==2.11.0+cpu
+torchvision==0.26.0+cpu
+torchaudio==2.11.0+cpu
