@@ -43,7 +43,7 @@ pip install sqlalchemy alembic redis
 pip install fastapi uvicorn websockets
 
 :: Install security tools
-pip install python-jose passlib bcrypt cryptography
+pip install PyJWT passlib bcrypt cryptography
 
 :: Verify installations
 python -c "import qiskit; print('Qiskit version:', qiskit.__version__)"
