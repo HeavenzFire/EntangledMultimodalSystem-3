@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 """Incremental Python lint gate that preserves a measurable legacy baseline."""
 import os
-from collections import Counter
-from pathlib import Path
 import subprocess
 import sys
+from collections import Counter
+from pathlib import Path
 
 
 def run(args, source=None):
