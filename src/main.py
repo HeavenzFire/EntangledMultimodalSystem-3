@@ -1,5 +1,6 @@
 import asyncio
 import logging
+import os
 import uvicorn
 from pathlib import Path
 from web.portal import app
@@ -61,7 +62,7 @@ async def main():
         # Start FastAPI server
         config = uvicorn.Config(
             app,
-            host="0.0.0.0",
+            host=os.getenv("HEAVENZFIRE_HOST", "127.0.0.1"),
             port=8000,
             log_level="info"
         )
