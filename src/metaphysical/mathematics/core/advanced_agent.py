@@ -107,8 +107,8 @@ class AdvancedAgent:
     def _initialize_models(self) -> None:
         """Initialize AI/ML models"""
         # Language models
-        self.language_model = AutoModel.from_pretrained("gpt-4")
-        self.tokenizer = AutoTokenizer.from_pretrained("gpt-4")
+        self.language_model = AutoModel.from_pretrained("gpt2", revision="607a30d783dfa663caf39e06633721c8d4cfcd7e")
+        self.tokenizer = AutoTokenizer.from_pretrained("gpt2", revision="607a30d783dfa663caf39e06633721c8d4cfcd7e")
         self.nlp = spacy.load("en_core_web_lg")
         
         # Vision models
