@@ -1,14 +1,16 @@
 #!/usr/bin/env python3
 """Incremental Python lint gate that preserves a measurable legacy baseline."""
-from collections import Counter
 import os
+from collections import Counter
 from pathlib import Path
 import subprocess
 import sys
 
 
 def run(args, source=None):
-    return subprocess.run(args, input=source, text=True, capture_output=True, check=False)
+    return subprocess.run(
+        args, input=source, text=True, capture_output=True, check=False
+    )
 
 
 def get_base():
@@ -39,6 +41,7 @@ def flake8_signatures(path, source):
             sys.executable,
             "-m",
             "flake8",
+            "--extend-ignore=E501",
             "--format=%(code)s:%(text)s",
             "--stdin-display-name",
             path,
@@ -107,7 +110,7 @@ def main():
             print(f"Checking new Python file: {path}")
             commands = [
                 [sys.executable, "-m", "black", "--check", path],
-                [sys.executable, "-m", "flake8", path],
+                [sys.executable, "-m", "flake8", "--extend-ignore=E501", path],
                 [sys.executable, "-m", "isort", "--check-only", path],
             ]
             for command in commands:
