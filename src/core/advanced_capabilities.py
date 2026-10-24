@@ -51,7 +51,7 @@ class AdvancedCapabilities:
                     tf.keras.layers.Dense(32, activation='relu'),
                     tf.keras.layers.Dense(16, activation='sigmoid')
                 ])
-            
+
             # Process through temporal network
             processed = self.temporal_network.predict(np.array([input_data]))
             return {
@@ -67,31 +67,38 @@ class AdvancedCapabilities:
         try:
             # Initialize multimodal processor if not exists
             if self.multimodal_processor is None:
-                self.multimodal_processor = AutoModel.from_pretrained("bert-base-uncased", revision="86b5e0934494bd15c9632b12f734a8a67f723594")
-                self.tokenizer = AutoTokenizer.from_pretrained("bert-base-uncased", revision="86b5e0934494bd15c9632b12f734a8a67f723594")
-            
+                revision = "86b5e0934494bd15c9632b12f734a8a67f723594"
+                self.multimodal_processor = AutoModel.from_pretrained(
+                    "bert-base-uncased",
+                    revision=revision,
+                )
+                self.tokenizer = AutoTokenizer.from_pretrained(
+                    "bert-base-uncased",
+                    revision=revision,
+                )
+
             # Process text
             text_tokens = self.tokenizer(text_data, return_tensors="pt")
             text_embeddings = self.multimodal_processor(**text_tokens).last_hidden_state
-            
+
             # Process other modalities if available
             results = {
                 "text_embeddings": text_embeddings.tolist(),
                 "modalities_processed": ["text"]
             }
-            
+
             if image_data is not None:
                 # Add image processing here
                 image_embeddings = self._process_image(image_data)
                 results["image_embeddings"] = image_embeddings.tolist()
                 results["modalities_processed"].append("image")
-            
+
             if audio_data is not None:
                 # Add audio processing here
                 audio_embeddings = self._process_audio(audio_data)
                 results["audio_embeddings"] = audio_embeddings.tolist()
                 results["modalities_processed"].append("audio")
-            
+
             return results
         except Exception as e:
             logger.error(f"Multimodal integration failed: {str(e)}")
@@ -121,11 +128,11 @@ class AdvancedCapabilities:
                     torch.nn.ReLU(),
                     torch.nn.Linear(128, 64)
                 )
-            
+
             # Process through cognitive engine
             with torch.no_grad():
                 cognitive_output = self.cognitive_engine(torch.tensor(input_data))
-            
+
             return {
                 "cognitive_output": cognitive_output.tolist(),
                 "processing_time": datetime.now().isoformat()
