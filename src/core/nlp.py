@@ -7,8 +7,15 @@ class NLPProcessor:
     def __init__(self):
         """Initialize the NLP processor with GPT-2 model."""
         try:
-            self.tokenizer = GPT2Tokenizer.from_pretrained("gpt2", revision="607a30d783dfa663caf39e06633721c8d4cfcd7e")
-            self.model = GPT2LMHeadModel.from_pretrained("gpt2", revision="607a30d783dfa663caf39e06633721c8d4cfcd7e")
+            revision = "607a30d783dfa663caf39e06633721c8d4cfcd7e"
+            self.tokenizer = GPT2Tokenizer.from_pretrained(
+                "gpt2",
+                revision=revision,
+            )
+            self.model = GPT2LMHeadModel.from_pretrained(
+                "gpt2",
+                revision=revision,
+            )
             logger.info("NLPProcessor initialized successfully")
         except Exception as e:
             logger.error(f"Failed to initialize NLPProcessor: {str(e)}")
@@ -19,7 +26,7 @@ class NLPProcessor:
         try:
             if not prompt or not isinstance(prompt, str):
                 raise ValueError("Prompt must be a non-empty string")
-            
+
             inputs = self.tokenizer.encode(prompt, return_tensors="pt")
             outputs = self.model.generate(
                 inputs,
@@ -30,8 +37,11 @@ class NLPProcessor:
                 top_k=50,
                 top_p=0.95
             )
-            
-            generated_text = self.tokenizer.decode(outputs[0], skip_special_tokens=True)
+
+            generated_text = self.tokenizer.decode(
+                outputs[0],
+                skip_special_tokens=True,
+            )
             logger.info(f"Successfully generated text for prompt: {prompt[:50]}...")
             return generated_text
         except Exception as e:
@@ -43,16 +53,20 @@ class NLPProcessor:
         try:
             if not text or not isinstance(text, str):
                 raise ValueError("Text must be a non-empty string")
-            
+
             # Simple sentiment analysis implementation
             positive_words = {"good", "great", "excellent", "wonderful", "amazing"}
             negative_words = {"bad", "terrible", "awful", "horrible", "poor"}
-            
+
             words = text.lower().split()
             positive_count = sum(1 for word in words if word in positive_words)
             negative_count = sum(1 for word in words if word in negative_words)
-            
-            sentiment = "positive" if positive_count > negative_count else "negative" if negative_count > positive_count else "neutral"
+
+            sentiment = (
+                "positive" if positive_count > negative_count
+                else "negative" if negative_count > positive_count
+                else "neutral"
+            )
             logger.info(f"Successfully analyzed sentiment for text: {text[:50]}...")
             return {
                 "sentiment": sentiment,
@@ -68,4 +82,4 @@ nlp_processor = NLPProcessor()
 
 def generate_text(prompt):
     """Global function to generate text using the NLP processor."""
-    return nlp_processor.generate_text(prompt) 
+    return nlp_processor.generate_text(prompt)
