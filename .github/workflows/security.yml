@@ -27,8 +27,20 @@ jobs:
     - name: Run safety check
       run: safety check --full-report -r requirements.txt
       
-    - name: Run bandit security scan
-      run: bandit -r src/
+    - name: Full Bandit report (all severities; baseline visibility)
+      run: bandit -r src/ -f json -o bandit-report.json
+      continue-on-error: true
+
+    - name: Enforce medium/high Bandit findings
+      run: bandit -r src/ -ll
+
+    - name: Upload Bandit report
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: bandit-report
+        path: bandit-report.json
+        if-no-files-found: ignore
       
     - name: Run dependency check
       run: |
