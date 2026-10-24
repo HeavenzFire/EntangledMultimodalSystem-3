@@ -37,8 +37,8 @@ class QuantumService:
     def _initialize_classical_model(self):
         """Initialize classical AI model"""
         model_name = "distilbert-base-uncased-finetuned-sst-2-english"
-        tokenizer = AutoTokenizer.from_pretrained(model_name)
-        model = AutoModelForSequenceClassification.from_pretrained(model_name)
+        tokenizer = AutoTokenizer.from_pretrained(model_name, revision="714eb0fa89d2f80546fda750413ed43d93601a13")
+        model = AutoModelForSequenceClassification.from_pretrained(model_name, revision="714eb0fa89d2f80546fda750413ed43d93601a13")
         return model, tokenizer
         
     async def process_data(self, data: Dict[str, Any], domain: str) -> Dict[str, Any]:

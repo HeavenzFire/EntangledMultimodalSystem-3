@@ -89,10 +89,11 @@ def create_app():
 if __name__ == "__main__":
     if setup_environment() and initialize_system():
         logger.info("System is ready to start")
-        sys.exit(0)
+        app = create_app()
+        app.run(
+            host=os.getenv("HEAVENZFIRE_HOST", "127.0.0.1"),
+            port=int(os.getenv("PORT", "5000")),
+        )
     else:
         logger.error("System initialization failed")
-        sys.exit(1)
-
-    app = create_app()
-    app.run(host='0.0.0.0', port=5000) 
+        sys.exit(1) 
