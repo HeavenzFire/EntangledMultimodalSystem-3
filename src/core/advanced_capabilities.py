@@ -67,8 +67,8 @@ class AdvancedCapabilities:
         try:
             # Initialize multimodal processor if not exists
             if self.multimodal_processor is None:
-                self.multimodal_processor = AutoModel.from_pretrained("bert-base-uncased")
-                self.tokenizer = AutoTokenizer.from_pretrained("bert-base-uncased")
+                self.multimodal_processor = AutoModel.from_pretrained("bert-base-uncased", revision="86b5e0934494bd15c9632b12f734a8a67f723594")
+                self.tokenizer = AutoTokenizer.from_pretrained("bert-base-uncased", revision="86b5e0934494bd15c9632b12f734a8a67f723594")
             
             # Process text
             text_tokens = self.tokenizer(text_data, return_tensors="pt")

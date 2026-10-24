@@ -1,3 +1,4 @@
+import os
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 from typing import Dict, Any, Optional
@@ -107,4 +108,4 @@ def generate_session_id() -> str:
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000) 
+    uvicorn.run(app, host=os.getenv("HEAVENZFIRE_HOST", "127.0.0.1"), port=int(os.getenv("PORT", "8000"))) 

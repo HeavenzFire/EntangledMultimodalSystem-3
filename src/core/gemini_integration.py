@@ -79,7 +79,7 @@ class GeminiIntegration:
                 "generationConfig": {"temperature": temperature}
             }
             
-            response = requests.post(self.text_endpoint, json=payload)
+            response = requests.post(self.text_endpoint, json=payload, timeout=15)
             response.raise_for_status()
             data = response.json()
             
@@ -120,7 +120,7 @@ class GeminiIntegration:
                 }]
             }
             
-            response = requests.post(self.vision_endpoint, json=payload)
+            response = requests.post(self.vision_endpoint, json=payload, timeout=15)
             response.raise_for_status()
             data = response.json()
             
