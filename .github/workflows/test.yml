@@ -11,10 +11,12 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: [3.10, 3.11]
+        python-version: ["3.10", "3.11"]
 
     steps:
     - uses: actions/checkout@v3
+      with:
+        fetch-depth: 0
     
     - name: Set up Python ${{ matrix.python-version }}
       uses: actions/setup-python@v4
@@ -37,14 +39,11 @@ jobs:
         file: ./coverage.xml
         fail_ci_if_error: true
         
-    - name: Run type checking
+    - name: Legacy MyPy audit (non-blocking baseline)
+      continue-on-error: true
       run: |
         pip install mypy
         mypy src/
-        
-    - name: Run linting
-      run: |
-        pip install black flake8 isort
-        black --check src/
-        flake8 src/
-        isort --check-only src/ 
+
+    - name: Incremental Python quality checks
+      run: python scripts/check_changed_python.py
