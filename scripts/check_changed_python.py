@@ -51,12 +51,24 @@ def flake8_signatures(path, source):
     )
     if result.returncode not in (0, 1):
         raise RuntimeError(result.stderr or f"flake8 failed for {path}")
-    return Counter(line.strip() for line in result.stdout.splitlines() if line.strip())
+    return Counter(
+        line.strip()
+        for line in result.stdout.splitlines()
+        if line.strip()
+    )
 
 
 def black_clean(path, source):
     result = run(
-        [sys.executable, "-m", "black", "--check", "--stdin-filename", path, "-"],
+        [
+            sys.executable,
+            "-m",
+            "black",
+            "--check",
+            "--stdin-filename",
+            path,
+            "-",
+        ],
         source,
     )
     return result.returncode == 0
@@ -101,7 +113,9 @@ def main():
         try:
             compile(current, path, "exec")
         except SyntaxError as exc:
-            print(f"ERROR: syntax error in {path}:{exc.lineno}: {exc.msg}")
+            print(
+                f"ERROR: syntax error in {path}:{exc.lineno}: {exc.msg}"
+            )
             failed = True
             continue
 
