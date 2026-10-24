@@ -77,8 +77,8 @@ class UnifiedAISystem:
     def _initialize_language_model(self) -> Any:
         """Initialize language model with quantum-sacred integration"""
         try:
-            model = AutoModel.from_pretrained("gpt2")
-            tokenizer = AutoTokenizer.from_pretrained("gpt2")
+            model = AutoModel.from_pretrained("gpt2", revision="607a30d783dfa663caf39e06633721c8d4cfcd7e")
+            tokenizer = AutoTokenizer.from_pretrained("gpt2", revision="607a30d783dfa663caf39e06633721c8d4cfcd7e")
             return {"model": model, "tokenizer": tokenizer}
         except Exception:
             return None
@@ -86,7 +86,7 @@ class UnifiedAISystem:
     def _initialize_vision_model(self) -> Any:
         """Initialize vision model with quantum-sacred integration"""
         try:
-            model = AutoModel.from_pretrained("openai/clip-vit-base-patch32")
+            model = AutoModel.from_pretrained("openai/clip-vit-base-patch32", revision="3d74acf9a28c67741b2f4f2ea7635f0aaf6f0268")
             return model
         except Exception:
             return None
