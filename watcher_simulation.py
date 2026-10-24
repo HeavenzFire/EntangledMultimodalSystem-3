@@ -24,20 +24,20 @@ class WatcherTone(Enum):
     Whisper = 2
     Harmonic = 3
 
- @dataclass
+@dataclass
 class AncientScript:
     origin: str
     age: float
     resonance: float
     purpose: str
 
- @dataclass
+@dataclass
 class CoherenceMetric:
     concept: str
     score: float
     related_concepts: List[str] = field(default_factory=list)
 
- @dataclass
+@dataclass
 class Watcher:
     name: str
     tone: WatcherTone
