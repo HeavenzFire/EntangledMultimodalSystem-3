@@ -22,8 +22,6 @@ transformers>=4.57.6,<5
 sentencepiece>=0.2.2
 tokenizers>=0.22.2
 accelerate>=1.15.0
-tokenizers>=0.15.0
-accelerate>=1.10.1
 bitsandbytes>=0.50.2
 optimum>=2.3.0
 
@@ -86,7 +84,6 @@ ray>=2.9.0
 # Security
 passlib[bcrypt]>=1.7.4
 bcrypt>=4.0.1
-cryptography>=48.0.0
 cryptography>=49.0.0
 pyOpenSSL>=23.2.0
 
@@ -108,9 +105,6 @@ google-cloud-storage>=2.14.0
 # Documentation
 sphinx-rtd-theme>=3.1.0
 nbsphinx>=0.9.1
-
-# Utilities
-loguru>=0.7.2
 
 # Gemini API
 google-generativeai>=0.8.6
@@ -138,15 +132,5 @@ mpi4py>=4.1.2
 # Typing Extensions
 typing-extensions>=4.8.0
 
-# Optimization and Performance
-dask>=2023.3.0
-ray>=2.8.0
-
-# Advanced Mathematics
-sympy>=1.12.0
-scipy>=1.10.0
-
 # Monitoring and Logging
-prometheus-client>=0.17.0
 python-json-logger>=4.2.0
-structlog>=23.1.0
