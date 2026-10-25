@@ -1,5 +1,4 @@
 import os
-from datetime import datetime
 from secrets import token_urlsafe
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
