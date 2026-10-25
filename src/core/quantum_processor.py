@@ -7,8 +7,7 @@ from dotenv import load_dotenv
 import numpy as np
 from qiskit import QuantumCircuit, transpile
 from qiskit.providers import Backend
-from qiskit.providers.ibmq import IBMQ
-from qiskit.providers.aer import AerSimulator
+from qiskit_aer import AerSimulator
 from qiskit.primitives import Sampler, Estimator
 from qiskit.quantum_info import SparsePauliOp
 from qiskit_ibm_runtime import QiskitRuntimeService, Session, Options
