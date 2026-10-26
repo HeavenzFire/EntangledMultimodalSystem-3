@@ -5,8 +5,8 @@ from datetime import datetime
 import logging
 from qiskit import QuantumCircuit, QuantumRegister, ClassicalRegister
 from qiskit.algorithms import QAOA
-from qiskit.optimization import QuadraticProgram
-from qiskit.optimization.algorithms import MinimumEigenOptimizer
+from qiskit_optimization import QuadraticProgram
+from qiskit_optimization.algorithms import MinimumEigenOptimizer
 import torch
 import torch.nn as nn
 
