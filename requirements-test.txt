@@ -4,6 +4,7 @@ pennylane==0.41.1
 autoray<0.8.0
 qiskit==0.46.3
 qiskit-aer==0.13.3
+qiskit-ignis==0.7.1
 tensorflow>=2.8.0
 transformers>=5.10.0,<6
 Pillow>=13.0.0
