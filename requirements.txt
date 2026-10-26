@@ -123,7 +123,7 @@ SpeechRecognition>=3.10.0
 pylint>=4.0.9
 
 # RDKit
-rdkit>=2026.3.6
+rdkit>=2026.9.1
 
 # Quantum Chemistry
 pyscf>=2.14.0
