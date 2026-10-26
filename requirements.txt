@@ -73,7 +73,7 @@ mypy>=2.4.0
 librosa>=0.10.1
 soundfile>=0.14.0
 pydub>=0.25.1
-pyaudio>=0.2.13
+pyaudio>=0.2.14
 
 # Scientific Computing
 sympy>=1.12.0
