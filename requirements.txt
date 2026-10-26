@@ -18,7 +18,7 @@ torch>=2.1.0
 pennylane>=0.41.1
 
 # AI and NLP
-transformers>=4.57.6,<5
+transformers>=5.10.0,<6
 Pillow>=13.0.0
 filelock>=4.2.1
 keras>=3.15.0
