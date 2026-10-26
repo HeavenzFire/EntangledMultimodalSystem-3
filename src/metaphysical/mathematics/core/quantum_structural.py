@@ -5,10 +5,11 @@ from typing import Dict, List, Any, Optional, Tuple, Callable
 from dataclasses import dataclass
 from datetime import datetime
 import logging
-from qiskit import QuantumCircuit, QuantumRegister, ClassicalRegister, execute, Aer
+from qiskit import QuantumCircuit, QuantumRegister, ClassicalRegister, execute
+from qiskit_aer import Aer
 from qiskit.algorithms import VQE, QAOA
-from qiskit.optimization import QuadraticProgram
-from qiskit.optimization.algorithms import MinimumEigenOptimizer
+from qiskit_optimization import QuadraticProgram
+from qiskit_optimization.algorithms import MinimumEigenOptimizer
 import time
 import json
 import yaml
