@@ -5,4 +5,4 @@ cryptography==50.0.0
 cryptography==48.0.1
 cryptography==49.0.0
 scipy==1.13.1
-gunicorn==23.0.0
+gunicorn==26.2.0
