@@ -8,8 +8,8 @@ from qiskit import QuantumCircuit, QuantumRegister, ClassicalRegister, execute, 
 from qiskit.circuit.library import QFT, PhaseEstimation
 from qiskit.quantum_info import Statevector, random_statevector
 from qiskit.algorithms import VQE, QAOA
-from qiskit.optimization import QuadraticProgram
-from qiskit.optimization.algorithms import MinimumEigenOptimizer
+from qiskit_optimization import QuadraticProgram
+from qiskit_optimization.algorithms import MinimumEigenOptimizer
 import time
 
 logger = logging.getLogger(__name__)
