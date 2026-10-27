@@ -30,5 +30,7 @@ def test_cloud_client_credential_failure_is_reported_on_demand():
         side_effect=RuntimeError("credentials unavailable"),
     ):
         recognizer = SpeechRecognizer()
-        with pytest.raises(SpeechRecognitionError, match="Cloud speech client initialization failed"):
+        with pytest.raises(
+            SpeechRecognitionError, match="Cloud speech client initialization failed"
+        ):
             _ = recognizer.client
