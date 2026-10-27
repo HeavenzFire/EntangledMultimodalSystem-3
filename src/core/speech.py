@@ -6,14 +6,23 @@ from src.config import Config
 
 class SpeechRecognizer:
     def __init__(self):
-        """Initialize the speech recognizer."""
-        try:
-            self.recognizer = sr.Recognizer()
-            self.client = speech.SpeechClient()
-            logger.info("SpeechRecognizer initialized successfully")
-        except Exception as e:
-            logger.error(f"Failed to initialize SpeechRecognizer: {str(e)}")
-            raise SpeechRecognitionError(f"Speech recognition initialization failed: {str(e)}")
+        """Initialize local recognition state without requiring cloud credentials."""
+        self.recognizer = sr.Recognizer()
+        self._client = None
+        logger.info("SpeechRecognizer initialized; cloud client will be created on demand")
+
+    @property
+    def client(self):
+        """Create the cloud client only when a cloud transcription is requested."""
+        if self._client is None:
+            try:
+                self._client = speech.SpeechClient()
+            except Exception as e:
+                logger.error(f"Failed to initialize cloud speech client: {str(e)}")
+                raise SpeechRecognitionError(
+                    f"Cloud speech client initialization failed: {str(e)}"
+                ) from e
+        return self._client
 
     def recognize_from_microphone(self):
         """Recognize speech from microphone input."""
