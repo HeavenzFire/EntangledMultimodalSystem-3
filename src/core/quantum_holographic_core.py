@@ -18,27 +18,23 @@ class QuantumHolographicCore:
         self.logger = logging.getLogger(__name__)
         self.config = config or {}
         
-        # Initialize core components
+        # Use bounded local defaults; cloud execution and larger simulations
+        # must be explicitly configured. The previous 128-qubit request was
+        # infeasible for this local simulator and used unsupported kwargs.
         self.qpu = QuantumProcessor(
-            num_qubits=128,
-            error_correction="surface_code",
-            ethical_constraints="asilomar_v5"
+            backend_name=self.config.get("backend_name", "aer_simulator"),
+            cloud_provider=self.config.get("cloud_provider"),
+            num_qubits=int(self.config.get("num_qubits", 5)),
+            error_correction=self.config.get("error_correction", "none"),
         )
-        
-        self.holo = HolographicProcessor(
-            resolution=16384,
-            latency=1e-15,
-            ethical_constraints="asilomar_v5"
-        )
-        
+        self.holo = HolographicProcessor()
         self.consciousness = QuantumConsciousness(
-            quantum_weight=0.4,
-            holographic_weight=0.3,
-            neural_weight=0.3
+            quantum_weight=float(self.config.get("quantum_weight", 0.4)),
+            holographic_weight=float(self.config.get("holographic_weight", 0.3)),
+            neural_weight=float(self.config.get("neural_weight", 0.3)),
         )
-        
         self.ethics = QuantumEthics()
-        
+
         # Initialize state and metrics
         self.state = {
             "quantum_entanglement": 0.0,
@@ -57,52 +53,87 @@ class QuantumHolographicCore:
         self.logger.info("QuantumHolographicCore initialized successfully")
     
     def process(self, data: np.ndarray) -> Tuple[np.ndarray, Dict[str, float]]:
-        """Process input data through quantum-holographic pipeline.
-        
-        Args:
-            data: Input data array
-            
-        Returns:
-            Tuple of processed output and metrics
+        """Process finite numeric input through the bounded local pipeline.
+
+        Quantum execution uses the configured simulator qubit count; reported
+        metrics are software diagnostics and are not physical-hardware claims.
         """
         try:
-            # Quantum processing
-            q_state = self.qpu.entangle(data)
-            q_metrics = self.qpu.get_metrics()
-            
-            # Holographic processing
+            input_vector = np.asarray(data, dtype=float).reshape(-1)
+            if input_vector.size == 0 or not np.all(np.isfinite(input_vector)):
+                raise ValueError("data must be a non-empty finite numeric array")
+
+            qubits = int(self.qpu.quantum_params["num_qubits"])
+            if qubits < 1 or qubits > 12:
+                raise ValueError("local core supports 1-12 qubits per run")
+
+            # Encode a bounded nearest-neighbour entanglement task.
+            task = {f"state_{i}": [1.0, 0.0] for i in range(qubits)}
+            for i in range(qubits - 1):
+                task[f"entangle_{i}_{i + 1}"] = True
+            quantum_result = self.qpu.process(
+                task_type="entanglement", data=task, use_cloud=False
+            )
+            counts = quantum_result.get("result", {}).get("counts", {})
+            q_state = np.zeros(2 ** qubits, dtype=float)
+            total = float(sum(counts.values())) if counts else 0.0
+            if total <= 0:
+                raise RuntimeError("quantum simulator returned no measurement counts")
+            for bitstring, count in counts.items():
+                try:
+                    index = int(str(bitstring).replace(" ", ""), 2)
+                except ValueError:
+                    continue
+                if 0 <= index < q_state.size:
+                    q_state[index] = float(count) / total
+            if not np.any(q_state):
+                raise RuntimeError("quantum simulator returned unrecognized measurement keys")
+
+            q_raw = self.qpu.get_metrics()
+            q_elapsed = max(float(quantum_result.get("execution_time", 0.0)), 1e-9)
+            q_metrics = {
+                "entanglement_fidelity": float(q_raw.get("fidelity", 0.0)),
+                "speed": 1.0 / q_elapsed,
+                "efficiency": float(q_raw.get("resource_usage", 0.0)),
+                "error_rate": float(q_raw.get("error_rate", 1.0)),
+            }
+
             h_state = self.holo.project(q_state)
-            h_metrics = self.holo.get_metrics()
-            
-            # Consciousness integration
+            h_raw = self.holo.get_metrics()
+            h_metrics = {
+                "fidelity": float(h_raw.get("fidelity", 0.0)),
+                "speed": float(h_raw.get("speed", 0.0)),
+                "efficiency": float(h_raw.get("efficiency", 0.0)),
+                "error_rate": float(h_raw.get("error_rate", 1.0)),
+            }
+
             c_state = self.consciousness.integrate(q_state, h_state)
             c_metrics = self.consciousness.get_metrics()
-            
-            # Ethical validation
-            e_metrics = self.ethics.validate(c_state)
-            
-            # Update state
+            e_metrics = self.ethics.validate({
+                "operation": "process_numeric_input",
+                "state": c_state.tolist(),
+            })
+
             self.state.update({
                 "quantum_entanglement": q_metrics["entanglement_fidelity"],
                 "holographic_fidelity": h_metrics["fidelity"],
                 "consciousness_level": c_metrics["phi_score"],
-                "ethical_compliance": e_metrics["compliance_score"]
+                "ethical_compliance": e_metrics["compliance_score"],
             })
-            
-            # Update metrics
             self.metrics.update({
                 "processing_speed": min(q_metrics["speed"], h_metrics["speed"]),
-                "energy_efficiency": (q_metrics["efficiency"] + h_metrics["efficiency"]) / 2,
+                "energy_efficiency": (
+                    q_metrics["efficiency"] + h_metrics["efficiency"]
+                ) / 2.0,
                 "error_rate": max(q_metrics["error_rate"], h_metrics["error_rate"]),
-                "integration_score": c_metrics["integration_score"]
+                "integration_score": c_metrics["integration_score"],
             })
-            
-            return c_state, self.metrics
-            
+            return c_state, self.metrics.copy()
+
         except Exception as e:
-            self.logger.error(f"Error in quantum-holographic processing: {str(e)}")
+            self.logger.error("Error in quantum-holographic processing: %s", e)
             raise
-    
+
     def calibrate(self, target_phi: float = 0.9) -> Dict[str, float]:
         """Calibrate the quantum-holographic system.
         
