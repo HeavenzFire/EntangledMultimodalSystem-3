@@ -8,7 +8,6 @@ import logging
 from qiskit import QuantumCircuit, QuantumRegister, ClassicalRegister, execute, Aer
 from qiskit.algorithms import VQE, QAOA
 from qiskit_optimization import QuadraticProgram
-from qiskit_optimization.algorithms import MinimumEigenOptimizer
 import time
 import json
 import yaml
