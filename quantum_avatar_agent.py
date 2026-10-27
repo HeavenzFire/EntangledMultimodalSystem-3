@@ -531,7 +531,6 @@ class QuantumAvatarAgent:
             ax1.add_patch(circle)
             
             # Add chakra label with consciousness information
-            state = f"Consciousness: {self.awareness_state[i]:.2f}"
             chakra_label = chakra.replace("_", "\n")
             state = f"Consciousness: {self.awareness_state[i]:.2f}"
             ax1.text(x, y, f"{chakra_label}\n{freq:.2f}Hz\n{state}",
