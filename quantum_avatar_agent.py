@@ -532,8 +532,10 @@ class QuantumAvatarAgent:
             
             # Add chakra label with consciousness information
             state = f"Consciousness: {self.awareness_state[i]:.2f}"
-            ax1.text(x, y, f"{chakra.replace('_', '\n')}\n{freq:.2f}Hz\n{state}", 
-                   ha='center', va='center')
+            chakra_label = chakra.replace("_", "\n")
+            state = f"Consciousness: {self.awareness_state[i]:.2f}"
+            ax1.text(x, y, f"{chakra_label}\n{freq:.2f}Hz\n{state}",
+                     ha="center", va="center")
         
         # Draw emotional state
         emotions = list(self.emotional_frequencies.keys())
