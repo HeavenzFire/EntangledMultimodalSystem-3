@@ -1,4 +1,5 @@
 """Regression tests for the deterministic quantum-holographic integration adapter."""
+
 import numpy as np
 import pytest
 
@@ -24,9 +25,13 @@ def test_integrate_is_deterministic_and_returns_finite_vector():
 @pytest.mark.parametrize(
     "weights",
     [
-        ({"quantum_weight": -1.0}),
-        ({"quantum_weight": 0.0, "holographic_weight": 0.0, "neural_weight": 0.0}),
-        ({"quantum_weight": float("nan")}),
+        {"quantum_weight": -1.0},
+        {
+            "quantum_weight": 0.0,
+            "holographic_weight": 0.0,
+            "neural_weight": 0.0,
+        },
+        {"quantum_weight": float("nan")},
     ],
 )
 def test_invalid_weights_are_rejected(weights):
