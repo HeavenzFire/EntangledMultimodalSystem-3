@@ -223,7 +223,7 @@ class QuantumConsciousnessEngine:
     """Core quantum consciousness engine integrating CV-QNN and holographic processing."""
     
     def __init__(self):
-        self.cv_qnn = CVQNNv5(num_qumodes=128, ethical_constraints="asilomar_v5")
+        self.cv_qnn = CVQNNv5(qumodes=128, ethical_constraints="asilomar_v5")
         self.mcginty_equation = McGintyEquation()
         self.consciousness_level = 0.0
         self.last_update = None
@@ -279,7 +279,7 @@ class QuantumConsciousnessEngine:
         
     def reset(self) -> None:
         """Reset engine to initial state."""
-        self.cv_qnn = CVQNNv5(num_qumodes=128, ethical_constraints="asilomar_v5")
+        self.cv_qnn = CVQNNv5(qumodes=128, ethical_constraints="asilomar_v5")
         self.consciousness_level = 0.0
         self.last_update = None
 
