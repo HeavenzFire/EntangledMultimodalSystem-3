@@ -24,7 +24,9 @@ class QuantumProcessor:
         self,
         backend_name: str = "aer_simulator",
         cloud_provider: Optional[str] = None,
-        api_token: Optional[str] = None
+        api_token: Optional[str] = None,
+        num_qubits: Optional[int] = None,
+        error_correction: Optional[str] = None,
     ):
         """Initialize Quantum Processor.
         
@@ -44,9 +46,15 @@ class QuantumProcessor:
             
             # Initialize quantum parameters
             self.quantum_params = {
-                "num_qubits": int(os.getenv("QUANTUM_NUM_QUBITS", "5")),
+                "num_qubits": int(
+                    num_qubits if num_qubits is not None
+                    else os.getenv("QUANTUM_NUM_QUBITS", "5")
+                ),
                 "shots": int(os.getenv("QUANTUM_SHOTS", "1024")),
-                "error_correction": os.getenv("QUANTUM_ERROR_CORRECTION", "surface_code"),
+                "error_correction": (
+                    error_correction if error_correction is not None
+                    else os.getenv("QUANTUM_ERROR_CORRECTION", "surface_code")
+                ),
                 "optimization_level": int(os.getenv("QUANTUM_OPTIMIZATION_LEVEL", "3")),
                 "max_execution_time": float(os.getenv("QUANTUM_MAX_EXECUTION_TIME", "300.0")),
                 "hybrid_threshold": float(os.getenv("QUANTUM_HYBRID_THRESHOLD", "0.5"))
@@ -552,6 +560,11 @@ class QuantumProcessor:
             
         except Exception as e:
             logging.error(f"Error updating metrics: {str(e)}")
+
+    def calibrate(self) -> Dict[str, float]:
+        """Return a software diagnostic; this does not calibrate physical hardware."""
+        score = 1.0 - float(self.metrics.get("error_rate", 1.0))
+        return {"score": min(1.0, max(0.0, score)), "mode": "software-metrics"}
 
     def get_state(self) -> Dict[str, Any]:
         """Get current processor state."""
