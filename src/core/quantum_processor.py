@@ -10,7 +10,12 @@ from qiskit.providers import Backend
 from qiskit_aer import AerSimulator
 from qiskit.primitives import Sampler, Estimator
 from qiskit.quantum_info import SparsePauliOp
-from qiskit_ibm_runtime import QiskitRuntimeService, Session, Options
+try:
+    from qiskit_ibm_runtime import QiskitRuntimeService, Session, Options
+except ImportError:  # IBM cloud execution is optional for local simulation.
+    QiskitRuntimeService = None
+    Session = None
+    Options = None
 
 class QuantumProcessor:
     """Advanced Quantum Processor with hybrid quantum-classical capabilities."""
@@ -82,6 +87,10 @@ class QuantumProcessor:
         """Initialize quantum backend."""
         try:
             if self.cloud_provider == "ibmq":
+                if QiskitRuntimeService is None or Session is None:
+                    raise QuantumError(
+                        "IBM Quantum execution requires the optional qiskit-ibm-runtime package"
+                    )
                 if not self.api_token:
                     raise QuantumError("IBMQ API token required for cloud backend")
                 # Initialize QiskitRuntimeService
