@@ -388,9 +388,11 @@ class QuantumProcessor:
             for i in range(self.quantum_params["num_qubits"]):
                 for j in range(i + 1, self.quantum_params["num_qubits"]):
                     if data.get(f"entangle_{i}_{j}", False):
-                        circuit.cx(i, j)
+                        # Prepare a superposition on the control before CX;
+                        # applying H only after CX from |00> leaves a product
+                        # state and does not create the intended Bell pair.
                         circuit.h(i)
-                        circuit.h(j)
+                        circuit.cx(i, j)
             
             return circuit
             
