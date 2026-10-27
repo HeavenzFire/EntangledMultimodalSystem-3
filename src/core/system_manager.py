@@ -4,7 +4,6 @@ from src.core.speech import SpeechRecognizer
 from src.core.fractal import FractalGenerator
 from src.core.radiation import RadiationMonitor
 from src.core.advanced_capabilities import AdvancedCapabilities
-from src.core.hyper_intelligence import HyperIntelligenceFramework
 from src.utils.logger import logger
 from src.utils.errors import ModelError, ManagementError
 from datetime import datetime
