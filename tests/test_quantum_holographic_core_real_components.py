@@ -9,7 +9,12 @@ def test_core_process_uses_real_bounded_local_components():
 
     assert output.size > 0
     assert np.all(np.isfinite(output))
-    assert {"processing_speed", "energy_efficiency", "error_rate", "integration_score"} <= metrics.keys()
+    assert {
+        "processing_speed",
+        "energy_efficiency",
+        "error_rate",
+        "integration_score",
+    } <= metrics.keys()
     assert core.qpu.quantum_params["num_qubits"] == 2
     assert core.holo.tensor_holography.encoding_matrix is None
 
