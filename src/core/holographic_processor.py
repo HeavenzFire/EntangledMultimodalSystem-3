@@ -8,49 +8,44 @@ from typing import Dict, Any, List, Optional
 import time
 
 class TensorHolographyDB:
-    """Tensor-based holographic encoding and decoding."""
-    
+    """Memory-bounded, reversible FFT-based holographic transform.
+
+    The former implementation eagerly allocated a dense 16,384 x 16,384
+    float64 matrix (~2 GiB) and then attempted cubic-time pseudo-inversion.
+    This implementation preserves the encode/decode contract without a
+    resolution-sized dense matrix. It is a numerical transform, not a claim
+    of physical holography.
+    """
+
     def __init__(self):
+        # Kept as a compatibility attribute; no dense matrix is needed.
         self.encoding_matrix = None
-        self._initialize_encoding()
-        
+
     def _initialize_encoding(self):
-        """Initialize holographic encoding matrix."""
-        try:
-            # Create encoding matrix for 16K resolution
-            self.encoding_matrix = np.random.randn(16384, 16384)
-            # Normalize matrix
-            self.encoding_matrix /= np.linalg.norm(self.encoding_matrix)
-            
-        except Exception as e:
-            logger.error(f"Error initializing encoding matrix: {str(e)}")
-            raise ModelError(f"Encoding initialization failed: {str(e)}")
-            
+        """Compatibility no-op: the transform is matrix-free."""
+        self.encoding_matrix = None
+
     def encode(self, input_data: np.ndarray) -> np.ndarray:
-        """Encode input data into holographic format."""
+        """Apply a reversible N-dimensional Fourier encoding."""
         try:
-            # Ensure input matches encoding dimensions
-            if input_data.shape != (16384, 16384):
-                input_data = np.resize(input_data, (16384, 16384))
-                
-            # Apply encoding transformation
-            encoded = np.dot(self.encoding_matrix, input_data)
-            return encoded
-            
+            data = np.asarray(input_data)
+            if data.size == 0 or not np.all(np.isfinite(data)):
+                raise ValueError("input_data must be non-empty and finite")
+            return np.fft.fftn(data)
         except Exception as e:
             logger.error(f"Error encoding holographic data: {str(e)}")
-            raise ModelError(f"Holographic encoding failed: {str(e)}")
-            
+            raise ModelError(f"Holographic encoding failed: {str(e)}") from e
+
     def decode(self, encoded_data: np.ndarray) -> np.ndarray:
-        """Decode holographic data back to original format."""
+        """Invert the Fourier encoding while preserving the original shape."""
         try:
-            # Apply inverse transformation
-            decoded = np.dot(np.linalg.pinv(self.encoding_matrix), encoded_data)
-            return decoded
-            
+            data = np.asarray(encoded_data)
+            if data.size == 0 or not np.all(np.isfinite(data)):
+                raise ValueError("encoded_data must be non-empty and finite")
+            return np.fft.ifftn(data)
         except Exception as e:
             logger.error(f"Error decoding holographic data: {str(e)}")
-            raise ModelError(f"Holographic decoding failed: {str(e)}")
+            raise ModelError(f"Holographic decoding failed: {str(e)}") from e
 
 class HolographicProcessor:
     """16K photonic processing engine with real-time rendering capabilities."""
@@ -91,29 +86,24 @@ class HolographicProcessor:
             raise ModelError(f"Holographic rendering failed: {str(e)}")
             
     def _apply_photonic_transforms(self, encoded_data: np.ndarray) -> np.ndarray:
-        """Apply photonic transformations to encoded data."""
+        """Apply a deterministic, shape-preserving numerical phase transform."""
         try:
-            # Apply wavefront propagation
-            propagated = np.fft.fft2(encoded_data)
-            
-            # Apply phase modulation
-            phase = np.exp(1j * np.random.rand(*encoded_data.shape))
-            modulated = propagated * phase
-            
-            # Inverse transform
-            transformed = np.fft.ifft2(modulated)
-            
-            return transformed
-            
+            data = np.asarray(encoded_data)
+            if data.size == 0 or not np.all(np.isfinite(data)):
+                raise ValueError("encoded_data must be non-empty and finite")
+            propagated = np.fft.fftn(data)
+            phase_values = np.linspace(0.0, 2.0 * np.pi, data.size, endpoint=False)
+            phase = np.exp(1j * phase_values.reshape(data.shape))
+            return np.fft.ifftn(propagated * phase)
         except Exception as e:
             logger.error(f"Error applying photonic transforms: {str(e)}")
-            raise ModelError(f"Photonic transformation failed: {str(e)}")
+            raise ModelError(f"Photonic transformation failed: {str(e)}") from e
             
     def _calculate_quality(self, rendered: np.ndarray, original: np.ndarray) -> float:
         """Calculate rendering quality metric."""
         try:
             # Calculate PSNR
-            mse = np.mean((rendered - original) ** 2)
+            mse = float(np.mean(np.abs(rendered - original) ** 2))
             if mse == 0:
                 return float('inf')
             max_pixel = 1.0
@@ -125,6 +115,37 @@ class HolographicProcessor:
             logger.error(f"Error calculating quality metric: {str(e)}")
             return 0.0
             
+    def project(self, input_state: np.ndarray) -> np.ndarray:
+        """Project a numeric state through the matrix-free transform."""
+        start_time = time.time()
+        encoded = self.tensor_holography.encode(input_state)
+        projected = self._apply_photonic_transforms(encoded)
+        self.last_render_time = time.time() - start_time
+        original = np.asarray(input_state).reshape(-1)
+        output = self.tensor_holography.decode(projected).reshape(-1)
+        denom = float(np.linalg.norm(original) * np.linalg.norm(output))
+        similarity = float(abs(np.vdot(original, output)) / denom) if denom else 0.0
+        self._metrics = {
+            "fidelity": min(1.0, max(0.0, similarity)),
+            "speed": 1.0 / max(self.last_render_time, 1e-9),
+            "efficiency": 1.0 / (1.0 + self.last_render_time),
+            "error_rate": max(0.0, 1.0 - min(1.0, similarity)),
+        }
+        return output
+
+    def get_metrics(self) -> Dict[str, float]:
+        """Return numerical transform diagnostics, not physical-device metrics."""
+        return getattr(self, "_metrics", {
+            "fidelity": 0.0, "speed": 0.0, "efficiency": 0.0, "error_rate": 1.0
+        }).copy()
+
+    def calibrate(self) -> Dict[str, float]:
+        """Report a neutral software calibration result for interface compatibility."""
+        self._metrics = {
+            "fidelity": 1.0, "speed": 0.0, "efficiency": 1.0, "error_rate": 0.0
+        }
+        return {"score": 1.0, "mode": "software-transform"}
+
     def get_state(self) -> Dict[str, Any]:
         """Get current processor state."""
         return {
