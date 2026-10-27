@@ -24,3 +24,22 @@ def test_core_rejects_empty_or_nonfinite_input():
             pass
         else:
             raise AssertionError("invalid input must be rejected")
+
+
+def test_entanglement_task_prepares_a_bell_pair():
+    from qiskit.quantum_info import Statevector
+    from src.core.quantum_processor import QuantumProcessor
+
+    processor = QuantumProcessor(num_qubits=2, error_correction="none")
+    circuit = processor._create_circuit(
+        "entanglement",
+        {
+            "state_0": [1.0, 0.0],
+            "state_1": [1.0, 0.0],
+            "entangle_0_1": True,
+        },
+    )
+    unmeasured = circuit.remove_final_measurements(inplace=False)
+    probabilities = Statevector.from_instruction(unmeasured).probabilities()
+
+    np.testing.assert_allclose(probabilities, [0.5, 0.0, 0.0, 0.5], atol=1e-8)
