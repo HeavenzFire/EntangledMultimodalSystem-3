@@ -7,8 +7,8 @@ class NLPProcessor:
     def __init__(self):
         """Initialize the NLP processor with GPT-2 model."""
         try:
-            self.tokenizer = GPT2Tokenizer.from_pretrained("gpt2")
-            self.model = GPT2LMHeadModel.from_pretrained("gpt2")
+            self.tokenizer = GPT2Tokenizer.from_pretrained("gpt2", revision="e7da7f221d5bf496a48136c0cd264e630fe9fcc8")
+            self.model = GPT2LMHeadModel.from_pretrained("gpt2", revision="e7da7f221d5bf496a48136c0cd264e630fe9fcc8")
             logger.info("NLPProcessor initialized successfully")
         except Exception as e:
             logger.error(f"Failed to initialize NLPProcessor: {str(e)}")
