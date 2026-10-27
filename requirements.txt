@@ -7,7 +7,7 @@ matplotlib>=3.7.0
 # Quantum computing
 qiskit>=2.2.0
 qiskit-aer>=0.12.0
-qiskit-machine-learning>=0.7.0
+qiskit-machine-learning>=0.9.1
 qiskit-nature>=0.7.0
 qiskit-ibm-runtime>=0.19.0
 qiskit-optimization>=0.7.0
