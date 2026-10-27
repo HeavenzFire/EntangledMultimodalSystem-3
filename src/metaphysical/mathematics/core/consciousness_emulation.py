@@ -12,7 +12,7 @@ import json
 import yaml
 from scipy import signal
 import networkx as nx
-from ..quantum_gravity import QuantumGravitySystem
+from .quantum_gravity import QuantumGravitySystem
 
 logger = logging.getLogger(__name__)
 

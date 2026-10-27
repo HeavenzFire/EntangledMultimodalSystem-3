@@ -14,7 +14,7 @@ import json
 import yaml
 from scipy import signal
 import networkx as nx
-from ..quantum_structural import QuantumStructuralSystem
+from .quantum_structural import QuantumStructuralSystem
 
 logger = logging.getLogger(__name__)
 

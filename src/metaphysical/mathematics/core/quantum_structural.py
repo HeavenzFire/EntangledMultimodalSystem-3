@@ -13,7 +13,7 @@ import json
 import yaml
 from scipy import signal
 import networkx as nx
-from ..omni_emulation import OmniEmulationSystem
+from .omni_emulation import OmniEmulationSystem
 
 logger = logging.getLogger(__name__)
 

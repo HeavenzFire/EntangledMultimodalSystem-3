@@ -12,7 +12,7 @@ import json
 import yaml
 from scipy import signal
 import networkx as nx
-from ..omni_transformation import OmniTransformationSystem
+from .omni_transformation import OmniTransformationSystem
 
 logger = logging.getLogger(__name__)
 
