@@ -173,6 +173,7 @@ class QuantumEthicalGovernor:
             'principle_violations': {}
         }
 
+
 # Backwards-compatible name used by QuantumHolographicCore.
 # This governor provides heuristic checks; it is not a formal ethical guarantee.
 QuantumEthics = QuantumEthicalGovernor
