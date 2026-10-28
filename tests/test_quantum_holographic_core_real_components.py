@@ -33,6 +33,7 @@ def test_core_rejects_empty_or_nonfinite_input():
 
 def test_entanglement_task_prepares_a_bell_pair():
     from qiskit.quantum_info import Statevector
+
     from src.core.quantum_processor import QuantumProcessor
 
     processor = QuantumProcessor(num_qubits=2, error_correction="none")
