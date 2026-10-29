@@ -7,6 +7,13 @@ on:
       - "src/metaphysical/mathematics/core/omni_emulation.py"
       - "tests/metaphysical/mathematics/core/test_omni_emulation_unit.py"
       - ".github/workflows/omni-emulation-smoke.yml"
+  push:
+    branches:
+      - "fix/unified-ci-security-integration"
+    paths:
+      - "src/metaphysical/mathematics/core/omni_emulation.py"
+      - "tests/metaphysical/mathematics/core/test_omni_emulation_unit.py"
+      - ".github/workflows/omni-emulation-smoke.yml"
 
 permissions:
   contents: read
