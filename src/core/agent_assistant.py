@@ -27,7 +27,7 @@ class AgentAssistant:
             
             # Initialize core components
             self.system_manager = system_manager or SystemManager()
-            self.system_director = system_director or SystemDirector(self.system_manager)
+            self.system_director = system_director or SystemDirector()
             
             # Initialize parameters
             self.assistant_interval = float(os.getenv("ASSISTANT_INTERVAL", "0.1"))

@@ -58,7 +58,7 @@ class SystemManager:
             self.planner = SystemPlanner()
             self.scheduler = SystemScheduler()
             self.executor = SystemExecutor()
-            self.monitor = SystemMonitor()
+            self.monitor = SystemMonitor(system_manager=self)
             self.validator = SystemValidator()
             self.optimizer = SystemOptimizer()
             self.balancer = SystemBalancer()

@@ -1,19 +1,21 @@
 import os
 import time
 import logging
-from typing import Dict, Any, Optional, List
-from src.core.system_manager import SystemManager
-from src.core.agent_assistant import AgentAssistant
-from src.utils.errors import ModelError
+from typing import Dict, Any, Optional, List, TYPE_CHECKING
 from dotenv import load_dotenv
+from src.utils.errors import ModelError
+
+if TYPE_CHECKING:
+    from src.core.system_manager import SystemManager
+    from src.core.agent_assistant import AgentAssistant
 
 class SystemMonitor:
     """System Monitor for comprehensive system monitoring and diagnostics."""
     
     def __init__(
         self,
-        system_manager: Optional[SystemManager] = None,
-        agent_assistant: Optional[AgentAssistant] = None
+        system_manager: Optional["SystemManager"] = None,
+        agent_assistant: Optional["AgentAssistant"] = None
     ):
         """Initialize System Monitor.
         
@@ -26,8 +28,17 @@ class SystemMonitor:
             load_dotenv()
             
             # Initialize core components
-            self.system_manager = system_manager or SystemManager()
-            self.agent_assistant = agent_assistant or AgentAssistant(self.system_manager)
+            if system_manager is None:
+                from src.core.system_manager import SystemManager
+
+                system_manager = SystemManager()
+            self.system_manager = system_manager
+
+            if agent_assistant is None:
+                from src.core.agent_assistant import AgentAssistant
+
+                agent_assistant = AgentAssistant(self.system_manager)
+            self.agent_assistant = agent_assistant
             
             # Initialize parameters
             self.monitoring_interval = float(os.getenv("MONITORING_INTERVAL", "0.1"))
