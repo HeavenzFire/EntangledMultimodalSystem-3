@@ -6,6 +6,10 @@ class ModelError(EntangledSystemError):
     """Raised when there's an error with the model operations."""
     pass
 
+class ManagementError(EntangledSystemError):
+    """Raised when system management or coordination fails."""
+    pass
+
 class SpeechRecognitionError(EntangledSystemError):
     """Raised when there's an error with speech recognition."""
     pass
