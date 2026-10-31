@@ -25,6 +25,8 @@ class TestSystemMonitor:
             assert monitor.state["diagnostic_count"] == 0
             assert monitor.monitoring_interval == 0.1
             assert monitor.history_length == 1000
+            assert monitor.system_manager is not None
+            assert monitor.agent_assistant is not None
 
     def test_initialization_with_custom_components(self):
         """Test initialization with custom SystemManager and AgentAssistant."""

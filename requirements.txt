@@ -7,6 +7,7 @@ matplotlib>=3.7.0
 # Quantum computing
 qiskit>=2.2.0
 qiskit-aer>=0.12.0
+qiskit-ignis==0.7.1
 qiskit-machine-learning>=0.7.0
 qiskit-nature>=0.7.0
 qiskit-ibm-runtime>=0.19.0
@@ -18,12 +19,13 @@ torch>=2.1.0
 pennylane>=0.41.1
 
 # AI and NLP
-transformers>=4.57.6,<5
+transformers>=5.10.0,<6
+Pillow>=13.0.0
+filelock>=4.2.1
+keras>=3.15.0
 sentencepiece>=0.2.2
 tokenizers>=0.22.2
 accelerate>=1.15.0
-tokenizers>=0.15.0
-accelerate>=1.10.1
 bitsandbytes>=0.50.2
 optimum>=2.3.0
 
@@ -41,10 +43,10 @@ python-dotenv>=0.19.0
 requests>=2.26.0
 
 # Web and API
+PyJWT>=2.10.1
 fastapi>=0.68.1
 uvicorn>=0.15.0
 pydantic>=2.13.5
-python-jose>=3.3.0
 passlib>=1.7.4
 python-multipart>=0.0.31
 aiohttp>=3.8.1
@@ -84,10 +86,8 @@ dask>=2023.12.0
 ray>=2.9.0
 
 # Security
-python-jose[cryptography]>=3.3.0
 passlib[bcrypt]>=1.7.4
 bcrypt>=4.0.1
-cryptography>=48.0.0
 cryptography>=49.0.0
 pyOpenSSL>=23.2.0
 
@@ -109,9 +109,6 @@ google-cloud-storage>=2.14.0
 # Documentation
 sphinx-rtd-theme>=3.1.0
 nbsphinx>=0.9.1
-
-# Utilities
-loguru>=0.7.2
 
 # Gemini API
 google-generativeai>=0.8.6
@@ -139,15 +136,5 @@ mpi4py>=4.1.2
 # Typing Extensions
 typing-extensions>=4.8.0
 
-# Optimization and Performance
-dask>=2023.3.0
-ray>=2.8.0
-
-# Advanced Mathematics
-sympy>=1.12.0
-scipy>=1.10.0
-
 # Monitoring and Logging
-prometheus-client>=0.17.0
 python-json-logger>=4.2.0
-structlog>=23.1.0

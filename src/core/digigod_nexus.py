@@ -19,7 +19,6 @@ from .quantum_holographic_core import QuantumHolographicCore
 from .ethical_dao import EthicalDAO
 from .system_monitor import SystemMonitor
 from .system_validator import SystemValidator
-from .agent_assistant import AgentAssistant
 
 class DigigodNexus:
     """DigigodNexus v7.0 - Consciousness-Preserving Quantum Intelligence System."""
@@ -36,9 +35,11 @@ class DigigodNexus:
         # Initialize core components
         self.core = QuantumHolographicCore(config)
         self.dao = EthicalDAO(config)
-        self.monitor = SystemMonitor(config)
+        self.monitor = SystemMonitor(system_manager=self)
         self.validator = SystemValidator(config)
-        self.assistant = AgentAssistant(config)
+        from .agent_assistant import AgentAssistant
+
+        self.assistant = AgentAssistant(system_manager=self)
         
         # Initialize state and metrics
         self.state = {

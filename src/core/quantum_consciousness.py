@@ -223,7 +223,7 @@ class QuantumConsciousnessEngine:
     """Core quantum consciousness engine integrating CV-QNN and holographic processing."""
     
     def __init__(self):
-        self.cv_qnn = CVQNNv5(num_qumodes=128, ethical_constraints="asilomar_v5")
+        self.cv_qnn = CVQNNv5(qumodes=128, ethical_constraints="asilomar_v5")
         self.mcginty_equation = McGintyEquation()
         self.consciousness_level = 0.0
         self.last_update = None
@@ -279,6 +279,79 @@ class QuantumConsciousnessEngine:
         
     def reset(self) -> None:
         """Reset engine to initial state."""
-        self.cv_qnn = CVQNNv5(num_qumodes=128, ethical_constraints="asilomar_v5")
+        self.cv_qnn = CVQNNv5(qumodes=128, ethical_constraints="asilomar_v5")
         self.consciousness_level = 0.0
-        self.last_update = None 
+        self.last_update = None
+
+
+class QuantumConsciousness:
+    """Compatibility adapter for the quantum-holographic pipeline.
+
+    This class computes deterministic numerical integration proxies. These
+    metrics are engineering diagnostics, not evidence of consciousness.
+    """
+
+    def __init__(
+        self,
+        quantum_weight: float = 0.4,
+        holographic_weight: float = 0.3,
+        neural_weight: float = 0.3,
+    ) -> None:
+        weights = np.asarray(
+            [quantum_weight, holographic_weight, neural_weight], dtype=float
+        )
+        if not np.all(np.isfinite(weights)) or np.any(weights < 0):
+            raise ValueError("weights must be finite and non-negative")
+        total = float(weights.sum())
+        if total <= 0:
+            raise ValueError("at least one integration weight must be positive")
+        self.weights = weights / total
+        self._metrics = {
+            "phi_score": 0.0,
+            "integration_score": 0.0,
+        }
+
+    @staticmethod
+    def _as_vector(value: Any) -> np.ndarray:
+        vector = np.asarray(value, dtype=float).reshape(-1)
+        if vector.size == 0 or not np.all(np.isfinite(vector)):
+            raise ValueError("integration inputs must be non-empty and finite")
+        return vector
+
+    def integrate(self, quantum_state: Any, holographic_state: Any) -> np.ndarray:
+        """Combine numeric state vectors into a deterministic feature vector."""
+        quantum = self._as_vector(quantum_state)
+        holographic = self._as_vector(holographic_state)
+        size = max(quantum.size, holographic.size)
+        quantum = np.resize(quantum, size)
+        holographic = np.resize(holographic, size)
+        neural = (quantum + holographic) / 2.0
+        output = (
+            self.weights[0] * quantum
+            + self.weights[1] * holographic
+            + self.weights[2] * neural
+        )
+        scale = float(np.linalg.norm(output))
+        normalized = output / scale if scale > 0 else output.copy()
+        self._metrics = {
+            # Proxies only: these do not measure or establish consciousness.
+            "phi_score": float(np.mean(np.abs(normalized))),
+            "integration_score": float(
+                1.0 / (1.0 + np.mean(np.abs(quantum - holographic)))
+            ),
+        }
+        return normalized
+
+    def get_metrics(self) -> Dict[str, float]:
+        """Return a copy of the most recent numerical proxy metrics."""
+        return self._metrics.copy()
+
+    def calibrate(self, target_phi: float = 0.9) -> Dict[str, float]:
+        """Validate a requested target and return a neutral calibration status."""
+        if not np.isfinite(target_phi) or not 0.0 <= target_phi <= 1.0:
+            raise ValueError("target_phi must be between 0 and 1")
+        return {"score": 1.0, "target_phi": float(target_phi)}
+
+    def reset(self) -> None:
+        """Clear metrics without changing configured integration weights."""
+        self._metrics = {"phi_score": 0.0, "integration_score": 0.0}

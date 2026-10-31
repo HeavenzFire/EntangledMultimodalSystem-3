@@ -1,65 +1,5 @@
-import matplotlib.pyplot as plt
+import numpy as np
 import plotly.express as px
-import plotly.graph_objects as go
-import numpy as np
-from typing import List, Optional
-from .simulation import MetaphysicalSimulator, MetaphysicalState
-
-class MetaphysicalVisualizer:
-    """Visualizes multidimensional spiritual dynamics"""
-    
-    def __init__(self, simulator: MetaphysicalSimulator):
-        """
-        Parameters:
-        simulator (MetaphysicalSimulator): Configured simulator instance
-        """
-        self.simulator = simulator
-        self.history = simulator.history
-        
-        if not self.history:
-            raise ValueError("No simulation results available. Run simulator.solve() first.")
-            
-        # Extract time series data
-        self.time = np.array([state.time for state in self.history])
-        self.T = np.array([state.transcendence for state in self.history])
-        self.L = np.array([state.love for state in self.history])
-        self.S = np.array([state.synchronicity for state in self.history])
-        self.U = np.array([state.unity for state in self.history])
-    
-    def plot_time_evolution(self, figsize: tuple = (14, 8)) -> plt.Figure:
-        """Plot temporal development of all dimensions"""
-        fig, axs = plt.subplots(4, 1, figsize=figsize, sharex=True)
-        dimensions = ['Transcendence', 'Unconditional Love', 
-                     'Synchronicity', 'Unity Energy']
-        
-        for ax, data, label in zip(axs, [self.T, self.L, self.S, self.U], dimensions):
-            ax.plot(self.time, data, lw=2, alpha=0.8)
-            ax.set_ylabel(label, rotation=0, ha='right', va='center')
-            ax.grid(alpha=0.2)
-            
-        axs[-1].set_xlabel('Spiritual Time')
-        fig.suptitle("Consciousness Dimension Evolution", y=0.95)
-        return fig
-
-    def plot_3d_phase_portrait(self, elev: float = 25, azim: float = -60) -> go.Figure:
-        """Interactive 3D phase portrait with Plotly"""
-        fig = go.Figure(data=go.Scatter3d(
-            x=self.T,
-            y=self.L,
-            z=self.S,
-            mode='markers',
-            marker=dict(
-                size=4,
-                color=self.U,
-                colorscale='Rainbow',
-                opacity=0.7,
-                colorbar=dict(title='Unity Energy')
-            ),
-            hovertemplate="T: %{x:.2f}<br>"
-                        + "L: %{y:.2f}<br>"
-                        + "S: %{z:.2f}<br>"
-                        + "U: %{marker.color:.2f}"
-import numpy as np
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 import matplotlib.pyplot as plt
@@ -72,6 +12,8 @@ class MetaphysicalVisualizer:
     def __init__(self, simulator: MetaphysicalSimulator):
         """Initialize visualizer with simulation data."""
         self.simulator = simulator
+        if not simulator.history:
+            raise ValueError("No simulation results available. Run simulator.solve() first.")
         self.time = np.array([state.time for state in simulator.history])
         self.T = np.array([state.transcendence for state in simulator.history])
         self.L = np.array([state.love for state in simulator.history])
@@ -85,7 +27,7 @@ class MetaphysicalVisualizer:
         ))
         
         # Add traces with rolling averages
-        window = 10
+        window = min(10, max(1, len(self.time)))
         for i, (data, name) in enumerate([
             (self.T, 'Transcendence'),
             (self.L, 'Love'),
@@ -142,7 +84,7 @@ class MetaphysicalVisualizer:
         fig.update_layout(height=800, width=1200, title_text="Spiritual Evolution Over Time")
         return fig
     
-    def plot_3d_phase_portrait(self) -> go.Figure:
+    def plot_3d_phase_portrait(self, elev: float = 25, azim: float = -60) -> go.Figure:
         """Create 3D phase space visualization with velocity vectors."""
         fig = go.Figure()
         
@@ -156,24 +98,25 @@ class MetaphysicalVisualizer:
         
         # Velocity vectors
         dt = np.diff(self.time)
-        dT = np.diff(self.T) / dt
-        dL = np.diff(self.L) / dt
-        dS = np.diff(self.S) / dt
-        
-        # Sample every 10th point for clarity
-        sample = slice(None, None, 10)
-        fig.add_trace(go.Cone(
-            x=self.T[sample][:-1],
-            y=self.L[sample][:-1],
-            z=self.S[sample][:-1],
-            u=dT[sample],
-            v=dL[sample],
-            w=dS[sample],
-            sizemode="absolute",
-            sizeref=0.1,
-            showscale=False,
-            name='Velocity Field'
-        ))
+        dT = np.divide(np.diff(self.T), dt, out=np.zeros_like(dt), where=dt != 0)
+        dL = np.divide(np.diff(self.L), dt, out=np.zeros_like(dt), where=dt != 0)
+        dS = np.divide(np.diff(self.S), dt, out=np.zeros_like(dt), where=dt != 0)
+
+        # Sample every 10th interval; omit vectors when fewer than two states exist.
+        if len(dt):
+            indices = np.arange(0, len(dt), 10)
+            fig.add_trace(go.Cone(
+                x=self.T[indices],
+                y=self.L[indices],
+                z=self.S[indices],
+                u=dT[indices],
+                v=dL[indices],
+                w=dS[indices],
+                sizemode="absolute",
+                sizeref=0.1,
+                showscale=False,
+                name='Velocity Field'
+            ))
         
         fig.update_layout(
             scene=dict(
@@ -249,14 +192,20 @@ class MetaphysicalVisualizer:
                 time=self.time[0]
             )
             new_sim.solve(initial_state)
-            
-            # Plot results
+
+            # Plot results from the simulator's recorded state history.
+            new_time = np.array([state.time for state in new_sim.history])
+            series = [
+                np.array([state.transcendence for state in new_sim.history]),
+                np.array([state.love for state in new_sim.history]),
+                np.array([state.synchronicity for state in new_sim.history]),
+                np.array([state.unity for state in new_sim.history])
+            ]
             for i, (data, label) in enumerate(zip(
-                [new_sim.T, new_sim.L, new_sim.S, new_sim.U],
+                series,
                 ['Transcendence', 'Love', 'Synchronicity', 'Unity']
             )):
-                axs[i].plot(self.time, data, 
-                          label=f'{param_name}={value:.2f}')
+                axs[i].plot(new_time, data, label=f'{param_name}={value:.2f}')
                 axs[i].set_title(label)
                 axs[i].grid(alpha=0.2)
         
@@ -293,126 +242,4 @@ if __name__ == "__main__":
     
     # Visualize results
     visualizer = MetaphysicalVisualizer(simulator)
-    visualizer.show_all() 
-                yaxis_title='Love',
-                zaxis_title='Synchronicity'
-            ),
-            title='3D Phase Space Portrait'
-        )
-        return fig
-    
-    def plot_correlation_matrix(self) -> go.Figure:
-        """Create correlation matrix heatmap."""
-        data = np.vstack([self.T, self.L, self.S, self.U])
-        corr = np.corrcoef(data)
-        
-        fig = go.Figure(data=go.Heatmap(
-            z=corr,
-            x=['Transcendence', 'Love', 'Synchronicity', 'Unity'],
-            y=['Transcendence', 'Love', 'Synchronicity', 'Unity'],
-            colorscale='RdBu',
-            zmid=0
-        ))
-        
-        fig.update_layout(
-            title='Dimension Correlation Matrix',
-            xaxis_title='Dimension',
-            yaxis_title='Dimension'
-        )
-        return fig
-    
-    def plot_energy_landscape(self) -> go.Figure:
-        """Create energy landscape visualization."""
-        # Create grid for energy surface
-        T_grid = np.linspace(min(self.T), max(self.T), 50)
-        L_grid = np.linspace(min(self.L), max(self.L), 50)
-        T_mesh, L_mesh = np.meshgrid(T_grid, L_grid)
-        
-        # Calculate energy surface (example: harmonic potential)
-        U_surface = 0.5 * (T_mesh**2 + L_mesh**2)
-        
-        fig = go.Figure()
-        
-        # Energy surface
-        fig.add_trace(go.Surface(
-            x=T_mesh, y=L_mesh, z=U_surface,
-            colorscale='Viridis',
-            opacity=0.7,
-            name='Energy Surface'
-        ))
-        
-        # Trajectory
-        fig.add_trace(go.Scatter3d(
-            x=self.T, y=self.L, z=self.U,
-            mode='lines',
-            line=dict(color='red', width=3),
-            name='Spiritual Path'
-        ))
-        
-        fig.update_layout(
-            scene=dict(
-                xaxis_title='Transcendence',
-                yaxis_title='Love',
-                zaxis_title='Unity Energy'
-            ),
-            title='Unity Energy Landscape'
-        )
-        return fig
-    
-    def calculate_lyapunov(self) -> Tuple[float, np.ndarray]:
-        """Calculate Lyapunov exponents for stability analysis."""
-        # Numerical Jacobian calculation
-        dt = np.diff(self.time)
-        state_diff = np.diff(np.vstack([self.T, self.L, self.S, self.U]), axis=1)
-        J = state_diff / dt.reshape(-1, 1)
-        
-        # Calculate eigenvalues
-        eigenvalues = np.linalg.eigvals(J)
-        max_lyapunov = np.max(np.real(eigenvalues))
-        
-        return max_lyapunov, eigenvalues
-    
-    def plot_parameter_sensitivity(self, param_name: str, values: List[float]) -> go.Figure:
-        """Plot sensitivity analysis for a parameter."""
-        fig = make_subplots(rows=2, cols=2, subplot_titles=(
-            'Transcendence', 'Love', 'Synchronicity', 'Unity'
-        ))
-        
-        for value in values:
-            # Create new simulator with modified parameter
-            params = self.simulator.params.copy()
-            setattr(params, param_name, value)
-            new_simulator = MetaphysicalSimulator(params)
-            new_simulator.solve(self.simulator.history[0])
-            
-            # Extract data
-            time = np.array([state.time for state in new_simulator.history])
-            T = np.array([state.transcendence for state in new_simulator.history])
-            L = np.array([state.love for state in new_simulator.history])
-            S = np.array([state.synchronicity for state in new_simulator.history])
-            U = np.array([state.unity for state in new_simulator.history])
-            
-            # Add traces
-            for i, (data, name) in enumerate([
-                (T, 'Transcendence'),
-                (L, 'Love'),
-                (S, 'Synchronicity'),
-                (U, 'Unity')
-            ]):
-                row = i // 2 + 1
-                col = i % 2 + 1
-                
-                fig.add_trace(
-                    go.Scatter(
-                        x=time, y=data,
-                        name=f'{param_name}={value}',
-                        line=dict(width=2)
-                    ),
-                    row=row, col=col
-                )
-        
-        fig.update_layout(
-            height=800, width=1200,
-            title_text=f'Parameter Sensitivity: {param_name}'
-        )
-        return fig 
+    visualizer.show_all()

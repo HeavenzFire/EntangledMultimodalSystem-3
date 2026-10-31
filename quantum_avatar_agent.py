@@ -1,6 +1,7 @@
 import numpy as np
 import tensorflow as tf
-from qiskit import QuantumCircuit, QuantumRegister, ClassicalRegister, Aer, execute
+from qiskit import QuantumCircuit, QuantumRegister, ClassicalRegister, execute
+from qiskit_aer import Aer
 from qiskit.circuit.library import RYGate, RZGate, RXXGate, RYYGate, RZZGate, RXGate
 from qiskit.quantum_info import Statevector, DensityMatrix, partial_trace, random_statevector
 from qiskit_aer import AerSimulator
@@ -22,8 +23,8 @@ from scipy.spatial.distance import pdist, squareform
 from scipy.linalg import expm
 from qiskit.quantum_info import state_fidelity, purity, entropy
 from qiskit.ignis.verification.tomography import state_tomography_circuits, StateTomographyFitter
-from qiskit.optimization import QuadraticProgram
-from qiskit.optimization.algorithms import MinimumEigenOptimizer
+from qiskit_optimization import QuadraticProgram
+from qiskit_optimization.algorithms import MinimumEigenOptimizer
 from qiskit.algorithms import QAOA
 from qiskit.utils import QuantumInstance
 from qiskit.algorithms import VQE
@@ -530,9 +531,10 @@ class QuantumAvatarAgent:
             ax1.add_patch(circle)
             
             # Add chakra label with consciousness information
+            chakra_label = chakra.replace("_", "\n")
             state = f"Consciousness: {self.awareness_state[i]:.2f}"
-            ax1.text(x, y, f"{chakra.replace('_', '\n')}\n{freq:.2f}Hz\n{state}", 
-                   ha='center', va='center')
+            ax1.text(x, y, f"{chakra_label}\n{freq:.2f}Hz\n{state}",
+                     ha="center", va="center")
         
         # Draw emotional state
         emotions = list(self.emotional_frequencies.keys())

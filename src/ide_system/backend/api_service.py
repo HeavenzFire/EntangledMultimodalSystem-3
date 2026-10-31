@@ -1,3 +1,5 @@
+import os
+from secrets import token_urlsafe
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 from typing import Dict, Any, Optional
@@ -7,13 +9,28 @@ from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI(title="IDE System API")
 
-# Configure CORS
+# Keep browser access explicit. Override with a comma-separated list of trusted
+# frontend origins when deploying outside local development.
+_default_cors_origins = (
+    "http://localhost:3000,"
+    "http://127.0.0.1:3000,"
+    "http://localhost:5173,"
+    "http://127.0.0.1:5173"
+)
+_cors_origins = [
+    origin.strip()
+    for origin in os.getenv(
+        "HEAVENZFIRE_CORS_ORIGINS", _default_cors_origins
+    ).split(",")
+    if origin.strip()
+]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=_cors_origins,
     allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_methods=["GET", "POST", "OPTIONS"],
+    allow_headers=["Authorization", "Content-Type"],
 )
 
 # Initialize quantum service
@@ -36,10 +53,10 @@ async def evolve_data(request: DataRequest):
     try:
         # Process data through quantum service
         result = await quantum_service.process_data(request.data, request.domain)
-        
+
         # Store evolution history
         session_id = store_evolution_history(request.data, result)
-        
+
         return {
             "status": "success",
             "result": result,
@@ -54,10 +71,10 @@ async def submit_feedback(request: FeedbackRequest):
     try:
         # Store feedback
         store_feedback(request.session_id, request.rating, request.feedback)
-        
+
         # Update model based on feedback
         update_model_from_feedback(request.session_id, request.rating)
-        
+
         return {
             "status": "success",
             "message": "Feedback recorded successfully"
@@ -77,8 +94,10 @@ async def get_evolution_history(session_id: str):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-def store_evolution_history(input_data: Dict[str, Any], 
-                          result: Dict[str, Any]) -> str:
+def store_evolution_history(
+    input_data: Dict[str, Any],
+    result: Dict[str, Any],
+) -> str:
     """Store evolution history and return session ID"""
     # Implementation of history storage
     session_id = generate_session_id()
@@ -102,9 +121,12 @@ def get_evolution_history_from_storage(session_id: str) -> Dict[str, Any]:
 
 def generate_session_id() -> str:
     """Generate unique session ID"""
-    # Implementation of session ID generation
-    return "session_" + str(hash(str(datetime.now())))
+    return token_urlsafe(24)
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000) 
+    uvicorn.run(
+        app,
+        host=os.getenv("HEAVENZFIRE_HOST", "127.0.0.1"),
+        port=int(os.getenv("PORT", "8000")),
+    )

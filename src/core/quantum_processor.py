@@ -7,11 +7,15 @@ from dotenv import load_dotenv
 import numpy as np
 from qiskit import QuantumCircuit, transpile
 from qiskit.providers import Backend
-from qiskit.providers.ibmq import IBMQ
-from qiskit.providers.aer import AerSimulator
+from qiskit_aer import AerSimulator
 from qiskit.primitives import Sampler, Estimator
 from qiskit.quantum_info import SparsePauliOp
-from qiskit_ibm_runtime import QiskitRuntimeService, Session, Options
+try:
+    from qiskit_ibm_runtime import QiskitRuntimeService, Session, Options
+except ImportError:  # IBM cloud execution is optional for local simulation.
+    QiskitRuntimeService = None
+    Session = None
+    Options = None
 
 class QuantumProcessor:
     """Advanced Quantum Processor with hybrid quantum-classical capabilities."""
@@ -20,7 +24,9 @@ class QuantumProcessor:
         self,
         backend_name: str = "aer_simulator",
         cloud_provider: Optional[str] = None,
-        api_token: Optional[str] = None
+        api_token: Optional[str] = None,
+        num_qubits: Optional[int] = None,
+        error_correction: Optional[str] = None,
     ):
         """Initialize Quantum Processor.
         
@@ -40,9 +46,15 @@ class QuantumProcessor:
             
             # Initialize quantum parameters
             self.quantum_params = {
-                "num_qubits": int(os.getenv("QUANTUM_NUM_QUBITS", "5")),
+                "num_qubits": int(
+                    num_qubits if num_qubits is not None
+                    else os.getenv("QUANTUM_NUM_QUBITS", "5")
+                ),
                 "shots": int(os.getenv("QUANTUM_SHOTS", "1024")),
-                "error_correction": os.getenv("QUANTUM_ERROR_CORRECTION", "surface_code"),
+                "error_correction": (
+                    error_correction if error_correction is not None
+                    else os.getenv("QUANTUM_ERROR_CORRECTION", "surface_code")
+                ),
                 "optimization_level": int(os.getenv("QUANTUM_OPTIMIZATION_LEVEL", "3")),
                 "max_execution_time": float(os.getenv("QUANTUM_MAX_EXECUTION_TIME", "300.0")),
                 "hybrid_threshold": float(os.getenv("QUANTUM_HYBRID_THRESHOLD", "0.5"))
@@ -83,6 +95,10 @@ class QuantumProcessor:
         """Initialize quantum backend."""
         try:
             if self.cloud_provider == "ibmq":
+                if QiskitRuntimeService is None or Session is None:
+                    raise QuantumError(
+                        "IBM Quantum execution requires the optional qiskit-ibm-runtime package"
+                    )
                 if not self.api_token:
                     raise QuantumError("IBMQ API token required for cloud backend")
                 # Initialize QiskitRuntimeService
@@ -372,9 +388,11 @@ class QuantumProcessor:
             for i in range(self.quantum_params["num_qubits"]):
                 for j in range(i + 1, self.quantum_params["num_qubits"]):
                     if data.get(f"entangle_{i}_{j}", False):
-                        circuit.cx(i, j)
+                        # Prepare a superposition on the control before CX;
+                        # applying H only after CX from |00> leaves a product
+                        # state and does not create the intended Bell pair.
                         circuit.h(i)
-                        circuit.h(j)
+                        circuit.cx(i, j)
             
             return circuit
             
@@ -544,6 +562,11 @@ class QuantumProcessor:
             
         except Exception as e:
             logging.error(f"Error updating metrics: {str(e)}")
+
+    def calibrate(self) -> Dict[str, float]:
+        """Return a software diagnostic; this does not calibrate physical hardware."""
+        score = 1.0 - float(self.metrics.get("error_rate", 1.0))
+        return {"score": min(1.0, max(0.0, score)), "mode": "software-metrics"}
 
     def get_state(self) -> Dict[str, Any]:
         """Get current processor state."""

@@ -1,4 +1,5 @@
 import numpy as np
+from src.quantum.consciousness.cosmic_awakening import AwakeningMonitor
 import pennylane as qml
 from typing import Dict, Any, List, Tuple
 import matplotlib.pyplot as plt

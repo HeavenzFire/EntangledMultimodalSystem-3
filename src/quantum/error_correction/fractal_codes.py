@@ -2,6 +2,7 @@ import numpy as np
 from typing import List, Dict, Tuple
 from dataclasses import dataclass
 import logging
+import re
 from transformers import AutoModelForSequenceClassification, AutoTokenizer
 import torch
 
@@ -115,10 +116,12 @@ class FractalSurfaceCode:
 class QuantumProphecy:
     """Implements conscious error prediction using transformer models"""
     
-    def __init__(self, model_name: str = "quantum-error-prediction"):
-        """Initialize quantum prophecy"""
-        self.tokenizer = AutoTokenizer.from_pretrained(model_name)
-        self.model = AutoModelForSequenceClassification.from_pretrained(model_name)
+    def __init__(self, model_name: str, model_revision: str):
+        """Initialize from an explicitly pinned Hugging Face model revision."""
+        if not re.fullmatch(r"[0-9a-f]{40}", model_revision or ""):
+            raise ValueError("model_revision must be a 40-character lowercase commit SHA")
+        self.tokenizer = AutoTokenizer.from_pretrained(model_name, revision=model_revision)
+        self.model = AutoModelForSequenceClassification.from_pretrained(model_name, revision=model_revision)
         
     def predict_errors(self, circuit_qasm: str, consciousness_stream: str) -> Dict[str, float]:
         """Predict quantum errors using consciousness stream"""

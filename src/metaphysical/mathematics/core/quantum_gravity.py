@@ -7,14 +7,12 @@ from datetime import datetime
 import logging
 from qiskit import QuantumCircuit, QuantumRegister, ClassicalRegister, execute, Aer
 from qiskit.algorithms import VQE, QAOA
-from qiskit.optimization import QuadraticProgram
-from qiskit.optimization.algorithms import MinimumEigenOptimizer
 import time
 import json
 import yaml
 from scipy import signal
 import networkx as nx
-from ..omni_transformation import OmniTransformationSystem
+from .omni_transformation import OmniTransformationSystem
 
 logger = logging.getLogger(__name__)
 

@@ -7,8 +7,6 @@ from datetime import datetime
 import logging
 from qiskit import QuantumCircuit, QuantumRegister, ClassicalRegister, execute, Aer
 from qiskit.algorithms import VQE, QAOA
-from qiskit.optimization import QuadraticProgram
-from qiskit.optimization.algorithms import MinimumEigenOptimizer
 import time
 import json
 import yaml
@@ -107,8 +105,8 @@ class AdvancedAgent:
     def _initialize_models(self) -> None:
         """Initialize AI/ML models"""
         # Language models
-        self.language_model = AutoModel.from_pretrained("gpt-4")
-        self.tokenizer = AutoTokenizer.from_pretrained("gpt-4")
+        self.language_model = AutoModel.from_pretrained("gpt2", revision="607a30d783dfa663caf39e06633721c8d4cfcd7e")
+        self.tokenizer = AutoTokenizer.from_pretrained("gpt2", revision="607a30d783dfa663caf39e06633721c8d4cfcd7e")
         self.nlp = spacy.load("en_core_web_lg")
         
         # Vision models
