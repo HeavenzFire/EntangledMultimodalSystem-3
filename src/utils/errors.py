@@ -12,6 +12,11 @@ class ManagementError(EntangledSystemError):
     pass
 
 
+class OptimizationError(EntangledSystemError):
+    """Raised when system optimization fails."""
+    pass
+
+
 class SpeechRecognitionError(EntangledSystemError):
     """Raised when there's an error with speech recognition."""
     pass
