@@ -40,14 +40,15 @@ jobs:
       uses: actions/setup-python@v4
       with:
         python-version: '3.11'
-    - name: Install dependencies
+    - name: Validate static documentation
       run: |
-        python -m pip install --upgrade pip
-        pip install sphinx sphinx-rtd-theme nbsphinx
-    - name: Build documentation
-      run: |
-        cd docs
-        make html
+        test -s docs/index.html
+        test -s docs/ARCHITECTURE.md
+        test -s docs/SECURITY.md
+        find docs -type f -name '*.md' -size 0 -print -quit | grep -q . && {
+          echo "Found an empty Markdown documentation file."
+          exit 1
+        } || true
     - name: Deploy documentation
       if: github.ref == 'refs/heads/main'
       uses: peaceiris/actions-gh-pages@v3
