@@ -1,60 +1,33 @@
 import numpy as np
 import tensorflow as tf
-from typing import Dict, Any, List, Optional, Tuple
+from typing import Dict, Any, List, Optional, Tuple, TYPE_CHECKING
 from src.utils.errors import ModelError, OptimizationError
 from src.utils.logger import logger
-from src.core.hyper_intelligence_engine import HyperIntelligenceEngine
-from src.core.system_orchestrator import SystemOrchestrator
-from src.core.digigod_nexus import DigigodNexus
-from src.core.consciousness_matrix import ConsciousnessMatrix
-from src.core.ethical_governor import EthicalGovernor
-from src.core.multimodal_gan import MultimodalGAN
-from src.core.quantum_interface import QuantumInterface
-from src.core.holographic_interface import HolographicInterface
-from src.core.neural_interface import NeuralInterface
-from src.core.system_controller import SystemController
-from src.core.system_coordinator import SystemCoordinator
-from src.core.system_integrator import SystemIntegrator
-from src.core.system_architect import SystemArchitect
-from src.core.system_analyzer import SystemAnalyzer
-from src.core.system_evaluator import SystemEvaluator
-from src.core.system_manager import SystemManager
-from src.core.system_director import SystemDirector
-from src.core.system_planner import SystemPlanner
-from src.core.system_scheduler import SystemScheduler
-from src.core.system_executor import SystemExecutor
-from src.core.system_monitor import SystemMonitor
-from src.core.system_validator import SystemValidator
+
+if TYPE_CHECKING:
+    from src.core.system_manager import SystemManager
 
 class SystemOptimizer:
     """SystemOptimizer: Handles system optimization and performance tuning."""
     
-    def __init__(self):
-        """Initialize the SystemOptimizer."""
+    def __init__(self, system_manager: Optional["SystemManager"] = None):
+        """Initialize the optimizer with an existing manager and its components."""
         try:
-            # Initialize core components
-            self.engine = HyperIntelligenceEngine()
-            self.orchestrator = SystemOrchestrator()
-            self.nexus = DigigodNexus()
-            self.consciousness = ConsciousnessMatrix()
-            self.ethical_governor = EthicalGovernor()
-            self.multimodal_gan = MultimodalGAN()
-            self.quantum_interface = QuantumInterface()
-            self.holographic_interface = HolographicInterface()
-            self.neural_interface = NeuralInterface()
-            self.controller = SystemController()
-            self.coordinator = SystemCoordinator()
-            self.integrator = SystemIntegrator()
-            self.architect = SystemArchitect()
-            self.analyzer = SystemAnalyzer()
-            self.evaluator = SystemEvaluator()
-            self.manager = SystemManager()
-            self.director = SystemDirector()
-            self.planner = SystemPlanner()
-            self.scheduler = SystemScheduler()
-            self.executor = SystemExecutor()
-            self.monitor = SystemMonitor()
-            self.validator = SystemValidator()
+            if system_manager is None:
+                from src.core.system_manager import SystemManager
+
+                system_manager = SystemManager()
+            self.manager = system_manager
+            component_names = (
+                "engine", "orchestrator", "nexus", "consciousness",
+                "ethical_governor", "multimodal_gan", "quantum_interface",
+                "holographic_interface", "neural_interface", "controller",
+                "coordinator", "integrator", "architect", "analyzer",
+                "evaluator", "director", "planner", "scheduler", "executor",
+                "monitor", "validator",
+            )
+            for name in component_names:
+                setattr(self, name, getattr(system_manager, name, None))
             
             # Initialize optimizer parameters
             self.params = {
