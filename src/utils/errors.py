@@ -7,6 +7,11 @@ class ModelError(EntangledSystemError):
     pass
 
 
+class ControlError(EntangledSystemError):
+    """Raised when system control or strategy application fails."""
+    pass
+
+
 class ManagementError(EntangledSystemError):
     """Raised when system management or coordination fails."""
     pass
