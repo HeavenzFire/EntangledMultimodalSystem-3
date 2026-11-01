@@ -36,7 +36,7 @@ class DigigodNexus:
         self.core = QuantumHolographicCore(config)
         self.dao = EthicalDAO(config)
         self.monitor = SystemMonitor(system_manager=self)
-        self.validator = SystemValidator(config)
+        self.validator = SystemValidator(system_manager=self, system_monitor=self.monitor)
         from .agent_assistant import AgentAssistant
 
         self.assistant = AgentAssistant(system_manager=self)
