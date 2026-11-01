@@ -1,9 +1,11 @@
 import os
 import time
 import logging
-from typing import Dict, Any, Optional, List, Tuple
-from src.core.system_manager import SystemManager
-from src.core.system_monitor import SystemMonitor
+from typing import Dict, Any, Optional, List, Tuple, TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from src.core.system_manager import SystemManager
+    from src.core.system_monitor import SystemMonitor
 from src.utils.errors import ModelError, ValidationError
 from dotenv import load_dotenv
 
@@ -12,8 +14,8 @@ class SystemValidator:
     
     def __init__(
         self,
-        system_manager: Optional[SystemManager] = None,
-        system_monitor: Optional[SystemMonitor] = None
+        system_manager: Optional["SystemManager"] = None,
+        system_monitor: Optional["SystemMonitor"] = None
     ):
         """Initialize System Validator.
         
@@ -26,8 +28,16 @@ class SystemValidator:
             load_dotenv()
             
             # Initialize core components
-            self.system_manager = system_manager or SystemManager()
-            self.system_monitor = system_monitor or SystemMonitor(self.system_manager)
+            if system_manager is None:
+                from src.core.system_manager import SystemManager
+
+                system_manager = SystemManager()
+            self.system_manager = system_manager
+            if system_monitor is None:
+                from src.core.system_monitor import SystemMonitor
+
+                system_monitor = SystemMonitor(self.system_manager)
+            self.system_monitor = system_monitor
             
             # Initialize parameters
             self.validation_interval = float(os.getenv("VALIDATION_INTERVAL", "0.1"))
