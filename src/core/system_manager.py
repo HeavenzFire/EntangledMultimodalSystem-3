@@ -60,7 +60,7 @@ class SystemManager:
             self.executor = SystemExecutor()
             self.monitor = SystemMonitor(system_manager=self)
             self.validator = SystemValidator(system_manager=self, system_monitor=self.monitor)
-            self.optimizer = SystemOptimizer()
+            self.optimizer = SystemOptimizer(system_manager=self)
             self.balancer = SystemBalancer()
             self.coordinator = SystemCoordinator()
             self.integrator = SystemIntegrator()
