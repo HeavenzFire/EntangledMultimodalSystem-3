@@ -20,9 +20,9 @@ pennylane>=0.41.1
 # AI and NLP
 transformers>=4.57.6,<5
 sentencepiece>=0.2.2
-tokenizers>=0.22.2
+tokenizers>=0.23.3
 accelerate>=1.15.0
-tokenizers>=0.15.0
+tokenizers>=0.23.3
 accelerate>=1.10.1
 bitsandbytes>=0.50.2
 optimum>=2.3.0
