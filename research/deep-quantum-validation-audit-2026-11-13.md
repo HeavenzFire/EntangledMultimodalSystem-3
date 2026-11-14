@@ -77,6 +77,21 @@ Results:
 Interpretation: the standard amplitude-damping Lindblad equation and numerical reference setup behave as expected in this controlled two-level case. This does **not** execute or validate the repository's `neural_quantum_bridge` method; that method still needs direct tests with input validation, solver-status handling, and trace/positivity assertions.
 
 
+
+## New reference implementation and tests added to this branch
+Added:
+- `research/reference_quantum_core.py`: finite-dimensional reference functions for state validation, Hermitian Hamiltonian evolution, seeded Born-rule measurement, density-matrix physicality checks, GKSL/Lindblad evolution, and QFT matrix construction.
+- `tests/test_reference_quantum_core.py`: tests for unitary/norm preservation, rejection of non-Hermitian Hamiltonians and nonphysical density matrices, seeded measurement reproducibility and Born probabilities, analytic amplitude damping, QFT unitarity for 1–4 qubits, and rejection of negative Lindblad rates.
+
+Local numerical verification of the same reference cases passed:
+- Hamiltonian-generated U†U agrees with identity to 1e-12 tolerance.
+- State norm is preserved.
+- Seeded Z measurement of |+> is reproducible and balanced within sampling tolerance.
+- Amplitude damping at rate 0.37 over [0,8] agrees with exp(-0.37 t) to maximum population error 1.20e-11.
+- QFT matrices for 1, 2, and 3 qubits are unitary to 1e-12 tolerance.
+
+Status qualification: these local numerical checks were performed in an isolated Python environment using NumPy 2.3.5 and SciPy 1.17.0. The newly committed pytest file has not yet been confirmed by the repository's GitHub Actions run. CI status must be checked before calling the repository integration validated. The reference implementation is a research aid and is not a replacement for a mature quantum SDK.
+
 ## Evidence and limitations
 - Findings above are based on source inspection of the default-branch files listed in this report.
 - No source files or runtime components were executed as part of this static audit.
