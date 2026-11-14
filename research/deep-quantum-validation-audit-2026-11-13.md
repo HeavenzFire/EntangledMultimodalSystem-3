@@ -92,6 +92,17 @@ Local numerical verification of the same reference cases passed:
 
 Status qualification: these local numerical checks were performed in an isolated Python environment using NumPy 2.3.5 and SciPy 1.17.0. The newly committed pytest file has not yet been confirmed by the repository's GitHub Actions run. CI status must be checked before calling the repository integration validated. The reference implementation is a research aid and is not a replacement for a mature quantum SDK.
 
+
+## Pull-request CI evidence after adding the reference core
+The PR-triggered workflow run for head commit `7adc8490adba4824ee6f95654ebc5e555839a48d` exposed repository-level CI blockers:
+- The existing `Tests` job failed during dependency installation because `requirements-test.txt` requests `unittest-mock>=0.2.0`, for which pip reports no matching distribution. The test suite did not reach pytest in that job.
+- The existing `Framework Validation` job failed at the same dependency-install stage for the same missing distribution.
+- The existing `CI` job has multiple failures. The Python 3.1 matrix entry cannot be installed (the workflow requests a non-existent Python minor version); several Python 3.10/3.11 test jobs also report failure and need separate log inspection after dependency installation is repaired.
+- The existing Code Quality workflow's Black check reports 542 files would be reformatted and 12 files fail parsing. This is repository-wide baseline debt, not attributable solely to the added reference core.
+- The security scan reports 44 findings (26 low, 18 medium; 0 high), including binding to 0.0.0.0 and Hugging Face model downloads without pinned revisions. These require a separate security triage.
+
+These are observed workflow results, not inferred causes. No existing dependency manifest or broad formatting sweep was changed in this research branch. The newly added pytest file has not yet been reached by the failed test jobs, so its GitHub CI status remains unverified. The independent local numerical checks described above remain the only execution evidence for the new reference routines.
+
 ## Evidence and limitations
 - Findings above are based on source inspection of the default-branch files listed in this report.
 - No source files or runtime components were executed as part of this static audit.
