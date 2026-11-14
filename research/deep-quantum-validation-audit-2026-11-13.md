@@ -37,6 +37,17 @@ The repository contains useful mathematical starting points, but several modules
 - The so-called Hadamard-like transform in `QuantumProcessingUnit` is an n-dimensional discrete Fourier transform matrix. It is unitary when constructed with the shown normalization, but it is not the qubit Hadamard except for specific dimensions/basis conventions.
 - The memory implementation caps each sparse tensor axis at 1000, yielding a logical 1000×1000×1000 sparse tensor. It is not infinite-dimensional memory; resource costs and index validation need explicit limits.
 
+
+### 5. Existing validation tests and reported metrics
+- `tests/quantum/algorithms/test_quantum_algorithms.py` imports `src.quantum.algorithms.quantum_algorithms`, `AlgorithmResult`, and a `QuantumAlgorithm()` constructor with no arguments. The inspected implementation is under `core/quantum/algorithms/quantum_algorithms.py`, defines no `AlgorithmResult`, and requires `num_qubits` in the base constructor. The test and implementation paths/contracts therefore do not align as written.
+- That same test asserts success for QFT, QPE, Grover, Shor, and amplitude amplification through a different API than the inspected implementation. Those assertions do not establish that the corresponding algorithms in `core/quantum/algorithms/quantum_algorithms.py` work.
+- `tests/test_quantum_classical_validation.py` checks broad threshold values, but the inspected validator generates some reported metrics from random normal distributions rather than measurements of the claimed property. For example, coherence time, ethical compliance, and transparency scores are random synthetic values.
+- The radiation detector simulation generates a Bell-pair measurement independent of the simulated radiation level, then treats the measurement as the detection signal. The resulting sensitivity/specificity are not evidence of radiation detection capability.
+- The classical benchmark labels a GPU as available using `tf.config.list_physical_devices('GPU') is not None`; an empty list is still not None, so this boolean can incorrectly report hardware acceleration. The matrix "accuracy" is also generated randomly rather than computed against a reference result.
+- The quantum-processing test measures only whether a Bell circuit returns correlated outcomes; its reported "coherence_time" is synthetic and is not measured from a time-dependent coherence experiment.
+- These are test-validity defects: a test can pass while the named scientific capability remains unmeasured. Replace synthetic metrics with observable-derived metrics, known reference fixtures, explicit uncertainty, and negative controls.
+
+
 ## Recommended hard-validation sequence
 1. Create a dependency-light reference quantum core using NumPy/SciPy only: state-vector validation, Hermitian observables/Hamiltonians, unitary evolution, Born-rule measurement with seeded RNG, density-matrix validation, and Lindblad evolution.
 2. Add property tests: norm conservation; U†U=I; Hermiticity preservation; trace preservation; positivity within numerical tolerance; pure-state density matrix equivalence; and known one-/two-qubit gate fixtures.
