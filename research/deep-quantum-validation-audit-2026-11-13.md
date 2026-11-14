@@ -57,6 +57,26 @@ The repository contains useful mathematical starting points, but several modules
 6. Rebuild variational circuits with symbolic parameters and test parameter count, objective reproducibility, optimizer selection, and exact small-instance solutions.
 7. Only after these foundations pass, evaluate proposed Fibonacci/369/gyroid/Euler modifications against conventional circuits and classical baselines with held-out instances and preregistered metrics.
 
+
+## Independent numerical reference check (not repository execution)
+To check the conventional Lindblad equation independently of the repository implementation, an isolated SciPy reference integration was run for a two-level amplitude-damping system:
+- Initial state: excited pure state |1><1|.
+- Hamiltonian: zero.
+- Jump operator: |0><1|.
+- Decay rate: 0.37 in the chosen dimensionless units.
+- Time interval: 0 to 8, with 101 requested output points.
+- Analytic excited-state population: exp(-0.37 t).
+
+Results:
+- Integrator success: true.
+- Maximum trace error: 4.44e-16.
+- Maximum Hermiticity error: 0.
+- Minimum sampled density-matrix eigenvalue: 0.
+- Maximum excited-population error against the analytic solution: 1.20e-11.
+
+Interpretation: the standard amplitude-damping Lindblad equation and numerical reference setup behave as expected in this controlled two-level case. This does **not** execute or validate the repository's `neural_quantum_bridge` method; that method still needs direct tests with input validation, solver-status handling, and trace/positivity assertions.
+
+
 ## Evidence and limitations
 - Findings above are based on source inspection of the default-branch files listed in this report.
 - No source files or runtime components were executed as part of this static audit.
